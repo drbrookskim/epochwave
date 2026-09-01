@@ -318,8 +318,13 @@
       });
     });
 
-    /* 시작 위치 */
-    scroller.scrollLeft = 0;
+    /* 시작 위치: 목적지 연도가 설정되어 있으면 해당 위치로 스크롤 */
+    if (App.destYear && App.destYear > 1955) {
+      var targetX = X(App.destYear, App.destMonth || 1);
+      scroller.scrollLeft = Math.max(0, targetX - scroller.clientWidth / 2);
+    } else {
+      scroller.scrollLeft = 0;
+    }
   };
 
   /* ══════════ 주가 툴팁 ══════════ */

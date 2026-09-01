@@ -22,7 +22,202 @@ var App = {
   var ledPres  = document.getElementById('ledPres');
   var ledLast  = document.getElementById('ledLast');
 
+  var destMonthEl     = document.getElementById('destMonth');
+  var destDayEl       = document.getElementById('destDay');
+  var destHourEl      = document.getElementById('destHour');
+  var destMinEl       = document.getElementById('destMin');
+  var destAmEl        = document.getElementById('destAm');
+  var destPmEl        = document.getElementById('destPm');
+  var destAmpmBtn     = document.getElementById('destAmpmBtn');
+  var destYearDownBtn = document.getElementById('destYearDown');
+  var tcWarningEl     = document.getElementById('tcWarning');
+
   var loaded = false, failed = false, charging = false;
+
+  /* ═══ 목적지 시간 상태 (기본값: 1955년 11월 5일 06:00 AM) ═══ */
+  var MONTH_NAMES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  var destState = {
+    year: 1955,
+    month: 11, // 1 ~ 12
+    day: 5,
+    hour: 6,
+    min: 0,
+    ampm: 'AM'
+  };
+
+  App.destYear = destState.year;
+  App.destMonth = destState.month;
+
+  var warnTimer = null;
+  function showWarning(msg) {
+    if (!tcWarningEl) return;
+    tcWarningEl.innerHTML = '<span class="tc-warn-icon">⚠️</span> ' + msg;
+    tcWarningEl.hidden = false;
+    clearTimeout(warnTimer);
+    warnTimer = setTimeout(function () {
+      tcWarningEl.hidden = true;
+    }, 3500);
+  }
+
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  function renderDest() {
+    if (destMonthEl) destMonthEl.textContent = MONTH_NAMES[destState.month - 1];
+    if (destDayEl) destDayEl.textContent = pad2(destState.day);
+    if (ledDest) ledDest.textContent = destState.year;
+    if (destHourEl) destHourEl.textContent = pad2(destState.hour);
+    if (destMinEl) destMinEl.textContent = pad2(destState.min);
+
+    if (destAmEl && destPmEl) {
+      destAmEl.classList.toggle('is-on', destState.ampm === 'AM');
+      destPmEl.classList.toggle('is-on', destState.ampm === 'PM');
+    }
+
+    if (destYearDownBtn) {
+      destYearDownBtn.classList.toggle('is-disabled', destState.year <= 1955);
+    }
+
+    App.destYear = destState.year;
+    App.destMonth = destState.month;
+
+    // 프리셋 칩 활성화 상태 동기화
+    var chips = document.querySelectorAll('.tc-preset-chip');
+    chips.forEach(function (chip) {
+      var y = +chip.dataset.y;
+      var m = +chip.dataset.m;
+      chip.classList.toggle('is-active', y === destState.year && m === destState.month);
+    });
+  }
+
+  function changeDest(unit, delta) {
+    if (charging) return;
+
+    if (unit === 'year') {
+      var nextYear = destState.year + delta;
+      if (nextYear < 1955) {
+        showWarning('1955년 이전으로는 시간 설정할 수 없습니다 (타임라인 시작점: 1955년)');
+        destState.year = 1955;
+        renderDest();
+        return;
+      }
+      if (nextYear > 2026) {
+        destState.year = 2026;
+        renderDest();
+        return;
+      }
+      destState.year = nextYear;
+    } else if (unit === 'month') {
+      destState.month = ((destState.month - 1 + delta + 12) % 12) + 1;
+      var maxD = new Date(destState.year, destState.month, 0).getDate();
+      if (destState.day > maxD) destState.day = maxD;
+    } else if (unit === 'day') {
+      var maxD = new Date(destState.year, destState.month, 0).getDate();
+      destState.day = ((destState.day - 1 + delta + maxD) % maxD) + 1;
+    } else if (unit === 'hour') {
+      destState.hour = ((destState.hour - 1 + delta + 12) % 12) + 1;
+    } else if (unit === 'min') {
+      destState.min = (destState.min + delta + 60) % 60;
+    }
+
+    renderDest();
+  }
+
+  function promptEdit(unit) {
+    if (charging) return;
+    if (unit === 'year') {
+      var input = prompt('목적지 연도를 입력하세요 (1955 ~ 2026):', destState.year);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (isNaN(val)) return;
+      if (val < 1955) {
+        showWarning('1955년 이전으로는 설정할 수 없습니다 (1955년으로 자동 조정)');
+        destState.year = 1955;
+      } else if (val > 2026) {
+        destState.year = 2026;
+      } else {
+        destState.year = val;
+      }
+      renderDest();
+    } else if (unit === 'month') {
+      var input = prompt('목적지 월을 입력하세요 (1 ~ 12):', destState.month);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 1 && val <= 12) {
+        destState.month = val;
+        renderDest();
+      }
+    } else if (unit === 'day') {
+      var maxD = new Date(destState.year, destState.month, 0).getDate();
+      var input = prompt('목적지 일을 입력하세요 (1 ~ ' + maxD + '):', destState.day);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 1 && val <= maxD) {
+        destState.day = val;
+        renderDest();
+      }
+    } else if (unit === 'hour') {
+      var input = prompt('목적지 시간을 입력하세요 (1 ~ 12):', destState.hour);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 1 && val <= 12) {
+        destState.hour = val;
+        renderDest();
+      }
+    } else if (unit === 'min') {
+      var input = prompt('목적지 분을 입력하세요 (0 ~ 59):', destState.min);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 0 && val <= 59) {
+        destState.min = val;
+        renderDest();
+      }
+    }
+  }
+
+  // 화살표 버튼 이벤트 연결
+  document.querySelectorAll('.tc-dest .tc-arrow').forEach(function (arrow) {
+    arrow.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var unit = arrow.dataset.unit;
+      var delta = parseInt(arrow.dataset.delta, 10);
+      changeDest(unit, delta);
+    });
+  });
+
+  // 스크린 클릭/마우스휠 직접 변경 이벤트 연결
+  document.querySelectorAll('.tc-dest .tc-click-edit').forEach(function (screen) {
+    screen.addEventListener('click', function () {
+      promptEdit(screen.dataset.unit);
+    });
+    screen.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      var delta = e.deltaY < 0 ? 1 : -1;
+      changeDest(screen.dataset.unit, delta);
+    }, { passive: false });
+  });
+
+  // AM/PM 토글 버튼
+  if (destAmpmBtn) {
+    destAmpmBtn.addEventListener('click', function () {
+      destState.ampm = destState.ampm === 'AM' ? 'PM' : 'AM';
+      renderDest();
+    });
+  }
+
+  // 퀵 프리셋 칩 클릭
+  document.querySelectorAll('.tc-preset-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      destState.year = parseInt(chip.dataset.y, 10);
+      destState.month = parseInt(chip.dataset.m, 10);
+      destState.day = parseInt(chip.dataset.d, 10);
+      destState.hour = parseInt(chip.dataset.h, 10);
+      destState.min = parseInt(chip.dataset.min, 10);
+      destState.ampm = chip.dataset.ap;
+      renderDest();
+    });
+  });
+
+  renderDest();
 
   function paint(p) {
     fill.style.width = (p * 100).toFixed(1) + '%';
@@ -62,7 +257,7 @@ var App = {
     charging = true;
     clearInterval(flick);
     splash.classList.add('charging');
-    hint.textContent = '88mph 가속 중… 시간 회로 작동!';
+    hint.textContent = '88mph 가속 중… ' + destState.year + '년으로 도약!';
 
     var t0 = performance.now();
     (function step(now) {
@@ -100,9 +295,7 @@ var App = {
       })
       .then(function (json) {
         App.data = json;
-        var f = json.meta && json.meta.range ? json.meta.range.from : 1955;
         var t = json.meta && json.meta.range ? json.meta.range.to : 2026;
-        if (ledDest) ledDest.textContent = f;
         if (ledPres) ledPres.textContent = t;
         loaded = true;
         ready();
@@ -138,8 +331,6 @@ var App = {
   function launch() {
     appEl.hidden = false;
     appEl.classList.add('enter-anim');
-    /* 연출이 끝나면(또는 어떤 이유로 재생되지 않으면) 클래스를 떼서
-       0% 키프레임에 화면이 투명하게 붙잡히는 일이 없게 한다 */
     var clear = function () { appEl.classList.remove('enter-anim'); };
     appEl.addEventListener('animationend', clear, { once: true });
     setTimeout(clear, 1400);
@@ -147,7 +338,7 @@ var App = {
     App.build(App.data);
     document.getElementById('scroller').focus({ preventScroll: true });
 
-    /* 소실점으로 빨려들어간 빛이 여기, 1955년의 첫 시점에 도착했다는 걸 보여준다 */
+    /* 소실점으로 빨려들어간 빛이 설정한 목적지 시점에 도착 */
     if (!App.reduced) arrive();
   }
 
@@ -158,7 +349,11 @@ var App = {
     setTimeout(function () { flash.remove(); }, 700);
 
     var glow = [].slice.call(document.querySelectorAll('.depart-mark'));
-    var first = App.nodes[0];
+    var targetNode = null;
+    if (App.destYear && App.destYear > 1955) {
+      targetNode = App.nodes.find(function (n) { return n.ev.year >= App.destYear; });
+    }
+    var first = targetNode || App.nodes[0];
     if (first) glow.push(first.el);
 
     glow.forEach(function (el) { el.classList.add('is-arrival'); });
