@@ -224,32 +224,6 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 }
 .tc-ampm-btn:hover .tc-ampm-item{color:rgba(255,255,255,.6)}
 
-/* 퀵 프리셋 칩 */
-.tc-presets{
-  display:flex; align-items:center; justify-content:center; gap:5px;
-  flex-wrap:wrap; margin-top:8px; padding-top:7px;
-  border-top:1px dashed rgba(255,255,255,.1);
-}
-.tc-preset-title{
-  font-family:Orbitron,sans-serif; font-size:8px; letter-spacing:.12em;
-  color:rgba(255,255,255,.45);
-}
-.tc-preset-chip{
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
-  border-radius:99px; color:rgba(255,255,255,.75); font-size:10px;
-  font-family:"Noto Sans KR",sans-serif; padding:2px 8px; cursor:pointer;
-  transition:all .15s; white-space:nowrap;
-}
-.tc-preset-chip:hover{
-  background:rgba(255,80,80,.2); border-color:#ff5555; color:#fff;
-  box-shadow:0 0 6px rgba(255,60,60,.4);
-}
-.tc-preset-chip.is-active{
-  background:linear-gradient(180deg,#b01018 0%,#700a0e 100%);
-  border-color:#ff4040; color:#fff; font-weight:700;
-  box-shadow:0 0 8px rgba(255,40,40,.5);
-}
-
 /* 1955년 이전 제한 경고 토스트 */
 .tc-warning{
   margin-top:6px; padding:5px 10px; background:rgba(180,20,20,.38);
@@ -923,17 +897,6 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
           </div>
         </div>
 
-        <!-- 퀵 시대 프리셋 -->
-        <div class="tc-presets" aria-label="목적지 연도 바로가기">
-          <span class="tc-preset-title">TARGET:</span>
-          <button type="button" class="tc-preset-chip is-active" data-y="1955" data-m="11" data-d="5" data-h="6" data-min="0" data-ap="AM">1955 백투더퓨처</button>
-          <button type="button" class="tc-preset-chip" data-y="1971" data-m="8" data-d="15" data-h="9" data-min="0" data-ap="PM">1971 닉슨쇼크</button>
-          <button type="button" class="tc-preset-chip" data-y="1985" data-m="10" data-d="26" data-h="1" data-min="20" data-ap="AM">1985 마티의 현재</button>
-          <button type="button" class="tc-preset-chip" data-y="1997" data-m="11" data-d="21" data-h="10" data-min="0" data-ap="PM">1997 IMF</button>
-          <button type="button" class="tc-preset-chip" data-y="2008" data-m="9" data-d="15" data-h="9" data-min="30" data-ap="AM">2008 금융위기</button>
-          <button type="button" class="tc-preset-chip" data-y="2026" data-m="1" data-d="1" data-h="12" data-min="0" data-ap="PM">2026 미래</button>
-        </div>
-
         <!-- 1955년 이전 제한 알림 -->
         <div class="tc-warning" id="tcWarning" hidden aria-live="polite">
           <span class="tc-warn-icon">⚠️</span> 1955년 이전으로는 시간 설정할 수 없습니다 (타임라인 시작점: 1955년)
@@ -1192,14 +1155,6 @@ var App = {
 
     App.destYear = destState.year;
     App.destMonth = destState.month;
-
-    // 프리셋 칩 활성화 상태 동기화
-    var chips = document.querySelectorAll('.tc-preset-chip');
-    chips.forEach(function (chip) {
-      var y = +chip.dataset.y;
-      var m = +chip.dataset.m;
-      chip.classList.toggle('is-active', y === destState.year && m === destState.month);
-    });
   }
 
   function changeDest(unit, delta) {
@@ -1316,19 +1271,6 @@ var App = {
       renderDest();
     });
   }
-
-  // 퀵 프리셋 칩 클릭
-  document.querySelectorAll('.tc-preset-chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      destState.year = parseInt(chip.dataset.y, 10);
-      destState.month = parseInt(chip.dataset.m, 10);
-      destState.day = parseInt(chip.dataset.d, 10);
-      destState.hour = parseInt(chip.dataset.h, 10);
-      destState.min = parseInt(chip.dataset.min, 10);
-      destState.ampm = chip.dataset.ap;
-      renderDest();
-    });
-  });
 
   renderDest();
 

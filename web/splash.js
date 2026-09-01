@@ -79,14 +79,6 @@ var App = {
 
     App.destYear = destState.year;
     App.destMonth = destState.month;
-
-    // 프리셋 칩 활성화 상태 동기화
-    var chips = document.querySelectorAll('.tc-preset-chip');
-    chips.forEach(function (chip) {
-      var y = +chip.dataset.y;
-      var m = +chip.dataset.m;
-      chip.classList.toggle('is-active', y === destState.year && m === destState.month);
-    });
   }
 
   function changeDest(unit, delta) {
@@ -203,19 +195,6 @@ var App = {
       renderDest();
     });
   }
-
-  // 퀵 프리셋 칩 클릭
-  document.querySelectorAll('.tc-preset-chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      destState.year = parseInt(chip.dataset.y, 10);
-      destState.month = parseInt(chip.dataset.m, 10);
-      destState.day = parseInt(chip.dataset.d, 10);
-      destState.hour = parseInt(chip.dataset.h, 10);
-      destState.min = parseInt(chip.dataset.min, 10);
-      destState.ampm = chip.dataset.ap;
-      renderDest();
-    });
-  });
 
   renderDest();
 
