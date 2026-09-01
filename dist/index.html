@@ -384,18 +384,38 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 }
 @keyframes arrivalFlash{ 0%{opacity:1} 100%{opacity:0} }
 
-.depart-mark.is-arrival{ animation:departArrival 1.5s ease-out .15s both }
+.depart-mark.is-arrival{ animation:departArrival 5s ease-in-out .15s both }
 @keyframes departArrival{
-  0%,15% { filter:drop-shadow(0 0 2px #FFB03A) }
-  40%    { filter:drop-shadow(0 0 18px #FFEBB0) }
+  0%     { filter:drop-shadow(0 0 2px #FFB03A) }
+  12%    { filter:drop-shadow(0 0 24px #FFEBB0) drop-shadow(0 0 40px #FF9020) }
+  30%    { filter:drop-shadow(0 0 10px #FFB03A) }
+  50%    { filter:drop-shadow(0 0 28px #FFEBB0) drop-shadow(0 0 48px #FF8010) }
+  70%    { filter:drop-shadow(0 0 12px #FFB03A) }
+  85%    { filter:drop-shadow(0 0 22px #FFEBB0) drop-shadow(0 0 36px #FF9020) }
   100%   { filter:drop-shadow(0 0 2px #FFB03A) }
 }
 
-.node.is-arrival .dot{ animation:nodeArrival 1.5s ease-out .15s both }
+.node.is-arrival .dot{
+  animation:nodeArrival 5s ease-in-out .15s both;
+  z-index: 20;
+}
 @keyframes nodeArrival{
-  0%,15% { box-shadow:0 0 0 5px color-mix(in srgb, var(--c) 9%, transparent), 0 6px 18px rgba(0,0,0,.55) }
-  40%    { box-shadow:0 0 0 20px color-mix(in srgb, var(--c) 28%, transparent), 0 0 44px color-mix(in srgb, var(--c) 85%, transparent) }
-  100%   { box-shadow:0 0 0 5px color-mix(in srgb, var(--c) 9%, transparent), 0 6px 18px rgba(0,0,0,.55) }
+  0%   { box-shadow:0 0 0 5px color-mix(in srgb, var(--c) 9%, transparent), 0 6px 18px rgba(0,0,0,.55); transform:scale(1) }
+  12%  { box-shadow:0 0 0 28px color-mix(in srgb, var(--c) 38%, transparent), 0 0 55px color-mix(in srgb, var(--c) 95%, transparent); transform:scale(1.35) }
+  30%  { box-shadow:0 0 0 12px color-mix(in srgb, var(--c) 18%, transparent), 0 0 28px color-mix(in srgb, var(--c) 65%, transparent); transform:scale(1.15) }
+  50%  { box-shadow:0 0 0 34px color-mix(in srgb, var(--c) 42%, transparent), 0 0 65px color-mix(in srgb, var(--c) 100%, transparent); transform:scale(1.4) }
+  70%  { box-shadow:0 0 0 14px color-mix(in srgb, var(--c) 20%, transparent), 0 0 30px color-mix(in srgb, var(--c) 70%, transparent); transform:scale(1.18) }
+  85%  { box-shadow:0 0 0 26px color-mix(in srgb, var(--c) 32%, transparent), 0 0 48px color-mix(in srgb, var(--c) 85%, transparent); transform:scale(1.25) }
+  100% { box-shadow:0 0 0 5px color-mix(in srgb, var(--c) 9%, transparent), 0 6px 18px rgba(0,0,0,.55); transform:scale(1) }
+}
+
+.node.is-arrival .node-btn{
+  animation:nodeBtnArrival 5s ease-in-out .15s both;
+}
+@keyframes nodeBtnArrival{
+  0%, 100% { filter:none; }
+  15%, 50%, 85% { filter:drop-shadow(0 0 14px #FFD54A) drop-shadow(0 0 26px #FFA22E); }
+  30%, 70% { filter:drop-shadow(0 0 6px #FFA22E); }
 }
 
 .hud{
@@ -1401,20 +1421,25 @@ var App = {
     var flash = document.createElement('div');
     flash.className = 'arrival-flash';
     document.body.appendChild(flash);
-    setTimeout(function () { flash.remove(); }, 700);
+    setTimeout(function () { flash.remove(); }, 800);
 
     var glow = [].slice.call(document.querySelectorAll('.depart-mark'));
-    var targetNode = null;
     if (App.destYear && App.destYear > 1955) {
-      targetNode = App.nodes.find(function (n) { return n.ev.year >= App.destYear; });
+      var matching = App.nodes.filter(function (n) { return n.ev.year === App.destYear; });
+      if (!matching.length) {
+        var closest = App.nodes.find(function (n) { return n.ev.year >= App.destYear; });
+        if (closest) matching = [closest];
+      }
+      matching.forEach(function (n) { glow.push(n.el); });
+    } else {
+      var first = App.nodes[0];
+      if (first) glow.push(first.el);
     }
-    var first = targetNode || App.nodes[0];
-    if (first) glow.push(first.el);
 
     glow.forEach(function (el) { el.classList.add('is-arrival'); });
     setTimeout(function () {
       glow.forEach(function (el) { el.classList.remove('is-arrival'); });
-    }, 1500);
+    }, 5000); // 5초 동안 하이라이트 유지
   }
 })();
 

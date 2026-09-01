@@ -325,19 +325,24 @@ var App = {
     var flash = document.createElement('div');
     flash.className = 'arrival-flash';
     document.body.appendChild(flash);
-    setTimeout(function () { flash.remove(); }, 700);
+    setTimeout(function () { flash.remove(); }, 800);
 
     var glow = [].slice.call(document.querySelectorAll('.depart-mark'));
-    var targetNode = null;
     if (App.destYear && App.destYear > 1955) {
-      targetNode = App.nodes.find(function (n) { return n.ev.year >= App.destYear; });
+      var matching = App.nodes.filter(function (n) { return n.ev.year === App.destYear; });
+      if (!matching.length) {
+        var closest = App.nodes.find(function (n) { return n.ev.year >= App.destYear; });
+        if (closest) matching = [closest];
+      }
+      matching.forEach(function (n) { glow.push(n.el); });
+    } else {
+      var first = App.nodes[0];
+      if (first) glow.push(first.el);
     }
-    var first = targetNode || App.nodes[0];
-    if (first) glow.push(first.el);
 
     glow.forEach(function (el) { el.classList.add('is-arrival'); });
     setTimeout(function () {
       glow.forEach(function (el) { el.classList.remove('is-arrival'); });
-    }, 1500);
+    }, 5000); // 5초 동안 하이라이트 유지
   }
 })();
