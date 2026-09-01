@@ -20,25 +20,32 @@ var App = {
   var hint     = document.getElementById('splashHint');
   var ledDest  = document.getElementById('ledDest');
   var ledPres  = document.getElementById('ledPres');
+  var ledLast  = document.getElementById('ledLast');
 
   var loaded = false, failed = false, charging = false;
 
   function paint(p) {
     fill.style.width = (p * 100).toFixed(1) + '%';
-    gtxt.textContent = (p * 1.21).toFixed(2) + ' GIGAWATTS';
+    if (charging) {
+      gtxt.textContent = Math.round(p * 88) + 'mph';
+    } else {
+      gtxt.textContent = '88mph';
+    }
   }
   paint(0);
 
-  /* LED 깜빡임 — 충전이 시작되면 멈춘다 */
+  /* LED 미세 깜빡임 — 영화 속 클래식 하드웨어 감성 */
+  var flickTargets = [ledDest, ledPres, ledLast].filter(Boolean);
   var flick = setInterval(function () {
-    var t = Math.random() < 0.5 ? ledDest : ledPres;
+    if (!flickTargets.length) return;
+    var t = flickTargets[Math.floor(Math.random() * flickTargets.length)];
     t.style.opacity = '.35';
     setTimeout(function () { t.style.opacity = ''; }, 70);
   }, 1400);
 
   function ready() {
     btn.disabled = false;
-    hint.textContent = '준비 완료 — 버튼을 누르면 플럭스 캐패시터가 충전됩니다.';
+    hint.textContent = '준비 완료 — Start On을 누르면 88mph로 시간 도약합니다.';
     btn.focus();
   }
 
@@ -49,27 +56,27 @@ var App = {
     hint.style.color = '#FF8080';
   }
 
-  /* ── 버튼을 누르면 1.21 GIGAWATTS 까지 충전하고, 다 차면 워프로 이어진다 ── */
+  /* ── 버튼을 누르면 88mph 까지 가속하고, 다 차면 워프로 이어진다 ── */
   var CHARGE_MS = 1500;
   function charge(done) {
     charging = true;
     clearInterval(flick);
     splash.classList.add('charging');
-    hint.textContent = '플럭스 캐패시터 충전 중…';
+    hint.textContent = '88mph 가속 중… 시간 회로 작동!';
 
     var t0 = performance.now();
     (function step(now) {
       var p = Math.min(1, (now - t0) / CHARGE_MS);
-      /* 후반으로 갈수록 빨라지는 곡선 — 마지막에 확 차오르는 느낌 */
+      /* 후반으로 갈수록 빨라지는 곡선 — 마지막에 확 차오르는 가속감 */
       paint(p * p * (3 - 2 * p));
       if (p < 1) return requestAnimationFrame(step);
 
       paint(1);
       splash.classList.remove('charging');
       splash.classList.add('charged');
-      gtxt.textContent = '1.21 GIGAWATTS';
-      hint.textContent = '어디로 가든 길은 필요 없다.';
-      setTimeout(done, 260);   // 만충을 눈으로 확인할 짧은 여유
+      gtxt.textContent = '88mph';
+      hint.textContent = '"Roads we\'re going we don\'t need roads."';
+      setTimeout(done, 260);   // 88mph 달성을 눈으로 확인할 짧은 여유
     })(t0);
   }
 
@@ -82,7 +89,8 @@ var App = {
       App.data = json;
       var f = json.meta && json.meta.range ? json.meta.range.from : 1955;
       var t = json.meta && json.meta.range ? json.meta.range.to : 2026;
-      ledDest.textContent = f; ledPres.textContent = t;
+      if (ledDest) ledDest.textContent = f;
+      if (ledPres) ledPres.textContent = t;
       loaded = true;
       ready();
     })
@@ -94,7 +102,7 @@ var App = {
 
     if (App.reduced) {
       paint(1);
-      gtxt.textContent = '1.21 GIGAWATTS';
+      gtxt.textContent = '88mph';
       splash.hidden = true;
       launch();
       return;

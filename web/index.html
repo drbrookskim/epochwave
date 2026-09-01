@@ -51,27 +51,135 @@
       <span class="w1">BACK TO</span>
       <span class="w2">THE FUTURE</span>
     </h1>
-    <p class="subtitle">1955년 11월, 마티가 도착한 그 시점에서 출발한다.<br>2026년까지 70년의 <b>한국사</b>와 <b>세계사</b>를 나란히 본다.</p>
+    <p class="subtitle">
+      <span class="sub-quote">"Roads we're going we don't need roads."</span><br>
+      1955년부터 현재까지의 역사적 사건에 따른 주가의 흐름을 알아보자.
+    </p>
 
-    <div class="circuits" role="group" aria-label="시간 회로">
-      <div class="circuit dest">
-        <span class="lbl">DESTINATION TIME</span>
-        <span class="led" id="ledDest">1955</span>
+    <!-- ══ 드로리안 시간 회로 계기판 (DeLorean Time Circuits) ══ -->
+    <div class="time-circuits" role="group" aria-label="시간 회로 계기판">
+      <!-- 1. DESTINATION TIME (RED) -->
+      <div class="tc-row tc-dest">
+        <div class="tc-screw tl" aria-hidden="true"></div>
+        <div class="tc-screw tr" aria-hidden="true"></div>
+        <div class="tc-screw bl" aria-hidden="true"></div>
+        <div class="tc-screw br" aria-hidden="true"></div>
+        <div class="tc-header">
+          <span class="tc-badge">DESTINATION TIME</span>
+        </div>
+        <div class="tc-panel">
+          <div class="tc-col tc-month">
+            <span class="tc-lbl">MONTH</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">888</span><span class="tc-val led" id="destMonth">NOV</span></div>
+          </div>
+          <div class="tc-col tc-day">
+            <span class="tc-lbl">DAY</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="destDay">05</span></div>
+          </div>
+          <div class="tc-col tc-year">
+            <span class="tc-lbl">YEAR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">8888</span><span class="tc-val led" id="ledDest">1955</span></div>
+          </div>
+          <div class="tc-col tc-ampm">
+            <div class="tc-ampm-item is-on" id="destAm"><i class="tc-led-dot"></i><span>AM</span></div>
+            <div class="tc-ampm-item" id="destPm"><i class="tc-led-dot"></i><span>PM</span></div>
+          </div>
+          <div class="tc-col tc-hour">
+            <span class="tc-lbl">HOUR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="destHour">06</span></div>
+          </div>
+          <span class="tc-colon led">:</span>
+          <div class="tc-col tc-min">
+            <span class="tc-lbl">MIN</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="destMin">00</span></div>
+          </div>
+        </div>
       </div>
-      <div class="circuit pres">
-        <span class="lbl">PRESENT TIME</span>
-        <span class="led" id="ledPres">2026</span>
+
+      <!-- 2. PRESENT TIME (GREEN) -->
+      <div class="tc-row tc-pres">
+        <div class="tc-screw tl" aria-hidden="true"></div>
+        <div class="tc-screw tr" aria-hidden="true"></div>
+        <div class="tc-screw bl" aria-hidden="true"></div>
+        <div class="tc-screw br" aria-hidden="true"></div>
+        <div class="tc-header">
+          <span class="tc-badge">PRESENT TIME</span>
+        </div>
+        <div class="tc-panel">
+          <div class="tc-col tc-month">
+            <span class="tc-lbl">MONTH</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">888</span><span class="tc-val led" id="presMonth">OCT</span></div>
+          </div>
+          <div class="tc-col tc-day">
+            <span class="tc-lbl">DAY</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presDay">26</span></div>
+          </div>
+          <div class="tc-col tc-year">
+            <span class="tc-lbl">YEAR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">8888</span><span class="tc-val led" id="ledPres">2026</span></div>
+          </div>
+          <div class="tc-col tc-ampm">
+            <div class="tc-ampm-item" id="presAm"><i class="tc-led-dot"></i><span>AM</span></div>
+            <div class="tc-ampm-item is-on" id="presPm"><i class="tc-led-dot"></i><span>PM</span></div>
+          </div>
+          <div class="tc-col tc-hour">
+            <span class="tc-lbl">HOUR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presHour">01</span></div>
+          </div>
+          <span class="tc-colon led">:</span>
+          <div class="tc-col tc-min">
+            <span class="tc-lbl">MIN</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presMin">21</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. LAST TIME DEPARTED (AMBER) -->
+      <div class="tc-row tc-last">
+        <div class="tc-screw tl" aria-hidden="true"></div>
+        <div class="tc-screw tr" aria-hidden="true"></div>
+        <div class="tc-screw bl" aria-hidden="true"></div>
+        <div class="tc-screw br" aria-hidden="true"></div>
+        <div class="tc-header">
+          <span class="tc-badge">LAST TIME DEPARTED</span>
+        </div>
+        <div class="tc-panel">
+          <div class="tc-col tc-month">
+            <span class="tc-lbl">MONTH</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">888</span><span class="tc-val led" id="lastMonth">OCT</span></div>
+          </div>
+          <div class="tc-col tc-day">
+            <span class="tc-lbl">DAY</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="lastDay">26</span></div>
+          </div>
+          <div class="tc-col tc-year">
+            <span class="tc-lbl">YEAR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">8888</span><span class="tc-val led" id="ledLast">1985</span></div>
+          </div>
+          <div class="tc-col tc-ampm">
+            <div class="tc-ampm-item is-on" id="lastAm"><i class="tc-led-dot"></i><span>AM</span></div>
+            <div class="tc-ampm-item" id="lastPm"><i class="tc-led-dot"></i><span>PM</span></div>
+          </div>
+          <div class="tc-col tc-hour">
+            <span class="tc-lbl">HOUR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="lastHour">01</span></div>
+          </div>
+          <span class="tc-colon led">:</span>
+          <div class="tc-col tc-min">
+            <span class="tc-lbl">MIN</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="lastMin">20</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="gauge" aria-hidden="true">
       <div class="gauge-bar"><i id="gaugeFill"></i></div>
-      <span class="gauge-txt" id="gaugeTxt">0.00 GIGAWATTS</span>
+      <span class="gauge-txt" id="gaugeTxt">88mph</span>
     </div>
 
     <button id="enterBtn" class="enter" disabled>
-      <span class="mph">88</span><span class="unit">MPH</span>
-      <span class="cta">시간축으로 진입</span>
+      <span class="cta">Start On</span>
     </button>
     <p class="hint" id="splashHint">연결 중…</p>
   </div>

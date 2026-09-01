@@ -116,19 +116,137 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   background:linear-gradient(180deg,#FFF6D8,#FFB43A 48%,#E8571C);
   -webkit-background-clip:text; background-clip:text; color:transparent;
   filter:drop-shadow(0 4px 0 rgba(120,20,0,.55));}
-.subtitle{margin:20px auto 26px; max-width:44ch; font-size:14.5px; line-height:1.75; color:rgba(255,255,255,.86)}
+.subtitle{margin:20px auto 26px; max-width:48ch; font-size:14.5px; line-height:1.75; color:rgba(255,255,255,.86)}
 .subtitle b{color:#FFD98A; font-weight:700}
-
-.circuits{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:22px}
-.circuit{
-  background:rgba(6,8,18,.72); border:1px solid rgba(255,255,255,.14);
-  border-radius:8px; padding:9px 16px 10px; min-width:170px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 8px 24px rgba(0,0,0,.4);
+.sub-quote{
+  font-family:Orbitron,sans-serif; font-style:italic; font-weight:700;
+  font-size:clamp(14px,3.2vw,16.5px); color:#FFE285;
+  text-shadow:0 0 12px rgba(255,210,100,.45); letter-spacing:.03em;
+  display:inline-block; margin-bottom:4px;
 }
-.circuit .lbl{display:block; font-family:Orbitron,sans-serif; font-size:8.5px; letter-spacing:.2em; color:rgba(255,255,255,.5); margin-bottom:5px}
-.circuit .led{font-family:Orbitron,sans-serif; font-weight:700; font-size:27px; letter-spacing:.08em; display:block}
-.dest .led{color:#FF5C3A; text-shadow:0 0 14px rgba(255,92,58,.75)}
-.pres .led{color:#4DE28C; text-shadow:0 0 14px rgba(77,226,140,.7)}
+
+/* ═══ 드로리안 시간 회로 계기판 (DeLorean Time Circuits) ═══ */
+.time-circuits{
+  display:flex; flex-direction:column; gap:9px; width:100%; max-width:540px;
+  margin:0 auto 20px; padding:10px; background:rgba(8,11,20,.82);
+  border:1px solid rgba(255,255,255,.14); border-radius:12px;
+  box-shadow:0 16px 40px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.12);
+  backdrop-filter:blur(8px);
+}
+
+.tc-row{
+  position:relative;
+  background:linear-gradient(180deg,#252a37 0%,#161923 55%,#11141d 100%);
+  border:1px solid rgba(255,255,255,.15); border-radius:7px;
+  padding:7px 10px 9px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 4px 14px rgba(0,0,0,.5);
+}
+
+/* 금속 리벳 볼트 */
+.tc-screw{
+  position:absolute; width:5.5px; height:5.5px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#9da8be,#20242f);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 1px 2px rgba(0,0,0,.9);
+  pointer-events:none;
+}
+.tc-screw.tl{top:4px; left:4px}
+.tc-screw.tr{top:4px; right:4px}
+.tc-screw.bl{bottom:4px; left:4px}
+.tc-screw.br{bottom:4px; right:4px}
+
+/* Dymo 양각 라벨 테이프 */
+.tc-header{display:flex; justify-content:center; margin-bottom:6px}
+.tc-badge{
+  display:inline-block; font-family:Orbitron,sans-serif; font-weight:900;
+  font-size:9.5px; letter-spacing:.18em; padding:2px 12px; border-radius:3px;
+  text-shadow:0 1px 2px rgba(0,0,0,.85);
+  box-shadow:0 2px 5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.3);
+  text-transform:uppercase;
+}
+.tc-dest .tc-badge{
+  background:linear-gradient(180deg,#c41c1c 0%,#850f0f 100%);
+  color:#fff; border:1px solid #e03838;
+}
+.tc-pres .tc-badge{
+  background:linear-gradient(180deg,#18863b 0%,#0d5323 100%);
+  color:#fff; border:1px solid #28b855;
+}
+.tc-last .tc-badge{
+  background:linear-gradient(180deg,#c98a08 0%,#8c5d03 100%);
+  color:#fff; border:1px solid #f0ad1d;
+}
+
+/* 계기판 패널 그리드 */
+.tc-panel{
+  display:flex; align-items:flex-end; justify-content:center; gap:clamp(3px,1.2vw,7px);
+  flex-wrap:nowrap;
+}
+.tc-col{display:flex; flex-direction:column; align-items:center}
+.tc-lbl{
+  font-family:Orbitron,sans-serif; font-weight:700; font-size:7.5px;
+  letter-spacing:.12em; color:rgba(255,255,255,.48); margin-bottom:3px;
+  text-transform:uppercase;
+}
+
+/* 오목한 디지털 스크린 창 */
+.tc-screen{
+  position:relative; background:#05070d;
+  border:1px solid rgba(255,255,255,.09); border-radius:4px;
+  padding:3px clamp(4px,1vw,8px);
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.95), 0 1px 0 rgba(255,255,255,.08);
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+
+.tc-ghost{
+  position:absolute; font-family:Orbitron,monospace; font-weight:700;
+  font-size:clamp(13px,3.6vw,19px); color:rgba(255,255,255,.04);
+  pointer-events:none; user-select:none; letter-spacing:.06em;
+}
+.tc-val{
+  position:relative; z-index:1; font-family:Orbitron,monospace; font-weight:700;
+  font-size:clamp(13px,3.6vw,19px); letter-spacing:.06em; display:block;
+}
+
+/* 테마별 LED 발광 효과 */
+.tc-dest .led{
+  color:#ff3838; text-shadow:0 0 8px rgba(255,56,56,.8), 0 0 16px rgba(255,56,56,.4);
+}
+.tc-pres .led{
+  color:#38e874; text-shadow:0 0 8px rgba(56,232,116,.8), 0 0 16px rgba(56,232,116,.4);
+}
+.tc-last .led{
+  color:#ffb72b; text-shadow:0 0 8px rgba(255,183,43,.8), 0 0 16px rgba(255,183,43,.4);
+}
+
+/* 시간 구분 콜론(:) */
+.tc-colon{
+  font-family:Orbitron,monospace; font-weight:900;
+  font-size:clamp(13px,3.6vw,19px); line-height:1;
+  padding-bottom:5px; animation:tcColonBlink 1s step-end infinite;
+}
+@keyframes tcColonBlink{ 0%,100%{opacity:1} 50%{opacity:.15} }
+
+/* AM / PM 인디케이터 */
+.tc-ampm{
+  display:flex; flex-direction:column; gap:3px; justify-content:center;
+  padding:2px 0 5px;
+}
+.tc-ampm-item{
+  display:inline-flex; align-items:center; gap:3px; font-family:Orbitron,sans-serif;
+  font-size:7px; font-weight:700; color:rgba(255,255,255,.2);
+}
+.tc-led-dot{
+  width:4px; height:4px; border-radius:50%; background:rgba(255,255,255,.15);
+  display:inline-block;
+}
+.tc-dest .tc-ampm-item.is-on{color:#ff4747; text-shadow:0 0 5px rgba(255,71,71,.8)}
+.tc-dest .tc-ampm-item.is-on .tc-led-dot{background:#ff4747; box-shadow:0 0 6px #ff4747}
+
+.tc-pres .tc-ampm-item.is-on{color:#38e874; text-shadow:0 0 5px rgba(56,232,116,.8)}
+.tc-pres .tc-ampm-item.is-on .tc-led-dot{background:#38e874; box-shadow:0 0 6px #38e874}
+
+.tc-last .tc-ampm-item.is-on{color:#ffb72b; text-shadow:0 0 5px rgba(255,183,43,.8)}
+.tc-last .tc-ampm-item.is-on .tc-led-dot{background:#ffb72b; box-shadow:0 0 6px #ffb72b}
 
 .gauge{display:flex; align-items:center; gap:12px; justify-content:center; margin-bottom:24px}
 .gauge-bar{width:min(58vw,300px); height:7px; border-radius:99px; background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.18); overflow:hidden;
@@ -138,9 +256,10 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 
 /* 버튼을 누른 뒤 충전되는 동안 — 게이지·회로가 함께 요동친다 */
 #splash.charging .gauge-bar{ box-shadow:0 0 18px 2px rgba(255,196,74,.55), inset 0 0 8px rgba(255,255,255,.25) }
-#splash.charging .circuit{ animation:circuitShake .12s linear infinite }
-#splash.charging .dest .led,
-#splash.charging .pres .led{ animation:ledFlicker .16s steps(2) infinite }
+#splash.charging .tc-row{ animation:circuitShake .12s linear infinite }
+#splash.charging .tc-dest .led,
+#splash.charging .tc-pres .led,
+#splash.charging .tc-last .led{ animation:ledFlicker .16s steps(2) infinite }
 #splash.charging .enter{ pointer-events:none; filter:saturate(1.3) }
 @keyframes circuitShake{
   0%,100%{ transform:translate(0,0) } 25%{ transform:translate(.6px,-.6px) }
@@ -155,22 +274,30 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 @keyframes chargeFlash{
   0%{ filter:brightness(1) } 40%{ filter:brightness(1.9) } 100%{ filter:brightness(1.25) }
 }
-.gauge-txt{font-family:Orbitron,sans-serif; font-size:10px; letter-spacing:.14em; color:rgba(255,255,255,.72); min-width:132px; text-align:left}
+.gauge-txt{
+  font-family:Orbitron,sans-serif; font-size:12.5px; font-weight:700;
+  letter-spacing:.12em; color:#FFE07A; text-shadow:0 0 10px rgba(255,200,80,.6);
+  min-width:85px; text-align:left;
+}
 
 .enter{
-  display:inline-flex; align-items:baseline; gap:8px; cursor:pointer;
-  font-family:Orbitron,sans-serif; padding:13px 26px; border-radius:99px;
-  color:#2A1200; border:none;
-  background:linear-gradient(180deg,#FFE07A,#FFA92E 55%,#F2711C);
-  box-shadow:0 6px 0 #A63F06, 0 14px 30px rgba(255,120,20,.4);
-  transition:transform .12s var(--fx), box-shadow .12s var(--fx), opacity .2s;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+  font-family:Orbitron,sans-serif; padding:13px 38px; border-radius:99px;
+  color:#201000; border:none;
+  background:linear-gradient(180deg,#FFE27D,#FFAA2E 50%,#E96014);
+  box-shadow:0 6px 0 #9E3804, 0 14px 32px rgba(255,120,20,.45);
+  transition:transform .12s var(--fx), box-shadow .12s var(--fx), opacity .2s, filter .2s;
 }
 .enter[disabled]{opacity:.35; cursor:not-allowed; filter:saturate(.4)}
-.enter:not([disabled]):hover{transform:translateY(-2px); box-shadow:0 8px 0 #A63F06, 0 18px 38px rgba(255,120,20,.5)}
-.enter:not([disabled]):active{transform:translateY(3px); box-shadow:0 3px 0 #A63F06}
-.enter .mph{font-weight:900; font-size:23px; font-style:italic}
-.enter .unit{font-weight:700; font-size:11px; letter-spacing:.1em}
-.enter .cta{font-family:"Noto Sans KR",sans-serif; font-weight:700; font-size:13.5px; margin-left:6px}
+.enter:not([disabled]):hover{
+  transform:translateY(-2px); box-shadow:0 8px 0 #9E3804, 0 18px 40px rgba(255,120,20,.6);
+  filter:brightness(1.08);
+}
+.enter:not([disabled]):active{transform:translateY(3px); box-shadow:0 3px 0 #9E3804}
+.enter .cta{
+  font-family:Orbitron,sans-serif; font-weight:900; font-size:16px;
+  letter-spacing:.14em; text-transform:uppercase;
+}
 .hint{margin:14px 0 0; font-size:11.5px; letter-spacing:.06em; color:rgba(255,255,255,.55); min-height:17px}
 
 /* ═══ 본편 셸 ═══ */
@@ -624,27 +751,135 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
       <span class="w1">BACK TO</span>
       <span class="w2">THE FUTURE</span>
     </h1>
-    <p class="subtitle">1955년 11월, 마티가 도착한 그 시점에서 출발한다.<br>2026년까지 70년의 <b>한국사</b>와 <b>세계사</b>를 나란히 본다.</p>
+    <p class="subtitle">
+      <span class="sub-quote">"Roads we're going we don't need roads."</span><br>
+      1955년부터 현재까지의 역사적 사건에 따른 주가의 흐름을 알아보자.
+    </p>
 
-    <div class="circuits" role="group" aria-label="시간 회로">
-      <div class="circuit dest">
-        <span class="lbl">DESTINATION TIME</span>
-        <span class="led" id="ledDest">1955</span>
+    <!-- ══ 드로리안 시간 회로 계기판 (DeLorean Time Circuits) ══ -->
+    <div class="time-circuits" role="group" aria-label="시간 회로 계기판">
+      <!-- 1. DESTINATION TIME (RED) -->
+      <div class="tc-row tc-dest">
+        <div class="tc-screw tl" aria-hidden="true"></div>
+        <div class="tc-screw tr" aria-hidden="true"></div>
+        <div class="tc-screw bl" aria-hidden="true"></div>
+        <div class="tc-screw br" aria-hidden="true"></div>
+        <div class="tc-header">
+          <span class="tc-badge">DESTINATION TIME</span>
+        </div>
+        <div class="tc-panel">
+          <div class="tc-col tc-month">
+            <span class="tc-lbl">MONTH</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">888</span><span class="tc-val led" id="destMonth">NOV</span></div>
+          </div>
+          <div class="tc-col tc-day">
+            <span class="tc-lbl">DAY</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="destDay">05</span></div>
+          </div>
+          <div class="tc-col tc-year">
+            <span class="tc-lbl">YEAR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">8888</span><span class="tc-val led" id="ledDest">1955</span></div>
+          </div>
+          <div class="tc-col tc-ampm">
+            <div class="tc-ampm-item is-on" id="destAm"><i class="tc-led-dot"></i><span>AM</span></div>
+            <div class="tc-ampm-item" id="destPm"><i class="tc-led-dot"></i><span>PM</span></div>
+          </div>
+          <div class="tc-col tc-hour">
+            <span class="tc-lbl">HOUR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="destHour">06</span></div>
+          </div>
+          <span class="tc-colon led">:</span>
+          <div class="tc-col tc-min">
+            <span class="tc-lbl">MIN</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="destMin">00</span></div>
+          </div>
+        </div>
       </div>
-      <div class="circuit pres">
-        <span class="lbl">PRESENT TIME</span>
-        <span class="led" id="ledPres">2026</span>
+
+      <!-- 2. PRESENT TIME (GREEN) -->
+      <div class="tc-row tc-pres">
+        <div class="tc-screw tl" aria-hidden="true"></div>
+        <div class="tc-screw tr" aria-hidden="true"></div>
+        <div class="tc-screw bl" aria-hidden="true"></div>
+        <div class="tc-screw br" aria-hidden="true"></div>
+        <div class="tc-header">
+          <span class="tc-badge">PRESENT TIME</span>
+        </div>
+        <div class="tc-panel">
+          <div class="tc-col tc-month">
+            <span class="tc-lbl">MONTH</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">888</span><span class="tc-val led" id="presMonth">OCT</span></div>
+          </div>
+          <div class="tc-col tc-day">
+            <span class="tc-lbl">DAY</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presDay">26</span></div>
+          </div>
+          <div class="tc-col tc-year">
+            <span class="tc-lbl">YEAR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">8888</span><span class="tc-val led" id="ledPres">2026</span></div>
+          </div>
+          <div class="tc-col tc-ampm">
+            <div class="tc-ampm-item" id="presAm"><i class="tc-led-dot"></i><span>AM</span></div>
+            <div class="tc-ampm-item is-on" id="presPm"><i class="tc-led-dot"></i><span>PM</span></div>
+          </div>
+          <div class="tc-col tc-hour">
+            <span class="tc-lbl">HOUR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presHour">01</span></div>
+          </div>
+          <span class="tc-colon led">:</span>
+          <div class="tc-col tc-min">
+            <span class="tc-lbl">MIN</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presMin">21</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. LAST TIME DEPARTED (AMBER) -->
+      <div class="tc-row tc-last">
+        <div class="tc-screw tl" aria-hidden="true"></div>
+        <div class="tc-screw tr" aria-hidden="true"></div>
+        <div class="tc-screw bl" aria-hidden="true"></div>
+        <div class="tc-screw br" aria-hidden="true"></div>
+        <div class="tc-header">
+          <span class="tc-badge">LAST TIME DEPARTED</span>
+        </div>
+        <div class="tc-panel">
+          <div class="tc-col tc-month">
+            <span class="tc-lbl">MONTH</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">888</span><span class="tc-val led" id="lastMonth">OCT</span></div>
+          </div>
+          <div class="tc-col tc-day">
+            <span class="tc-lbl">DAY</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="lastDay">26</span></div>
+          </div>
+          <div class="tc-col tc-year">
+            <span class="tc-lbl">YEAR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">8888</span><span class="tc-val led" id="ledLast">1985</span></div>
+          </div>
+          <div class="tc-col tc-ampm">
+            <div class="tc-ampm-item is-on" id="lastAm"><i class="tc-led-dot"></i><span>AM</span></div>
+            <div class="tc-ampm-item" id="lastPm"><i class="tc-led-dot"></i><span>PM</span></div>
+          </div>
+          <div class="tc-col tc-hour">
+            <span class="tc-lbl">HOUR</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="lastHour">01</span></div>
+          </div>
+          <span class="tc-colon led">:</span>
+          <div class="tc-col tc-min">
+            <span class="tc-lbl">MIN</span>
+            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="lastMin">20</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="gauge" aria-hidden="true">
       <div class="gauge-bar"><i id="gaugeFill"></i></div>
-      <span class="gauge-txt" id="gaugeTxt">0.00 GIGAWATTS</span>
+      <span class="gauge-txt" id="gaugeTxt">88mph</span>
     </div>
 
     <button id="enterBtn" class="enter" disabled>
-      <span class="mph">88</span><span class="unit">MPH</span>
-      <span class="cta">시간축으로 진입</span>
+      <span class="cta">Start On</span>
     </button>
     <p class="hint" id="splashHint">연결 중…</p>
   </div>
@@ -754,25 +989,32 @@ var App = {
   var hint     = document.getElementById('splashHint');
   var ledDest  = document.getElementById('ledDest');
   var ledPres  = document.getElementById('ledPres');
+  var ledLast  = document.getElementById('ledLast');
 
   var loaded = false, failed = false, charging = false;
 
   function paint(p) {
     fill.style.width = (p * 100).toFixed(1) + '%';
-    gtxt.textContent = (p * 1.21).toFixed(2) + ' GIGAWATTS';
+    if (charging) {
+      gtxt.textContent = Math.round(p * 88) + 'mph';
+    } else {
+      gtxt.textContent = '88mph';
+    }
   }
   paint(0);
 
-  /* LED 깜빡임 — 충전이 시작되면 멈춘다 */
+  /* LED 미세 깜빡임 — 영화 속 클래식 하드웨어 감성 */
+  var flickTargets = [ledDest, ledPres, ledLast].filter(Boolean);
   var flick = setInterval(function () {
-    var t = Math.random() < 0.5 ? ledDest : ledPres;
+    if (!flickTargets.length) return;
+    var t = flickTargets[Math.floor(Math.random() * flickTargets.length)];
     t.style.opacity = '.35';
     setTimeout(function () { t.style.opacity = ''; }, 70);
   }, 1400);
 
   function ready() {
     btn.disabled = false;
-    hint.textContent = '준비 완료 — 버튼을 누르면 플럭스 캐패시터가 충전됩니다.';
+    hint.textContent = '준비 완료 — Start On을 누르면 88mph로 시간 도약합니다.';
     btn.focus();
   }
 
@@ -783,27 +1025,27 @@ var App = {
     hint.style.color = '#FF8080';
   }
 
-  /* ── 버튼을 누르면 1.21 GIGAWATTS 까지 충전하고, 다 차면 워프로 이어진다 ── */
+  /* ── 버튼을 누르면 88mph 까지 가속하고, 다 차면 워프로 이어진다 ── */
   var CHARGE_MS = 1500;
   function charge(done) {
     charging = true;
     clearInterval(flick);
     splash.classList.add('charging');
-    hint.textContent = '플럭스 캐패시터 충전 중…';
+    hint.textContent = '88mph 가속 중… 시간 회로 작동!';
 
     var t0 = performance.now();
     (function step(now) {
       var p = Math.min(1, (now - t0) / CHARGE_MS);
-      /* 후반으로 갈수록 빨라지는 곡선 — 마지막에 확 차오르는 느낌 */
+      /* 후반으로 갈수록 빨라지는 곡선 — 마지막에 확 차오르는 가속감 */
       paint(p * p * (3 - 2 * p));
       if (p < 1) return requestAnimationFrame(step);
 
       paint(1);
       splash.classList.remove('charging');
       splash.classList.add('charged');
-      gtxt.textContent = '1.21 GIGAWATTS';
-      hint.textContent = '어디로 가든 길은 필요 없다.';
-      setTimeout(done, 260);   // 만충을 눈으로 확인할 짧은 여유
+      gtxt.textContent = '88mph';
+      hint.textContent = '"Roads we\'re going we don\'t need roads."';
+      setTimeout(done, 260);   // 88mph 달성을 눈으로 확인할 짧은 여유
     })(t0);
   }
 
@@ -816,7 +1058,8 @@ var App = {
       App.data = json;
       var f = json.meta && json.meta.range ? json.meta.range.from : 1955;
       var t = json.meta && json.meta.range ? json.meta.range.to : 2026;
-      ledDest.textContent = f; ledPres.textContent = t;
+      if (ledDest) ledDest.textContent = f;
+      if (ledPres) ledPres.textContent = t;
       loaded = true;
       ready();
     })
@@ -828,7 +1071,7 @@ var App = {
 
     if (App.reduced) {
       paint(1);
-      gtxt.textContent = '1.21 GIGAWATTS';
+      gtxt.textContent = '88mph';
       splash.hidden = true;
       launch();
       return;
