@@ -1049,21 +1049,39 @@ var App = {
     })(t0);
   }
 
-  fetch(App.API_BASE + 'api/history', { cache: 'no-cache' })
-    .then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(function (json) {
-      App.data = json;
-      var f = json.meta && json.meta.range ? json.meta.range.from : 1955;
-      var t = json.meta && json.meta.range ? json.meta.range.to : 2026;
-      if (ledDest) ledDest.textContent = f;
-      if (ledPres) ledPres.textContent = t;
-      loaded = true;
-      ready();
-    })
-    .catch(function (e) { fail(e.message); });
+  /* ── 사건 데이터 로드: 동일 오리진 우선 + Cloudflare Worker API fallback ── */
+  var candidates = [
+    'events.json',
+    'content/events.json',
+    'dist/events.json',
+    App.API_BASE + 'api/history'
+  ];
+
+  function tryFetch(idx) {
+    if (idx >= candidates.length) {
+      fail('모든 소스에서 데이터를 불러오지 못했습니다.');
+      return;
+    }
+    fetch(candidates[idx])
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (json) {
+        App.data = json;
+        var f = json.meta && json.meta.range ? json.meta.range.from : 1955;
+        var t = json.meta && json.meta.range ? json.meta.range.to : 2026;
+        if (ledDest) ledDest.textContent = f;
+        if (ledPres) ledPres.textContent = t;
+        loaded = true;
+        ready();
+      })
+      .catch(function (err) {
+        tryFetch(idx + 1);
+      });
+  }
+
+  tryFetch(0);
 
   btn.addEventListener('click', function () {
     if (failed || !App.data || charging) return;

@@ -9,15 +9,15 @@ const SESSION_RE = /^[a-zA-Z0-9-]{8,64}$/;
 
 // Cloudflare Pages(epochwave.pages.dev, 브랜치별 프리뷰 포함)에서도 이 API를
 // 그대로 호출할 수 있게 CORS를 열어준다. 그 외 오리진은 그냥 허용하지 않는다.
-const ALLOWED_ORIGIN_RE = /^https:\/\/([a-z0-9-]+\.)?epochwave\.pages\.dev$/i;
+const ALLOWED_ORIGIN_RE = /^https:\/\/([a-z0-9-]+\.)?(epochwave\.pages\.dev|github\.io)$/i;
 
 function corsHeaders(request) {
   const origin = request.headers.get("Origin");
-  if (!origin || !ALLOWED_ORIGIN_RE.test(origin)) return {};
+  const allowOrigin = origin && ALLOWED_ORIGIN_RE.test(origin) ? origin : "*";
   return {
-    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "content-type",
+    "Access-Control-Allow-Headers": "content-type, cache-control, pragma",
     "Vary": "Origin",
   };
 }
