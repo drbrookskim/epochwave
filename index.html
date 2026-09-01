@@ -224,6 +224,22 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 }
 .tc-ampm-btn:hover .tc-ampm-item{color:rgba(255,255,255,.6)}
 
+/* PRESENT TIME (GREEN) 조절 스타일 */
+.tc-pres .tc-edit-badge{
+  color:#a8ffc4; background:rgba(56,232,116,.15); border-color:rgba(56,232,116,.35);
+}
+.tc-pres .tc-arrow{
+  border-color:rgba(56,232,116,.26); color:#4ae880;
+}
+.tc-pres .tc-arrow:hover:not(.is-disabled){
+  background:rgba(56,232,116,.25); color:#fff; border-color:#38e874;
+  box-shadow:0 0 6px rgba(56,232,116,.6);
+}
+.tc-pres .tc-click-edit:hover{
+  border-color:rgba(56,232,116,.55);
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.95), 0 0 8px rgba(56,232,116,.35);
+}
+
 /* 1955년 이전 제한 경고 토스트 */
 .tc-warning{
   margin-top:6px; padding:5px 10px; background:rgba(180,20,20,.38);
@@ -923,40 +939,80 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
         </div>
       </div>
 
-      <!-- 2. PRESENT TIME (GREEN) -->
-      <div class="tc-row tc-pres">
+      <!-- 2. PRESENT TIME (GREEN) - TIME ADJUSTABLE -->
+      <div class="tc-row tc-pres is-editable">
         <div class="tc-screw tl" aria-hidden="true"></div>
         <div class="tc-screw tr" aria-hidden="true"></div>
         <div class="tc-screw bl" aria-hidden="true"></div>
         <div class="tc-screw br" aria-hidden="true"></div>
         <div class="tc-header">
           <span class="tc-badge">PRESENT TIME</span>
+          <span class="tc-edit-badge" title="시간 설정 가능">▲▼ 시간 설정 (1955년 이전 불가)</span>
         </div>
         <div class="tc-panel">
+          <!-- MONTH -->
           <div class="tc-col tc-month">
+            <button type="button" class="tc-arrow up" data-unit="month" data-delta="1" title="월 증가" aria-label="월 증가">▲</button>
             <span class="tc-lbl">MONTH</span>
-            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">888</span><span class="tc-val led" id="presMonth">OCT</span></div>
+            <div class="tc-screen tc-click-edit" data-unit="month" title="클릭하거나 마우스 휠로 월 변경">
+              <span class="tc-ghost" aria-hidden="true">888</span>
+              <span class="tc-val led" id="presMonth">OCT</span>
+            </div>
+            <button type="button" class="tc-arrow down" data-unit="month" data-delta="-1" title="월 감소" aria-label="월 감소">▼</button>
           </div>
+
+          <!-- DAY -->
           <div class="tc-col tc-day">
+            <button type="button" class="tc-arrow up" data-unit="day" data-delta="1" title="일 증가" aria-label="일 증가">▲</button>
             <span class="tc-lbl">DAY</span>
-            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presDay">26</span></div>
+            <div class="tc-screen tc-click-edit" data-unit="day" title="클릭하거나 마우스 휠로 일 변경">
+              <span class="tc-ghost" aria-hidden="true">88</span>
+              <span class="tc-val led" id="presDay">26</span>
+            </div>
+            <button type="button" class="tc-arrow down" data-unit="day" data-delta="-1" title="일 감소" aria-label="일 감소">▼</button>
           </div>
+
+          <!-- YEAR -->
           <div class="tc-col tc-year">
+            <button type="button" class="tc-arrow up" data-unit="year" data-delta="1" title="연도 증가" aria-label="연도 증가">▲</button>
             <span class="tc-lbl">YEAR</span>
-            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">8888</span><span class="tc-val led" id="ledPres">2026</span></div>
+            <div class="tc-screen tc-click-edit" data-unit="year" title="클릭하여 직접 입력하거나 휠로 연도 변경 (최소 1955년)">
+              <span class="tc-ghost" aria-hidden="true">8888</span>
+              <span class="tc-val led" id="ledPres">2026</span>
+            </div>
+            <button type="button" class="tc-arrow down" id="presYearDown" data-unit="year" data-delta="-1" title="연도 감소 (1955년 최소)" aria-label="연도 감소">▼</button>
           </div>
+
+          <!-- AM/PM -->
           <div class="tc-col tc-ampm">
-            <div class="tc-ampm-item" id="presAm"><i class="tc-led-dot"></i><span>AM</span></div>
-            <div class="tc-ampm-item is-on" id="presPm"><i class="tc-led-dot"></i><span>PM</span></div>
+            <button type="button" class="tc-ampm-btn" id="presAmpmBtn" title="클릭하여 AM/PM 전환" aria-label="AM/PM 전환">
+              <div class="tc-ampm-item" id="presAm"><i class="tc-led-dot"></i><span>AM</span></div>
+              <div class="tc-ampm-item is-on" id="presPm"><i class="tc-led-dot"></i><span>PM</span></div>
+            </button>
           </div>
+
+          <!-- HOUR -->
           <div class="tc-col tc-hour">
+            <button type="button" class="tc-arrow up" data-unit="hour" data-delta="1" title="시간 증가" aria-label="시간 증가">▲</button>
             <span class="tc-lbl">HOUR</span>
-            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presHour">01</span></div>
+            <div class="tc-screen tc-click-edit" data-unit="hour" title="클릭하거나 마우스 휠로 시간 변경">
+              <span class="tc-ghost" aria-hidden="true">88</span>
+              <span class="tc-val led" id="presHour">01</span>
+            </div>
+            <button type="button" class="tc-arrow down" data-unit="hour" data-delta="-1" title="시간 감소" aria-label="시간 감소">▼</button>
           </div>
+
           <span class="tc-colon led">:</span>
+
+          <!-- MIN -->
           <div class="tc-col tc-min">
+            <button type="button" class="tc-arrow up" data-unit="min" data-delta="1" title="분 증가" aria-label="분 증가">▲</button>
             <span class="tc-lbl">MIN</span>
-            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presMin">21</span></div>
+            <div class="tc-screen tc-click-edit" data-unit="min" title="클릭하거나 마우스 휠로 분 변경">
+              <span class="tc-ghost" aria-hidden="true">88</span>
+              <span class="tc-val led" id="presMin">21</span>
+            </div>
+            <button type="button" class="tc-arrow down" data-unit="min" data-delta="-1" title="분 감소" aria-label="분 감소">▼</button>
           </div>
         </div>
       </div>
@@ -1126,6 +1182,16 @@ var App = {
   var destPmEl        = document.getElementById('destPm');
   var destAmpmBtn     = document.getElementById('destAmpmBtn');
   var destYearDownBtn = document.getElementById('destYearDown');
+
+  var presMonthEl     = document.getElementById('presMonth');
+  var presDayEl       = document.getElementById('presDay');
+  var presHourEl      = document.getElementById('presHour');
+  var presMinEl       = document.getElementById('presMin');
+  var presAmEl        = document.getElementById('presAm');
+  var presPmEl        = document.getElementById('presPm');
+  var presAmpmBtn     = document.getElementById('presAmpmBtn');
+  var presYearDownBtn = document.getElementById('presYearDown');
+
   var tcWarningEl     = document.getElementById('tcWarning');
 
   var loaded = false, failed = false, charging = false;
@@ -1141,8 +1207,21 @@ var App = {
     ampm: 'AM'
   };
 
+  /* ═══ 현재(출발) 시간 상태 (기본값: 2026년 10월 26일 01:21 PM) ═══ */
+  var presState = {
+    year: 2026,
+    month: 10,
+    day: 26,
+    hour: 1,
+    min: 21,
+    ampm: 'PM'
+  };
+  var presUserModified = false;
+
   App.destYear = destState.year;
   App.destMonth = destState.month;
+  App.presYear = presState.year;
+  App.presMonth = presState.month;
 
   var warnTimer = null;
   function showWarning(msg) {
@@ -1177,6 +1256,26 @@ var App = {
     App.destMonth = destState.month;
   }
 
+  function renderPres() {
+    if (presMonthEl) presMonthEl.textContent = MONTH_NAMES[presState.month - 1];
+    if (presDayEl) presDayEl.textContent = pad2(presState.day);
+    if (ledPres) ledPres.textContent = presState.year;
+    if (presHourEl) presHourEl.textContent = pad2(presState.hour);
+    if (presMinEl) presMinEl.textContent = pad2(presState.min);
+
+    if (presAmEl && presPmEl) {
+      presAmEl.classList.toggle('is-on', presState.ampm === 'AM');
+      presPmEl.classList.toggle('is-on', presState.ampm === 'PM');
+    }
+
+    if (presYearDownBtn) {
+      presYearDownBtn.classList.toggle('is-disabled', presState.year <= 1955);
+    }
+
+    App.presYear = presState.year;
+    App.presMonth = presState.month;
+  }
+
   function changeDest(unit, delta) {
     if (charging) return;
 
@@ -1185,11 +1284,6 @@ var App = {
       if (nextYear < 1955) {
         showWarning('1955년 이전으로는 시간 설정할 수 없습니다 (타임라인 시작점: 1955년)');
         destState.year = 1955;
-        renderDest();
-        return;
-      }
-      if (nextYear > 2026) {
-        destState.year = 2026;
         renderDest();
         return;
       }
@@ -1210,24 +1304,51 @@ var App = {
     renderDest();
   }
 
+  function changePres(unit, delta) {
+    if (charging) return;
+    presUserModified = true;
+
+    if (unit === 'year') {
+      var nextYear = presState.year + delta;
+      if (nextYear < 1955) {
+        showWarning('1955년 이전으로는 시간 설정할 수 없습니다 (타임라인 시작점: 1955년)');
+        presState.year = 1955;
+        renderPres();
+        return;
+      }
+      presState.year = nextYear;
+    } else if (unit === 'month') {
+      presState.month = ((presState.month - 1 + delta + 12) % 12) + 1;
+      var maxD = new Date(presState.year, presState.month, 0).getDate();
+      if (presState.day > maxD) presState.day = maxD;
+    } else if (unit === 'day') {
+      var maxD = new Date(presState.year, presState.month, 0).getDate();
+      presState.day = ((presState.day - 1 + delta + maxD) % maxD) + 1;
+    } else if (unit === 'hour') {
+      presState.hour = ((presState.hour - 1 + delta + 12) % 12) + 1;
+    } else if (unit === 'min') {
+      presState.min = (presState.min + delta + 60) % 60;
+    }
+
+    renderPres();
+  }
+
   function promptEdit(unit) {
     if (charging) return;
     if (unit === 'year') {
-      var input = prompt('목적지 연도를 입력하세요 (1955 ~ 2026):', destState.year);
+      var input = prompt('목적지(DESTINATION) 연도를 입력하세요 (1955년 이상):', destState.year);
       if (input === null) return;
       var val = parseInt(input.trim(), 10);
       if (isNaN(val)) return;
       if (val < 1955) {
         showWarning('1955년 이전으로는 설정할 수 없습니다 (1955년으로 자동 조정)');
         destState.year = 1955;
-      } else if (val > 2026) {
-        destState.year = 2026;
       } else {
         destState.year = val;
       }
       renderDest();
     } else if (unit === 'month') {
-      var input = prompt('목적지 월을 입력하세요 (1 ~ 12):', destState.month);
+      var input = prompt('목적지(DESTINATION) 월을 입력하세요 (1 ~ 12):', destState.month);
       if (input === null) return;
       var val = parseInt(input.trim(), 10);
       if (!isNaN(val) && val >= 1 && val <= 12) {
@@ -1236,7 +1357,7 @@ var App = {
       }
     } else if (unit === 'day') {
       var maxD = new Date(destState.year, destState.month, 0).getDate();
-      var input = prompt('목적지 일을 입력하세요 (1 ~ ' + maxD + '):', destState.day);
+      var input = prompt('목적지(DESTINATION) 일을 입력하세요 (1 ~ ' + maxD + '):', destState.day);
       if (input === null) return;
       var val = parseInt(input.trim(), 10);
       if (!isNaN(val) && val >= 1 && val <= maxD) {
@@ -1244,7 +1365,7 @@ var App = {
         renderDest();
       }
     } else if (unit === 'hour') {
-      var input = prompt('목적지 시간을 입력하세요 (1 ~ 12):', destState.hour);
+      var input = prompt('목적지(DESTINATION) 시간을 입력하세요 (1 ~ 12):', destState.hour);
       if (input === null) return;
       var val = parseInt(input.trim(), 10);
       if (!isNaN(val) && val >= 1 && val <= 12) {
@@ -1252,7 +1373,7 @@ var App = {
         renderDest();
       }
     } else if (unit === 'min') {
-      var input = prompt('목적지 분을 입력하세요 (0 ~ 59):', destState.min);
+      var input = prompt('목적지(DESTINATION) 분을 입력하세요 (0 ~ 59):', destState.min);
       if (input === null) return;
       var val = parseInt(input.trim(), 10);
       if (!isNaN(val) && val >= 0 && val <= 59) {
@@ -1262,29 +1383,95 @@ var App = {
     }
   }
 
-  // 화살표 버튼 이벤트 연결
-  document.querySelectorAll('.tc-dest .tc-arrow').forEach(function (arrow) {
+  function promptEditPres(unit) {
+    if (charging) return;
+    presUserModified = true;
+    if (unit === 'year') {
+      var input = prompt('현재(PRESENT) 연도를 입력하세요 (1955년 이상):', presState.year);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (isNaN(val)) return;
+      if (val < 1955) {
+        showWarning('1955년 이전으로는 설정할 수 없습니다 (1955년으로 자동 조정)');
+        presState.year = 1955;
+      } else {
+        presState.year = val;
+      }
+      renderPres();
+    } else if (unit === 'month') {
+      var input = prompt('현재(PRESENT) 월을 입력하세요 (1 ~ 12):', presState.month);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 1 && val <= 12) {
+        presState.month = val;
+        renderPres();
+      }
+    } else if (unit === 'day') {
+      var maxD = new Date(presState.year, presState.month, 0).getDate();
+      var input = prompt('현재(PRESENT) 일을 입력하세요 (1 ~ ' + maxD + '):', presState.day);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 1 && val <= maxD) {
+        presState.day = val;
+        renderPres();
+      }
+    } else if (unit === 'hour') {
+      var input = prompt('현재(PRESENT) 시간을 입력하세요 (1 ~ 12):', presState.hour);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 1 && val <= 12) {
+        presState.hour = val;
+        renderPres();
+      }
+    } else if (unit === 'min') {
+      var input = prompt('현재(PRESENT) 분을 입력하세요 (0 ~ 59):', presState.min);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 0 && val <= 59) {
+        presState.min = val;
+        renderPres();
+      }
+    }
+  }
+
+  // 화살표 버튼 이벤트 연결 (DESTINATION & PRESENT 공통)
+  document.querySelectorAll('.tc-arrow').forEach(function (arrow) {
     arrow.addEventListener('click', function (e) {
       e.stopPropagation();
+      var isPres = arrow.closest('.tc-pres') != null;
       var unit = arrow.dataset.unit;
       var delta = parseInt(arrow.dataset.delta, 10);
-      changeDest(unit, delta);
+      if (isPres) {
+        changePres(unit, delta);
+      } else {
+        changeDest(unit, delta);
+      }
     });
   });
 
-  // 스크린 클릭/마우스휠 직접 변경 이벤트 연결
-  document.querySelectorAll('.tc-dest .tc-click-edit').forEach(function (screen) {
+  // 스크린 클릭/마우스휠 직접 변경 이벤트 연결 (DESTINATION & PRESENT 공통)
+  document.querySelectorAll('.tc-click-edit').forEach(function (screen) {
     screen.addEventListener('click', function () {
-      promptEdit(screen.dataset.unit);
+      var isPres = screen.closest('.tc-pres') != null;
+      if (isPres) {
+        promptEditPres(screen.dataset.unit);
+      } else {
+        promptEdit(screen.dataset.unit);
+      }
     });
     screen.addEventListener('wheel', function (e) {
       e.preventDefault();
+      var isPres = screen.closest('.tc-pres') != null;
       var delta = e.deltaY < 0 ? 1 : -1;
-      changeDest(screen.dataset.unit, delta);
+      if (isPres) {
+        changePres(screen.dataset.unit, delta);
+      } else {
+        changeDest(screen.dataset.unit, delta);
+      }
     }, { passive: false });
   });
 
-  // AM/PM 토글 버튼
+  // AM/PM 토글 버튼 (DEST)
   if (destAmpmBtn) {
     destAmpmBtn.addEventListener('click', function () {
       destState.ampm = destState.ampm === 'AM' ? 'PM' : 'AM';
@@ -1292,7 +1479,16 @@ var App = {
     });
   }
 
+  // AM/PM 토글 버튼 (PRES)
+  if (presAmpmBtn) {
+    presAmpmBtn.addEventListener('click', function () {
+      presState.ampm = presState.ampm === 'AM' ? 'PM' : 'AM';
+      renderPres();
+    });
+  }
+
   renderDest();
+  renderPres();
 
   function paint(p) {
     fill.style.width = (p * 100).toFixed(1) + '%';
@@ -1332,7 +1528,11 @@ var App = {
     charging = true;
     clearInterval(flick);
     splash.classList.add('charging');
-    hint.textContent = '88mph 가속 중… ' + destState.year + '년으로 도약!';
+    if (presState.year !== destState.year) {
+      hint.textContent = '88mph 가속 중… ' + presState.year + '년에서 ' + destState.year + '년으로 도약!';
+    } else {
+      hint.textContent = '88mph 가속 중… ' + destState.year + '년으로 도약!';
+    }
 
     var t0 = performance.now();
     (function step(now) {
@@ -1371,7 +1571,10 @@ var App = {
       .then(function (json) {
         App.data = json;
         var t = json.meta && json.meta.range ? json.meta.range.to : 2026;
-        if (ledPres) ledPres.textContent = t;
+        if (!presUserModified) {
+          presState.year = t;
+          renderPres();
+        }
         loaded = true;
         ready();
       })
@@ -1481,6 +1684,10 @@ var App = {
     App.marketPoints = [];
 
     var from = data.meta.range.from, to = data.meta.range.to;
+    var hudSub = document.querySelector('.hud-sub');
+    if (hudSub && App.destYear && App.presYear) {
+      hudSub.textContent = Math.min(App.destYear, App.presYear) + ' – ' + Math.max(App.destYear, App.presYear);
+    }
     var stageW = PAD_L + months(to, 12) * PX_PER_MONTH + PAD_R;
     var stageH = stage.offsetHeight;
     var cy = Math.round(stageH / 2);

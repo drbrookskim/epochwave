@@ -35,6 +35,10 @@
     App.marketPoints = [];
 
     var from = data.meta.range.from, to = data.meta.range.to;
+    var hudSub = document.querySelector('.hud-sub');
+    if (hudSub && App.destYear && App.presYear) {
+      hudSub.textContent = Math.min(App.destYear, App.presYear) + ' – ' + Math.max(App.destYear, App.presYear);
+    }
     var stageW = PAD_L + months(to, 12) * PX_PER_MONTH + PAD_R;
     var stageH = stage.offsetHeight;
     var cy = Math.round(stageH / 2);

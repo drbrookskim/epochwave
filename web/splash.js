@@ -30,6 +30,16 @@ var App = {
   var destPmEl        = document.getElementById('destPm');
   var destAmpmBtn     = document.getElementById('destAmpmBtn');
   var destYearDownBtn = document.getElementById('destYearDown');
+
+  var presMonthEl     = document.getElementById('presMonth');
+  var presDayEl       = document.getElementById('presDay');
+  var presHourEl      = document.getElementById('presHour');
+  var presMinEl       = document.getElementById('presMin');
+  var presAmEl        = document.getElementById('presAm');
+  var presPmEl        = document.getElementById('presPm');
+  var presAmpmBtn     = document.getElementById('presAmpmBtn');
+  var presYearDownBtn = document.getElementById('presYearDown');
+
   var tcWarningEl     = document.getElementById('tcWarning');
 
   var loaded = false, failed = false, charging = false;
@@ -45,8 +55,21 @@ var App = {
     ampm: 'AM'
   };
 
+  /* ═══ 현재(출발) 시간 상태 (기본값: 2026년 10월 26일 01:21 PM) ═══ */
+  var presState = {
+    year: 2026,
+    month: 10,
+    day: 26,
+    hour: 1,
+    min: 21,
+    ampm: 'PM'
+  };
+  var presUserModified = false;
+
   App.destYear = destState.year;
   App.destMonth = destState.month;
+  App.presYear = presState.year;
+  App.presMonth = presState.month;
 
   var warnTimer = null;
   function showWarning(msg) {
@@ -81,6 +104,26 @@ var App = {
     App.destMonth = destState.month;
   }
 
+  function renderPres() {
+    if (presMonthEl) presMonthEl.textContent = MONTH_NAMES[presState.month - 1];
+    if (presDayEl) presDayEl.textContent = pad2(presState.day);
+    if (ledPres) ledPres.textContent = presState.year;
+    if (presHourEl) presHourEl.textContent = pad2(presState.hour);
+    if (presMinEl) presMinEl.textContent = pad2(presState.min);
+
+    if (presAmEl && presPmEl) {
+      presAmEl.classList.toggle('is-on', presState.ampm === 'AM');
+      presPmEl.classList.toggle('is-on', presState.ampm === 'PM');
+    }
+
+    if (presYearDownBtn) {
+      presYearDownBtn.classList.toggle('is-disabled', presState.year <= 1955);
+    }
+
+    App.presYear = presState.year;
+    App.presMonth = presState.month;
+  }
+
   function changeDest(unit, delta) {
     if (charging) return;
 
@@ -89,11 +132,6 @@ var App = {
       if (nextYear < 1955) {
         showWarning('1955년 이전으로는 시간 설정할 수 없습니다 (타임라인 시작점: 1955년)');
         destState.year = 1955;
-        renderDest();
-        return;
-      }
-      if (nextYear > 2026) {
-        destState.year = 2026;
         renderDest();
         return;
       }
@@ -114,24 +152,51 @@ var App = {
     renderDest();
   }
 
+  function changePres(unit, delta) {
+    if (charging) return;
+    presUserModified = true;
+
+    if (unit === 'year') {
+      var nextYear = presState.year + delta;
+      if (nextYear < 1955) {
+        showWarning('1955년 이전으로는 시간 설정할 수 없습니다 (타임라인 시작점: 1955년)');
+        presState.year = 1955;
+        renderPres();
+        return;
+      }
+      presState.year = nextYear;
+    } else if (unit === 'month') {
+      presState.month = ((presState.month - 1 + delta + 12) % 12) + 1;
+      var maxD = new Date(presState.year, presState.month, 0).getDate();
+      if (presState.day > maxD) presState.day = maxD;
+    } else if (unit === 'day') {
+      var maxD = new Date(presState.year, presState.month, 0).getDate();
+      presState.day = ((presState.day - 1 + delta + maxD) % maxD) + 1;
+    } else if (unit === 'hour') {
+      presState.hour = ((presState.hour - 1 + delta + 12) % 12) + 1;
+    } else if (unit === 'min') {
+      presState.min = (presState.min + delta + 60) % 60;
+    }
+
+    renderPres();
+  }
+
   function promptEdit(unit) {
     if (charging) return;
     if (unit === 'year') {
-      var input = prompt('목적지 연도를 입력하세요 (1955 ~ 2026):', destState.year);
+      var input = prompt('목적지(DESTINATION) 연도를 입력하세요 (1955년 이상):', destState.year);
       if (input === null) return;
       var val = parseInt(input.trim(), 10);
       if (isNaN(val)) return;
       if (val < 1955) {
         showWarning('1955년 이전으로는 설정할 수 없습니다 (1955년으로 자동 조정)');
         destState.year = 1955;
-      } else if (val > 2026) {
-        destState.year = 2026;
       } else {
         destState.year = val;
       }
       renderDest();
     } else if (unit === 'month') {
-      var input = prompt('목적지 월을 입력하세요 (1 ~ 12):', destState.month);
+      var input = prompt('목적지(DESTINATION) 월을 입력하세요 (1 ~ 12):', destState.month);
       if (input === null) return;
       var val = parseInt(input.trim(), 10);
       if (!isNaN(val) && val >= 1 && val <= 12) {
@@ -140,7 +205,7 @@ var App = {
       }
     } else if (unit === 'day') {
       var maxD = new Date(destState.year, destState.month, 0).getDate();
-      var input = prompt('목적지 일을 입력하세요 (1 ~ ' + maxD + '):', destState.day);
+      var input = prompt('목적지(DESTINATION) 일을 입력하세요 (1 ~ ' + maxD + '):', destState.day);
       if (input === null) return;
       var val = parseInt(input.trim(), 10);
       if (!isNaN(val) && val >= 1 && val <= maxD) {
@@ -148,7 +213,7 @@ var App = {
         renderDest();
       }
     } else if (unit === 'hour') {
-      var input = prompt('목적지 시간을 입력하세요 (1 ~ 12):', destState.hour);
+      var input = prompt('목적지(DESTINATION) 시간을 입력하세요 (1 ~ 12):', destState.hour);
       if (input === null) return;
       var val = parseInt(input.trim(), 10);
       if (!isNaN(val) && val >= 1 && val <= 12) {
@@ -156,7 +221,7 @@ var App = {
         renderDest();
       }
     } else if (unit === 'min') {
-      var input = prompt('목적지 분을 입력하세요 (0 ~ 59):', destState.min);
+      var input = prompt('목적지(DESTINATION) 분을 입력하세요 (0 ~ 59):', destState.min);
       if (input === null) return;
       var val = parseInt(input.trim(), 10);
       if (!isNaN(val) && val >= 0 && val <= 59) {
@@ -166,29 +231,95 @@ var App = {
     }
   }
 
-  // 화살표 버튼 이벤트 연결
-  document.querySelectorAll('.tc-dest .tc-arrow').forEach(function (arrow) {
+  function promptEditPres(unit) {
+    if (charging) return;
+    presUserModified = true;
+    if (unit === 'year') {
+      var input = prompt('현재(PRESENT) 연도를 입력하세요 (1955년 이상):', presState.year);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (isNaN(val)) return;
+      if (val < 1955) {
+        showWarning('1955년 이전으로는 설정할 수 없습니다 (1955년으로 자동 조정)');
+        presState.year = 1955;
+      } else {
+        presState.year = val;
+      }
+      renderPres();
+    } else if (unit === 'month') {
+      var input = prompt('현재(PRESENT) 월을 입력하세요 (1 ~ 12):', presState.month);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 1 && val <= 12) {
+        presState.month = val;
+        renderPres();
+      }
+    } else if (unit === 'day') {
+      var maxD = new Date(presState.year, presState.month, 0).getDate();
+      var input = prompt('현재(PRESENT) 일을 입력하세요 (1 ~ ' + maxD + '):', presState.day);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 1 && val <= maxD) {
+        presState.day = val;
+        renderPres();
+      }
+    } else if (unit === 'hour') {
+      var input = prompt('현재(PRESENT) 시간을 입력하세요 (1 ~ 12):', presState.hour);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 1 && val <= 12) {
+        presState.hour = val;
+        renderPres();
+      }
+    } else if (unit === 'min') {
+      var input = prompt('현재(PRESENT) 분을 입력하세요 (0 ~ 59):', presState.min);
+      if (input === null) return;
+      var val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 0 && val <= 59) {
+        presState.min = val;
+        renderPres();
+      }
+    }
+  }
+
+  // 화살표 버튼 이벤트 연결 (DESTINATION & PRESENT 공통)
+  document.querySelectorAll('.tc-arrow').forEach(function (arrow) {
     arrow.addEventListener('click', function (e) {
       e.stopPropagation();
+      var isPres = arrow.closest('.tc-pres') != null;
       var unit = arrow.dataset.unit;
       var delta = parseInt(arrow.dataset.delta, 10);
-      changeDest(unit, delta);
+      if (isPres) {
+        changePres(unit, delta);
+      } else {
+        changeDest(unit, delta);
+      }
     });
   });
 
-  // 스크린 클릭/마우스휠 직접 변경 이벤트 연결
-  document.querySelectorAll('.tc-dest .tc-click-edit').forEach(function (screen) {
+  // 스크린 클릭/마우스휠 직접 변경 이벤트 연결 (DESTINATION & PRESENT 공통)
+  document.querySelectorAll('.tc-click-edit').forEach(function (screen) {
     screen.addEventListener('click', function () {
-      promptEdit(screen.dataset.unit);
+      var isPres = screen.closest('.tc-pres') != null;
+      if (isPres) {
+        promptEditPres(screen.dataset.unit);
+      } else {
+        promptEdit(screen.dataset.unit);
+      }
     });
     screen.addEventListener('wheel', function (e) {
       e.preventDefault();
+      var isPres = screen.closest('.tc-pres') != null;
       var delta = e.deltaY < 0 ? 1 : -1;
-      changeDest(screen.dataset.unit, delta);
+      if (isPres) {
+        changePres(screen.dataset.unit, delta);
+      } else {
+        changeDest(screen.dataset.unit, delta);
+      }
     }, { passive: false });
   });
 
-  // AM/PM 토글 버튼
+  // AM/PM 토글 버튼 (DEST)
   if (destAmpmBtn) {
     destAmpmBtn.addEventListener('click', function () {
       destState.ampm = destState.ampm === 'AM' ? 'PM' : 'AM';
@@ -196,7 +327,16 @@ var App = {
     });
   }
 
+  // AM/PM 토글 버튼 (PRES)
+  if (presAmpmBtn) {
+    presAmpmBtn.addEventListener('click', function () {
+      presState.ampm = presState.ampm === 'AM' ? 'PM' : 'AM';
+      renderPres();
+    });
+  }
+
   renderDest();
+  renderPres();
 
   function paint(p) {
     fill.style.width = (p * 100).toFixed(1) + '%';
@@ -236,7 +376,11 @@ var App = {
     charging = true;
     clearInterval(flick);
     splash.classList.add('charging');
-    hint.textContent = '88mph 가속 중… ' + destState.year + '년으로 도약!';
+    if (presState.year !== destState.year) {
+      hint.textContent = '88mph 가속 중… ' + presState.year + '년에서 ' + destState.year + '년으로 도약!';
+    } else {
+      hint.textContent = '88mph 가속 중… ' + destState.year + '년으로 도약!';
+    }
 
     var t0 = performance.now();
     (function step(now) {
@@ -275,7 +419,10 @@ var App = {
       .then(function (json) {
         App.data = json;
         var t = json.meta && json.meta.range ? json.meta.range.to : 2026;
-        if (ledPres) ledPres.textContent = t;
+        if (!presUserModified) {
+          presState.year = t;
+          renderPres();
+        }
         loaded = true;
         ready();
       })

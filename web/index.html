@@ -141,40 +141,80 @@
         </div>
       </div>
 
-      <!-- 2. PRESENT TIME (GREEN) -->
-      <div class="tc-row tc-pres">
+      <!-- 2. PRESENT TIME (GREEN) - TIME ADJUSTABLE -->
+      <div class="tc-row tc-pres is-editable">
         <div class="tc-screw tl" aria-hidden="true"></div>
         <div class="tc-screw tr" aria-hidden="true"></div>
         <div class="tc-screw bl" aria-hidden="true"></div>
         <div class="tc-screw br" aria-hidden="true"></div>
         <div class="tc-header">
           <span class="tc-badge">PRESENT TIME</span>
+          <span class="tc-edit-badge" title="시간 설정 가능">▲▼ 시간 설정 (1955년 이전 불가)</span>
         </div>
         <div class="tc-panel">
+          <!-- MONTH -->
           <div class="tc-col tc-month">
+            <button type="button" class="tc-arrow up" data-unit="month" data-delta="1" title="월 증가" aria-label="월 증가">▲</button>
             <span class="tc-lbl">MONTH</span>
-            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">888</span><span class="tc-val led" id="presMonth">OCT</span></div>
+            <div class="tc-screen tc-click-edit" data-unit="month" title="클릭하거나 마우스 휠로 월 변경">
+              <span class="tc-ghost" aria-hidden="true">888</span>
+              <span class="tc-val led" id="presMonth">OCT</span>
+            </div>
+            <button type="button" class="tc-arrow down" data-unit="month" data-delta="-1" title="월 감소" aria-label="월 감소">▼</button>
           </div>
+
+          <!-- DAY -->
           <div class="tc-col tc-day">
+            <button type="button" class="tc-arrow up" data-unit="day" data-delta="1" title="일 증가" aria-label="일 증가">▲</button>
             <span class="tc-lbl">DAY</span>
-            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presDay">26</span></div>
+            <div class="tc-screen tc-click-edit" data-unit="day" title="클릭하거나 마우스 휠로 일 변경">
+              <span class="tc-ghost" aria-hidden="true">88</span>
+              <span class="tc-val led" id="presDay">26</span>
+            </div>
+            <button type="button" class="tc-arrow down" data-unit="day" data-delta="-1" title="일 감소" aria-label="일 감소">▼</button>
           </div>
+
+          <!-- YEAR -->
           <div class="tc-col tc-year">
+            <button type="button" class="tc-arrow up" data-unit="year" data-delta="1" title="연도 증가" aria-label="연도 증가">▲</button>
             <span class="tc-lbl">YEAR</span>
-            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">8888</span><span class="tc-val led" id="ledPres">2026</span></div>
+            <div class="tc-screen tc-click-edit" data-unit="year" title="클릭하여 직접 입력하거나 휠로 연도 변경 (최소 1955년)">
+              <span class="tc-ghost" aria-hidden="true">8888</span>
+              <span class="tc-val led" id="ledPres">2026</span>
+            </div>
+            <button type="button" class="tc-arrow down" id="presYearDown" data-unit="year" data-delta="-1" title="연도 감소 (1955년 최소)" aria-label="연도 감소">▼</button>
           </div>
+
+          <!-- AM/PM -->
           <div class="tc-col tc-ampm">
-            <div class="tc-ampm-item" id="presAm"><i class="tc-led-dot"></i><span>AM</span></div>
-            <div class="tc-ampm-item is-on" id="presPm"><i class="tc-led-dot"></i><span>PM</span></div>
+            <button type="button" class="tc-ampm-btn" id="presAmpmBtn" title="클릭하여 AM/PM 전환" aria-label="AM/PM 전환">
+              <div class="tc-ampm-item" id="presAm"><i class="tc-led-dot"></i><span>AM</span></div>
+              <div class="tc-ampm-item is-on" id="presPm"><i class="tc-led-dot"></i><span>PM</span></div>
+            </button>
           </div>
+
+          <!-- HOUR -->
           <div class="tc-col tc-hour">
+            <button type="button" class="tc-arrow up" data-unit="hour" data-delta="1" title="시간 증가" aria-label="시간 증가">▲</button>
             <span class="tc-lbl">HOUR</span>
-            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presHour">01</span></div>
+            <div class="tc-screen tc-click-edit" data-unit="hour" title="클릭하거나 마우스 휠로 시간 변경">
+              <span class="tc-ghost" aria-hidden="true">88</span>
+              <span class="tc-val led" id="presHour">01</span>
+            </div>
+            <button type="button" class="tc-arrow down" data-unit="hour" data-delta="-1" title="시간 감소" aria-label="시간 감소">▼</button>
           </div>
+
           <span class="tc-colon led">:</span>
+
+          <!-- MIN -->
           <div class="tc-col tc-min">
+            <button type="button" class="tc-arrow up" data-unit="min" data-delta="1" title="분 증가" aria-label="분 증가">▲</button>
             <span class="tc-lbl">MIN</span>
-            <div class="tc-screen"><span class="tc-ghost" aria-hidden="true">88</span><span class="tc-val led" id="presMin">21</span></div>
+            <div class="tc-screen tc-click-edit" data-unit="min" title="클릭하거나 마우스 휠로 분 변경">
+              <span class="tc-ghost" aria-hidden="true">88</span>
+              <span class="tc-val led" id="presMin">21</span>
+            </div>
+            <button type="button" class="tc-arrow down" data-unit="min" data-delta="-1" title="분 감소" aria-label="분 감소">▼</button>
           </div>
         </div>
       </div>
