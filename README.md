@@ -1,8 +1,6 @@
 # Back to the Future — 1955 → 2026
 
 영화 *Back to the Future* 의 1955년을 출발점으로 삼아 2026년까지 70년의 **한국사와 세계사를 나란히** 보는 연표.
-
-**배포 주소** — https://ndk.hello-world-history.workers.dev
 **파이프라인 설계도** — [Timeline Engine Blueprint](https://claude.ai/code/artifact/53db5038-8301-4c57-977e-8c6e6545d3f4) (데이터 흐름·레이아웃·시그니처 인터랙션 도해)
 
 ---
