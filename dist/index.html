@@ -2645,6 +2645,9 @@ var App = {
     var stage = App.stage;
     var originR = opts.originR != null ? opts.originR : NODE_R;
 
+    var vw = (scroller && scroller.clientWidth) || window.innerWidth || 800;
+    var sc = (scroller && scroller.scrollLeft) || 0;
+
     /* 1. 반응형 카드 너비 */
     var CARD_W = Math.min(380, Math.max(260, vw - 36));
     var PAD = 16;
@@ -2791,19 +2794,22 @@ var App = {
       return;
     }
 
-    var len = path.getTotalLength();
-    path.style.strokeDasharray = len;
-    path.style.strokeDashoffset = len;
-    state.anims.push(path.animate(
-      [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
-      { duration: EDGE_MS, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }
-    ));
+    try {
+      var len = path.getTotalLength();
+      path.style.strokeDasharray = len;
+      path.style.strokeDashoffset = len;
+      state.anims.push(path.animate(
+        [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+        { duration: EDGE_MS, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }
+      ));
+    } catch (e) {}
+
     state.anims.push(cap.animate(
       [{ opacity: 0, transform: 'scale(.2)' }, { opacity: 1, transform: 'scale(1)' }],
       { duration: 160, delay: EDGE_MS - 30, easing: 'ease-out', fill: 'forwards' }
     ));
 
-    var seq = CLIP[key];
+    var seq = CLIP[key] || CLIP['top-left'];
     state.anims.push(card.animate([
       { clipPath: seq[0] + R, offset: 0 },
       { clipPath: seq[1] + R, offset: 0.45 },
@@ -2814,8 +2820,11 @@ var App = {
     }));
 
     setTimeout(function () {
-      if (state && state.card === card) card.classList.add('revealing');
-    }, EDGE_MS + 190);
+      if (state && state.card === card) {
+        card.style.clipPath = DONE;
+        card.classList.add('revealing');
+      }
+    }, EDGE_MS + UNFOLD_MS + 20);
   };
 
   /* ══════════ 사건 카드 ══════════ */
