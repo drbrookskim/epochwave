@@ -14,6 +14,9 @@
   }
   function months(y, m) { return (y - Y0) * 12 + (m - 1); }
   function X(y, m) { return PAD_L + months(y, m) * PX_PER_MONTH; }
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
 
   var wired = false;       // 전역 리스너는 한 번만
   var keepScroll = 0;      // 재배치 시 스크롤 위치 유지
@@ -31,6 +34,8 @@
     wires.innerHTML = '';
     nodesEl.innerHTML = '';
     eraNav.innerHTML = '';
+    var tpLayer = document.getElementById('turningPoints');
+    if (tpLayer) tpLayer.innerHTML = '';
     App.nodes = [];
     App.marketPoints = [];
 
@@ -159,11 +164,17 @@
       var x0 = X(pts[0][0], 6), xN = X(pts[pts.length - 1][0], 6);
       area = line + ' L' + xN.toFixed(1) + ' ' + base + ' L' + x0.toFixed(1) + ' ' + base + ' Z';
 
-      /* 전 구간을 흐리게 한 벌, 선택 구간만 밝게 한 벌 — 추세 맥락을 잃지 않는다 */
-      [gDim, gHi].forEach(function (g) {
-        g.appendChild(S('path', { d: area, fill: mk.color, class: 'mkt-area' }));
-        g.appendChild(S('path', { d: line, fill: 'none', stroke: mk.color, class: 'mkt-line' }));
-      });
+      /* 전 구간을 흐리게 한 벌, 선택 구간만 밝게 한 벌 — 지수별 그룹으로 묶어 On/Off 제어 */
+      var gMkDim = S('g', { class: 'mkt-series mkt-series-' + mk.id, 'data-mkt': mk.id });
+      gDim.appendChild(gMkDim);
+      var gMkHi = S('g', { class: 'mkt-series mkt-series-' + mk.id, 'data-mkt': mk.id });
+      gHi.appendChild(gMkHi);
+
+      gMkDim.appendChild(S('path', { d: area, fill: mk.color, class: 'mkt-area' }));
+      gMkDim.appendChild(S('path', { d: line, fill: 'none', stroke: mk.color, class: 'mkt-line' }));
+
+      gMkHi.appendChild(S('path', { d: area, fill: mk.color, class: 'mkt-area' }));
+      gMkHi.appendChild(S('path', { d: line, fill: 'none', stroke: mk.color, class: 'mkt-line' }));
 
       /* 시리즈 이름 — 곡선 시작점 옆에 */
       var t0 = S('text', {
@@ -171,16 +182,19 @@
         fill: mk.color, class: 'mkt-name'
       });
       t0.textContent = mk.label;
-      gHi.appendChild(t0);
+      gMkHi.appendChild(t0);
 
       /* 연도별 점 + 히트 영역 (히트는 클립 밖에 둬야 전 구간에서 호버·클릭된다) */
+      var gMkHits = S('g', { class: 'mkt-hits mkt-hits-' + mk.id, 'data-mkt': mk.id });
+      gMkt.appendChild(gMkHits);
+
       pts.forEach(function (p) {
         var x = X(p[0], 6), y = Y(p[1]);
         var halo = S('circle', { cx: x, cy: y, r: 5, class: 'mkt-halo' });
-        gHi.appendChild(halo);
+        gMkHi.appendChild(halo);
         var dot = S('circle', { cx: x, cy: y, r: 3.4, fill: mk.color, class: 'mkt-dot' });
         dot.style.color = mk.color;   // drop-shadow(currentColor) 용
-        gHi.appendChild(dot);
+        gMkHi.appendChild(dot);
         var hit = S('circle', { cx: x, cy: y, r: 9, fill: 'transparent', class: 'mkt-hit' });
         hit.addEventListener('mouseenter', function () {
           App.showQuote(mk, p, x, y, up);
@@ -196,10 +210,56 @@
           if (App.open && App.open.id === 'mkt:' + mk.id + ':' + p[0]) App.closeCard();
           else App.openMarketCard(mk, p, x, y, dot);
         });
-        gMkt.appendChild(hit);
+        gMkHits.appendChild(hit);
 
         App.marketPoints.push({ mkId: mk.id, year: p[0], x: x, y: y, track: mk.track, dot: dot, halo: halo });
       });
+
+      /* 역사적 고점·저점 및 주도주 핀 렌더링 */
+      if (tpLayer && Array.isArray(mk.turningPoints)) {
+        mk.turningPoints.forEach(function (tp) {
+          if (tp.year < from || tp.year > to) return;
+          var tpx = X(tp.year, tp.month || 6);
+          var pt = pts.find(function (p) { return p[0] === tp.year; });
+          var tpy = pt ? Y(pt[1]) : (up ? base - BAND * 0.75 : base + BAND * 0.75);
+
+          var isPeak = tp.type === 'peak';
+          var pin = document.createElement('div');
+          pin.className = 'tp-pin tp-' + tp.type + ' tp-mkt-' + mk.id;
+          pin.dataset.mkt = mk.id;
+          pin.style.left = tpx.toFixed(1) + 'px';
+          pin.style.top = tpy.toFixed(1) + 'px';
+          pin.style.setProperty('--c', mk.color);
+
+          var topLeaders = (tp.leaders || []).slice(0, 3).map(function (l) { return l.name; }).join(' · ');
+
+          pin.innerHTML =
+            '<div class="tp-beacon" aria-hidden="true"></div>' +
+            '<button type="button" class="tp-badge" aria-label="' + mk.label + ' ' + tp.year + '년 ' + (isPeak ? '고점' : '저점') + ' 및 주도주 보기">' +
+              '<span class="tp-icon">' + (isPeak ? '▲' : '▼') + '</span>' +
+              '<span class="tp-yr">' + tp.year + '</span>' +
+              '<span class="tp-tag">' + (isPeak ? '고점' : '저점') + '</span>' +
+              '<span class="tp-val">' + esc(tp.value.split(' ')[0]) + '</span>' +
+            '</button>' +
+            (topLeaders ? (
+              '<div class="tp-leaders-pill" title="당시 주도주: ' + esc(topLeaders) + '">' +
+                '<span class="tp-pill-lbl">주도주</span>' +
+                '<span class="tp-pill-names">' + esc(topLeaders) + '</span>' +
+              '</div>'
+            ) : '');
+
+          pin.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (App.open && App.open.id === 'tp:' + mk.id + ':' + tp.year + ':' + (tp.month || 0)) {
+              App.closeCard();
+            } else {
+              App.openTurningPointCard(tp, mk, tpx, tpy, pin);
+            }
+          });
+
+          tpLayer.appendChild(pin);
+        });
+      }
     });
 
     /* ── 노드 배치 (트랙별 레인 충돌 회피) ── */
@@ -265,15 +325,34 @@
     wired = true;
     App.initRange();
 
-    /* ── 주가 곡선 표시 토글 ── */
-    var mktBtn = document.getElementById('mktToggle');
-    if (mktBtn) mktBtn.addEventListener('click', function () {
-      var on = !document.getElementById('app').classList.contains('no-mkt');
-      document.getElementById('app').classList.toggle('no-mkt', on);
-      mktBtn.classList.toggle('is-on', !on);
-      mktBtn.setAttribute('aria-pressed', String(!on));
-      if (on) App.hideQuote();
+    /* ── 4대 증시 지수별 On/Off 토글 ── */
+    var mktToggles = document.querySelectorAll('.mkt-toolbar button[data-mkt]');
+    Array.prototype.forEach.call(mktToggles, function (btn) {
+      btn.addEventListener('click', function () {
+        var mktId = btn.dataset.mkt;
+        var app = document.getElementById('app');
+        var hideClass = 'hide-mkt-' + mktId;
+        var willHide = !app.classList.contains(hideClass);
+        app.classList.toggle(hideClass, willHide);
+        btn.classList.toggle('is-on', !willHide);
+        btn.classList.toggle('is-off', willHide);
+        btn.setAttribute('aria-pressed', String(!willHide));
+        App.hideQuote();
+      });
     });
+
+    /* ── 역사적 고점·저점·주도주 On/Off 토글 ── */
+    var tpBtn = document.getElementById('tpToggleBtn');
+    if (tpBtn) {
+      tpBtn.addEventListener('click', function () {
+        var app = document.getElementById('app');
+        var willHide = !app.classList.contains('hide-tp');
+        app.classList.toggle('hide-tp', willHide);
+        tpBtn.classList.toggle('is-on', !willHide);
+        tpBtn.classList.toggle('is-off', willHide);
+        tpBtn.setAttribute('aria-pressed', String(!willHide));
+      });
+    }
 
     /* ── 닫기 트리거 ── */
     stage.addEventListener('click', function () { App.closeCard(); });

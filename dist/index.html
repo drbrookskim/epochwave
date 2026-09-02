@@ -496,17 +496,264 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .q-chg{font-size:10.5px; font-variant-numeric:tabular-nums}
 .q-chg.up{color:#48D18A} .q-chg.dn{color:#FF6B6B}
 
-/* HUD 주가 토글 */
-.mkt-btn{
-  font:inherit; font-size:11px; cursor:pointer; white-space:nowrap;
-  display:inline-flex; align-items:center; gap:6px;
-  color:var(--faint); background:transparent;
-  border:1px solid var(--line); border-radius:99px; padding:4px 11px;
-  transition:color .15s, border-color .15s;
+/* ═══ 4대 증시 툴바 & On/Off 토글 버튼 ═══ */
+.mkt-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
 }
-.mkt-btn i{width:13px; height:2px; border-radius:99px; background:currentColor; display:inline-block}
-.mkt-btn.is-on{color:var(--ink); border-color:rgba(140,165,220,.4)}
-.mkt-btn.is-on i{background:linear-gradient(90deg,var(--korea),var(--world))}
+.mkt-btn {
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--faint);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 4px 10px;
+  transition: all 0.16s ease;
+  user-select: none;
+}
+.mkt-btn .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 4px currentColor;
+}
+.mkt-btn:hover {
+  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+}
+.mkt-btn.is-on {
+  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.06);
+}
+.mkt-btn.is-off {
+  color: rgba(140, 165, 220, 0.35);
+  border-color: rgba(255, 255, 255, 0.05);
+  background: transparent;
+  opacity: 0.6;
+}
+.mkt-btn.is-off .dot {
+  background: rgba(140, 165, 220, 0.25) !important;
+  box-shadow: none !important;
+}
+
+/* 고점·저점·주도주 토글 버튼 특수 스타일 */
+.tp-toggle-btn {
+  border-color: rgba(255, 176, 58, 0.3);
+}
+.tp-toggle-btn .tp-star {
+  color: #ffb03a;
+  font-size: 11px;
+  font-style: normal;
+  text-shadow: 0 0 6px rgba(255, 176, 58, 0.8);
+}
+.tp-toggle-btn.is-on {
+  border-color: rgba(255, 176, 58, 0.55);
+  background: rgba(255, 176, 58, 0.12);
+  color: #ffe7a8;
+  box-shadow: 0 0 12px rgba(255, 176, 58, 0.25);
+}
+.tp-toggle-btn.is-off .tp-star {
+  color: rgba(140, 165, 220, 0.3);
+  text-shadow: none;
+}
+
+/* ═══ 증시 레이어 제어 (CSS 기반 즉시 반응) ═══ */
+#app.hide-mkt-nasdaq [data-mkt="nasdaq"] { display: none !important; }
+#app.hide-mkt-nyse [data-mkt="nyse"] { display: none !important; }
+#app.hide-mkt-kospi [data-mkt="kospi"] { display: none !important; }
+#app.hide-mkt-kosdaq [data-mkt="kosdaq"] { display: none !important; }
+#app.hide-tp .tp-layer { display: none !important; }
+
+/* ═══ 역사적 고점·저점 핀 & 주도주 레이어 ═══ */
+.tp-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+.tp-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1), z-index 0.18s;
+}
+.tp-pin:hover, .tp-pin.is-active {
+  z-index: 10;
+  transform: translate(-50%, -55%) scale(1.06);
+}
+
+.tp-beacon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: var(--c, #ffb03a);
+  opacity: 0.3;
+  pointer-events: none;
+  animation: tpPulse 2.4s infinite ease-out;
+}
+@keyframes tpPulse {
+  0% { transform: scale(0.7); opacity: 0.6; }
+  70% { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.tp-badge {
+  font: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-family: Orbitron, sans-serif;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(10, 14, 26, 0.92);
+  border: 1px solid var(--c, #8899bb);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 8px color-mix(in srgb, var(--c) 40%, transparent);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.tp-pin:hover .tp-badge, .tp-pin.is-active .tp-badge {
+  background: color-mix(in srgb, var(--c) 25%, #0a0e1a);
+  border-color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8), 0 0 14px var(--c);
+}
+
+.tp-peak .tp-icon { color: #ff5757; text-shadow: 0 0 5px #ff5757; }
+.tp-trough .tp-icon { color: #38bdf8; text-shadow: 0 0 5px #38bdf8; }
+.tp-yr { color: #ffe7a8; }
+.tp-tag {
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+.tp-peak .tp-tag { background: rgba(255, 87, 87, 0.2); color: #ff8b8b; }
+.tp-trough .tp-tag { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; }
+.tp-val { color: var(--ink); margin-left: 2px; }
+
+/* 주도주 미니 알약 배지 */
+.tp-leaders-pill {
+  margin-top: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: rgba(8, 12, 22, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 9px;
+  color: var(--dim);
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.tp-pin:hover .tp-leaders-pill, .tp-pin.is-active .tp-leaders-pill {
+  color: #fff;
+  border-color: var(--c);
+  background: rgba(10, 14, 26, 0.96);
+}
+.tp-pill-lbl {
+  color: #ffb03a;
+  font-weight: 700;
+  font-size: 8.5px;
+}
+.tp-pill-names {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ═══ 상세 카드 내 주도주 & 고점·저점 섹션 ═══ */
+.tp-type-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+.tp-type-tag.peak {
+  background: rgba(255, 87, 87, 0.18);
+  color: #ff7878;
+  border: 1px solid rgba(255, 87, 87, 0.4);
+}
+.tp-type-tag.trough {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+.tp-chg-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dim);
+  margin-left: 4px;
+}
+.tp-leaders-sec {
+  border-left-color: #ffb03a !important;
+}
+.tp-leaders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 8px;
+}
+.tp-leader-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 6px 10px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.tp-leader-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 176, 58, 0.4);
+}
+.tp-leader-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tp-leader-badge {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid;
+  font-weight: 600;
+}
+.tp-leader-name {
+  font-size: 12px;
+  color: var(--ink);
+  font-weight: 700;
+}
+.tp-leader-desc {
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: 3px;
+  line-height: 1.45;
+}
 
 /* ═══ 기간 선택 바 ═══ */
 .period-bar{
@@ -790,7 +1037,8 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   :root{--stage-min:400px}
   .hud{flex-wrap:wrap; gap:10px 14px; padding:10px 12px}
   .eras{order:3; flex-basis:100%; justify-content:flex-start}
-  .hud-r{margin-left:auto}
+  .hud-r{margin-left:auto; max-width:100%; overflow-x:auto; scrollbar-width:none}
+  .mkt-toolbar{overflow-x:auto; scrollbar-width:none}
   .node .nm{max-width:104px; font-size:10.5px}
   .foot-scroll{display:none}
 }
@@ -799,6 +1047,8 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   .circuit{min-width:142px} .circuit .led{font-size:22px}
   .node .nm{display:none}
   .node .dot{width:40px;height:40px} .node .dot svg{width:20px;height:20px}
+  .mkt-btn{padding:3px 7px; font-size:10px}
+  .tp-leaders-pill{display:none}
 }
 
 /* ═══ 저모션 ═══ */
@@ -1077,12 +1327,23 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
     </div>
     <nav class="eras" id="eraNav" aria-label="시대 바로가기"></nav>
     <div class="hud-r">
-      <span class="legend"><i class="sw world"></i>세계</span>
-      <span class="legend"><i class="sw korea"></i>한국</span>
-      <button type="button" id="mktToggle" class="mkt-btn is-on" aria-pressed="true"
-              title="주가 곡선 표시 · S&amp;P 500 / KOSPI 연말 종가 근사값, 로그 스케일">
-        <i></i>주가
-      </button>
+      <div class="mkt-toolbar" role="toolbar" aria-label="증시 지수 및 주도주 선택">
+        <button type="button" class="mkt-btn is-on" data-mkt="nasdaq" aria-pressed="true" title="NASDAQ 종합지수 켜기/끄기">
+          <i class="dot" style="background:#A855F7"></i>NASDAQ
+        </button>
+        <button type="button" class="mkt-btn is-on" data-mkt="nyse" aria-pressed="true" title="NYSE 종합지수 켜기/끄기">
+          <i class="dot" style="background:#38BDF8"></i>NYSE
+        </button>
+        <button type="button" class="mkt-btn is-on" data-mkt="kospi" aria-pressed="true" title="코스피 지수 켜기/끄기">
+          <i class="dot" style="background:#FF5757"></i>코스피
+        </button>
+        <button type="button" class="mkt-btn is-on" data-mkt="kosdaq" aria-pressed="true" title="코스닥 지수 켜기/끄기">
+          <i class="dot" style="background:#F59E0B"></i>코스닥
+        </button>
+        <button type="button" class="mkt-btn is-on tp-toggle-btn" id="tpToggleBtn" aria-pressed="true" title="역사적 고점·저점 및 당시 주도주 표시 켜기/끄기">
+          <i class="tp-star">★</i>고점·저점·주도주
+        </button>
+      </div>
     </div>
   </header>
 
@@ -1102,6 +1363,7 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   <div id="scroller" tabindex="0" aria-label="연표. 좌우 방향키로 이동하고 Enter로 사건을 엽니다.">
     <div id="stage">
       <svg id="wires" aria-hidden="true"></svg>
+      <div id="turningPoints" class="tp-layer"></div>
       <div id="nodes"></div>
       <div id="cards"></div>
       <div id="quote" hidden aria-hidden="true"></div>
@@ -1663,6 +1925,9 @@ var App = {
   }
   function months(y, m) { return (y - Y0) * 12 + (m - 1); }
   function X(y, m) { return PAD_L + months(y, m) * PX_PER_MONTH; }
+  function esc(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
 
   var wired = false;       // 전역 리스너는 한 번만
   var keepScroll = 0;      // 재배치 시 스크롤 위치 유지
@@ -1680,6 +1945,8 @@ var App = {
     wires.innerHTML = '';
     nodesEl.innerHTML = '';
     eraNav.innerHTML = '';
+    var tpLayer = document.getElementById('turningPoints');
+    if (tpLayer) tpLayer.innerHTML = '';
     App.nodes = [];
     App.marketPoints = [];
 
@@ -1808,11 +2075,17 @@ var App = {
       var x0 = X(pts[0][0], 6), xN = X(pts[pts.length - 1][0], 6);
       area = line + ' L' + xN.toFixed(1) + ' ' + base + ' L' + x0.toFixed(1) + ' ' + base + ' Z';
 
-      /* 전 구간을 흐리게 한 벌, 선택 구간만 밝게 한 벌 — 추세 맥락을 잃지 않는다 */
-      [gDim, gHi].forEach(function (g) {
-        g.appendChild(S('path', { d: area, fill: mk.color, class: 'mkt-area' }));
-        g.appendChild(S('path', { d: line, fill: 'none', stroke: mk.color, class: 'mkt-line' }));
-      });
+      /* 전 구간을 흐리게 한 벌, 선택 구간만 밝게 한 벌 — 지수별 그룹으로 묶어 On/Off 제어 */
+      var gMkDim = S('g', { class: 'mkt-series mkt-series-' + mk.id, 'data-mkt': mk.id });
+      gDim.appendChild(gMkDim);
+      var gMkHi = S('g', { class: 'mkt-series mkt-series-' + mk.id, 'data-mkt': mk.id });
+      gHi.appendChild(gMkHi);
+
+      gMkDim.appendChild(S('path', { d: area, fill: mk.color, class: 'mkt-area' }));
+      gMkDim.appendChild(S('path', { d: line, fill: 'none', stroke: mk.color, class: 'mkt-line' }));
+
+      gMkHi.appendChild(S('path', { d: area, fill: mk.color, class: 'mkt-area' }));
+      gMkHi.appendChild(S('path', { d: line, fill: 'none', stroke: mk.color, class: 'mkt-line' }));
 
       /* 시리즈 이름 — 곡선 시작점 옆에 */
       var t0 = S('text', {
@@ -1820,16 +2093,19 @@ var App = {
         fill: mk.color, class: 'mkt-name'
       });
       t0.textContent = mk.label;
-      gHi.appendChild(t0);
+      gMkHi.appendChild(t0);
 
       /* 연도별 점 + 히트 영역 (히트는 클립 밖에 둬야 전 구간에서 호버·클릭된다) */
+      var gMkHits = S('g', { class: 'mkt-hits mkt-hits-' + mk.id, 'data-mkt': mk.id });
+      gMkt.appendChild(gMkHits);
+
       pts.forEach(function (p) {
         var x = X(p[0], 6), y = Y(p[1]);
         var halo = S('circle', { cx: x, cy: y, r: 5, class: 'mkt-halo' });
-        gHi.appendChild(halo);
+        gMkHi.appendChild(halo);
         var dot = S('circle', { cx: x, cy: y, r: 3.4, fill: mk.color, class: 'mkt-dot' });
         dot.style.color = mk.color;   // drop-shadow(currentColor) 용
-        gHi.appendChild(dot);
+        gMkHi.appendChild(dot);
         var hit = S('circle', { cx: x, cy: y, r: 9, fill: 'transparent', class: 'mkt-hit' });
         hit.addEventListener('mouseenter', function () {
           App.showQuote(mk, p, x, y, up);
@@ -1845,10 +2121,56 @@ var App = {
           if (App.open && App.open.id === 'mkt:' + mk.id + ':' + p[0]) App.closeCard();
           else App.openMarketCard(mk, p, x, y, dot);
         });
-        gMkt.appendChild(hit);
+        gMkHits.appendChild(hit);
 
         App.marketPoints.push({ mkId: mk.id, year: p[0], x: x, y: y, track: mk.track, dot: dot, halo: halo });
       });
+
+      /* 역사적 고점·저점 및 주도주 핀 렌더링 */
+      if (tpLayer && Array.isArray(mk.turningPoints)) {
+        mk.turningPoints.forEach(function (tp) {
+          if (tp.year < from || tp.year > to) return;
+          var tpx = X(tp.year, tp.month || 6);
+          var pt = pts.find(function (p) { return p[0] === tp.year; });
+          var tpy = pt ? Y(pt[1]) : (up ? base - BAND * 0.75 : base + BAND * 0.75);
+
+          var isPeak = tp.type === 'peak';
+          var pin = document.createElement('div');
+          pin.className = 'tp-pin tp-' + tp.type + ' tp-mkt-' + mk.id;
+          pin.dataset.mkt = mk.id;
+          pin.style.left = tpx.toFixed(1) + 'px';
+          pin.style.top = tpy.toFixed(1) + 'px';
+          pin.style.setProperty('--c', mk.color);
+
+          var topLeaders = (tp.leaders || []).slice(0, 3).map(function (l) { return l.name; }).join(' · ');
+
+          pin.innerHTML =
+            '<div class="tp-beacon" aria-hidden="true"></div>' +
+            '<button type="button" class="tp-badge" aria-label="' + mk.label + ' ' + tp.year + '년 ' + (isPeak ? '고점' : '저점') + ' 및 주도주 보기">' +
+              '<span class="tp-icon">' + (isPeak ? '▲' : '▼') + '</span>' +
+              '<span class="tp-yr">' + tp.year + '</span>' +
+              '<span class="tp-tag">' + (isPeak ? '고점' : '저점') + '</span>' +
+              '<span class="tp-val">' + esc(tp.value.split(' ')[0]) + '</span>' +
+            '</button>' +
+            (topLeaders ? (
+              '<div class="tp-leaders-pill" title="당시 주도주: ' + esc(topLeaders) + '">' +
+                '<span class="tp-pill-lbl">주도주</span>' +
+                '<span class="tp-pill-names">' + esc(topLeaders) + '</span>' +
+              '</div>'
+            ) : '');
+
+          pin.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (App.open && App.open.id === 'tp:' + mk.id + ':' + tp.year + ':' + (tp.month || 0)) {
+              App.closeCard();
+            } else {
+              App.openTurningPointCard(tp, mk, tpx, tpy, pin);
+            }
+          });
+
+          tpLayer.appendChild(pin);
+        });
+      }
     });
 
     /* ── 노드 배치 (트랙별 레인 충돌 회피) ── */
@@ -1914,15 +2236,34 @@ var App = {
     wired = true;
     App.initRange();
 
-    /* ── 주가 곡선 표시 토글 ── */
-    var mktBtn = document.getElementById('mktToggle');
-    if (mktBtn) mktBtn.addEventListener('click', function () {
-      var on = !document.getElementById('app').classList.contains('no-mkt');
-      document.getElementById('app').classList.toggle('no-mkt', on);
-      mktBtn.classList.toggle('is-on', !on);
-      mktBtn.setAttribute('aria-pressed', String(!on));
-      if (on) App.hideQuote();
+    /* ── 4대 증시 지수별 On/Off 토글 ── */
+    var mktToggles = document.querySelectorAll('.mkt-toolbar button[data-mkt]');
+    Array.prototype.forEach.call(mktToggles, function (btn) {
+      btn.addEventListener('click', function () {
+        var mktId = btn.dataset.mkt;
+        var app = document.getElementById('app');
+        var hideClass = 'hide-mkt-' + mktId;
+        var willHide = !app.classList.contains(hideClass);
+        app.classList.toggle(hideClass, willHide);
+        btn.classList.toggle('is-on', !willHide);
+        btn.classList.toggle('is-off', willHide);
+        btn.setAttribute('aria-pressed', String(!willHide));
+        App.hideQuote();
+      });
     });
+
+    /* ── 역사적 고점·저점·주도주 On/Off 토글 ── */
+    var tpBtn = document.getElementById('tpToggleBtn');
+    if (tpBtn) {
+      tpBtn.addEventListener('click', function () {
+        var app = document.getElementById('app');
+        var willHide = !app.classList.contains('hide-tp');
+        app.classList.toggle('hide-tp', willHide);
+        tpBtn.classList.toggle('is-on', !willHide);
+        tpBtn.classList.toggle('is-off', willHide);
+        tpBtn.setAttribute('aria-pressed', String(!willHide));
+      });
+    }
 
     /* ── 닫기 트리거 ── */
     stage.addEventListener('click', function () { App.closeCard(); });
@@ -2404,6 +2745,73 @@ var App = {
         if (!dotEl) return;
         dotEl.classList.remove('is-active');
         if (dotEl.previousElementSibling) dotEl.previousElementSibling.classList.remove('is-active');
+      }
+    });
+  };
+
+  /* ── 역사적 고점·저점 및 당시 주도주 상세 카드 ── */
+  App.openTurningPointCard = function (tp, mk, x, y, pinEl) {
+    App.closeCard(true);
+
+    var isPeak = tp.type === 'peak';
+    var track = mk.track;
+    var leadersHTML = '';
+    if (Array.isArray(tp.leaders) && tp.leaders.length > 0) {
+      leadersHTML =
+        '<section class="side tp-leaders-sec stagger" style="animation-delay:180ms">' +
+          '<div class="side-top">' +
+            '<span class="side-head">🏆 그 당시의 핵심 주도주</span>' +
+          '</div>' +
+          '<div class="tp-leaders-list">' +
+            tp.leaders.map(function (ld) {
+              return (
+                '<div class="tp-leader-item">' +
+                  '<div class="tp-leader-name-wrap">' +
+                    '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
+                    '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
+                  '</div>' +
+                  (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
+                '</div>'
+              );
+            }).join('') +
+          '</div>' +
+        '</section>';
+    }
+
+    var descHTML = tp.desc ? (
+      '<section class="side stagger" style="animation-delay:120ms">' +
+        '<div class="side-top">' +
+          '<span class="side-head">역사적 배경 및 시장 흐름</span>' +
+        '</div>' +
+        '<p class="side-body">' + esc(tp.desc) + '</p>' +
+      '</section>'
+    ) : '';
+
+    var whenText = tp.year + '년' + (tp.month ? ' ' + tp.month + '월' : '');
+
+    App._openUnfold({
+      id: 'tp:' + mk.id + ':' + tp.year + ':' + (tp.month || 0),
+      x: x, y: y, track: track, color: mk.color,
+      ariaLabel: mk.label + ' ' + whenText + ' ' + (isPeak ? '고점' : '저점'),
+      originR: 8,
+      html:
+        '<header class="card-head">' +
+          '<div class="card-when stagger" style="animation-delay:0ms">' +
+            '<span class="ym">' + whenText + '</span>' +
+            '<span class="era" style="color:' + mk.color + '; border-color:' + mk.color + '55">' + mk.label + '</span>' +
+            '<span class="tp-type-tag ' + tp.type + '">' + (isPeak ? '▲ 역사적 고점' : '▼ 역사적 저점') + '</span>' +
+          '</div>' +
+          '<h2 class="card-title stagger" style="animation-delay:60ms">' + esc(tp.title) + '</h2>' +
+          '<p class="card-note mkt-chg-note ' + (isPeak ? 'up' : 'dn') + ' stagger" style="animation-delay:100ms">' +
+            esc(tp.value) + (tp.change ? ' <span class="tp-chg-sub">(' + esc(tp.change) + ')</span>' : '') +
+          '</p>' +
+        '</header>' +
+        '<div class="card-body">' + descHTML + leadersHTML + '</div>',
+      activate: function () {
+        if (pinEl) pinEl.classList.add('is-active');
+      },
+      deactivate: function () {
+        if (pinEl) pinEl.classList.remove('is-active');
       }
     });
   };

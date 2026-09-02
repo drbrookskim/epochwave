@@ -279,12 +279,23 @@
     </div>
     <nav class="eras" id="eraNav" aria-label="시대 바로가기"></nav>
     <div class="hud-r">
-      <span class="legend"><i class="sw world"></i>세계</span>
-      <span class="legend"><i class="sw korea"></i>한국</span>
-      <button type="button" id="mktToggle" class="mkt-btn is-on" aria-pressed="true"
-              title="주가 곡선 표시 · S&amp;P 500 / KOSPI 연말 종가 근사값, 로그 스케일">
-        <i></i>주가
-      </button>
+      <div class="mkt-toolbar" role="toolbar" aria-label="증시 지수 및 주도주 선택">
+        <button type="button" class="mkt-btn is-on" data-mkt="nasdaq" aria-pressed="true" title="NASDAQ 종합지수 켜기/끄기">
+          <i class="dot" style="background:#A855F7"></i>NASDAQ
+        </button>
+        <button type="button" class="mkt-btn is-on" data-mkt="nyse" aria-pressed="true" title="NYSE 종합지수 켜기/끄기">
+          <i class="dot" style="background:#38BDF8"></i>NYSE
+        </button>
+        <button type="button" class="mkt-btn is-on" data-mkt="kospi" aria-pressed="true" title="코스피 지수 켜기/끄기">
+          <i class="dot" style="background:#FF5757"></i>코스피
+        </button>
+        <button type="button" class="mkt-btn is-on" data-mkt="kosdaq" aria-pressed="true" title="코스닥 지수 켜기/끄기">
+          <i class="dot" style="background:#F59E0B"></i>코스닥
+        </button>
+        <button type="button" class="mkt-btn is-on tp-toggle-btn" id="tpToggleBtn" aria-pressed="true" title="역사적 고점·저점 및 당시 주도주 표시 켜기/끄기">
+          <i class="tp-star">★</i>고점·저점·주도주
+        </button>
+      </div>
     </div>
   </header>
 
@@ -304,6 +315,7 @@
   <div id="scroller" tabindex="0" aria-label="연표. 좌우 방향키로 이동하고 Enter로 사건을 엽니다.">
     <div id="stage">
       <svg id="wires" aria-hidden="true"></svg>
+      <div id="turningPoints" class="tp-layer"></div>
       <div id="nodes"></div>
       <div id="cards"></div>
       <div id="quote" hidden aria-hidden="true"></div>

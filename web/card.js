@@ -291,6 +291,73 @@
     });
   };
 
+  /* ── 역사적 고점·저점 및 당시 주도주 상세 카드 ── */
+  App.openTurningPointCard = function (tp, mk, x, y, pinEl) {
+    App.closeCard(true);
+
+    var isPeak = tp.type === 'peak';
+    var track = mk.track;
+    var leadersHTML = '';
+    if (Array.isArray(tp.leaders) && tp.leaders.length > 0) {
+      leadersHTML =
+        '<section class="side tp-leaders-sec stagger" style="animation-delay:180ms">' +
+          '<div class="side-top">' +
+            '<span class="side-head">🏆 그 당시의 핵심 주도주</span>' +
+          '</div>' +
+          '<div class="tp-leaders-list">' +
+            tp.leaders.map(function (ld) {
+              return (
+                '<div class="tp-leader-item">' +
+                  '<div class="tp-leader-name-wrap">' +
+                    '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
+                    '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
+                  '</div>' +
+                  (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
+                '</div>'
+              );
+            }).join('') +
+          '</div>' +
+        '</section>';
+    }
+
+    var descHTML = tp.desc ? (
+      '<section class="side stagger" style="animation-delay:120ms">' +
+        '<div class="side-top">' +
+          '<span class="side-head">역사적 배경 및 시장 흐름</span>' +
+        '</div>' +
+        '<p class="side-body">' + esc(tp.desc) + '</p>' +
+      '</section>'
+    ) : '';
+
+    var whenText = tp.year + '년' + (tp.month ? ' ' + tp.month + '월' : '');
+
+    App._openUnfold({
+      id: 'tp:' + mk.id + ':' + tp.year + ':' + (tp.month || 0),
+      x: x, y: y, track: track, color: mk.color,
+      ariaLabel: mk.label + ' ' + whenText + ' ' + (isPeak ? '고점' : '저점'),
+      originR: 8,
+      html:
+        '<header class="card-head">' +
+          '<div class="card-when stagger" style="animation-delay:0ms">' +
+            '<span class="ym">' + whenText + '</span>' +
+            '<span class="era" style="color:' + mk.color + '; border-color:' + mk.color + '55">' + mk.label + '</span>' +
+            '<span class="tp-type-tag ' + tp.type + '">' + (isPeak ? '▲ 역사적 고점' : '▼ 역사적 저점') + '</span>' +
+          '</div>' +
+          '<h2 class="card-title stagger" style="animation-delay:60ms">' + esc(tp.title) + '</h2>' +
+          '<p class="card-note mkt-chg-note ' + (isPeak ? 'up' : 'dn') + ' stagger" style="animation-delay:100ms">' +
+            esc(tp.value) + (tp.change ? ' <span class="tp-chg-sub">(' + esc(tp.change) + ')</span>' : '') +
+          '</p>' +
+        '</header>' +
+        '<div class="card-body">' + descHTML + leadersHTML + '</div>',
+      activate: function () {
+        if (pinEl) pinEl.classList.add('is-active');
+      },
+      deactivate: function () {
+        if (pinEl) pinEl.classList.remove('is-active');
+      }
+    });
+  };
+
   App.closeCard = function (instant) {
     if (!state) return;
     var s = state;
