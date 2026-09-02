@@ -559,14 +559,29 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   text-shadow: none;
 }
 
-/* ═══ 증시 레이어 제어 (CSS 기반 즉시 반응) ═══ */
-#app.hide-mkt-nasdaq [data-mkt="nasdaq"] { display: none !important; }
-#app.hide-mkt-nyse [data-mkt="nyse"] { display: none !important; }
-#app.hide-mkt-kospi [data-mkt="kospi"] { display: none !important; }
-#app.hide-mkt-kosdaq [data-mkt="kosdaq"] { display: none !important; }
-#app.hide-tp .tp-layer { display: none !important; }
+/* ═══ 증시 레이어 제어 (상단 버튼 .mkt-btn 은 유지하고, 무대 #stage 내부 요소만 사라짐) ═══ */
+#app.hide-mkt-nasdaq #stage [data-mkt="nasdaq"] { display: none !important; }
+#app.hide-mkt-nyse #stage [data-mkt="nyse"] { display: none !important; }
+#app.hide-mkt-kospi #stage [data-mkt="kospi"] { display: none !important; }
+#app.hide-mkt-kosdaq #stage [data-mkt="kosdaq"] { display: none !important; }
+#app.hide-tp #stage .tp-layer,
+#app.hide-tp #stage .tp-stem-layer,
+#app.hide-tp #stage [data-tp-stem] { display: none !important; }
 
-/* ═══ 역사적 고점·저점 핀 & 주도주 레이어 ═══ */
+/* ═══ 역사적 고점·저점 지시선 (Stem) & 핀 레이어 ═══ */
+.tp-stem-layer {
+  pointer-events: none;
+}
+.tp-stem {
+  stroke-width: 1.2;
+  stroke-dasharray: 2 3;
+  opacity: 0.6;
+  transition: opacity 0.2s, stroke-width 0.2s;
+}
+.tp-stem-dot {
+  opacity: 0.85;
+  filter: drop-shadow(0 0 4px currentColor);
+}
 .tp-layer {
   position: absolute;
   inset: 0;

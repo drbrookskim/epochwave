@@ -569,14 +569,29 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   text-shadow: none;
 }
 
-/* ═══ 증시 레이어 제어 (CSS 기반 즉시 반응) ═══ */
-#app.hide-mkt-nasdaq [data-mkt="nasdaq"] { display: none !important; }
-#app.hide-mkt-nyse [data-mkt="nyse"] { display: none !important; }
-#app.hide-mkt-kospi [data-mkt="kospi"] { display: none !important; }
-#app.hide-mkt-kosdaq [data-mkt="kosdaq"] { display: none !important; }
-#app.hide-tp .tp-layer { display: none !important; }
+/* ═══ 증시 레이어 제어 (상단 버튼 .mkt-btn 은 유지하고, 무대 #stage 내부 요소만 사라짐) ═══ */
+#app.hide-mkt-nasdaq #stage [data-mkt="nasdaq"] { display: none !important; }
+#app.hide-mkt-nyse #stage [data-mkt="nyse"] { display: none !important; }
+#app.hide-mkt-kospi #stage [data-mkt="kospi"] { display: none !important; }
+#app.hide-mkt-kosdaq #stage [data-mkt="kosdaq"] { display: none !important; }
+#app.hide-tp #stage .tp-layer,
+#app.hide-tp #stage .tp-stem-layer,
+#app.hide-tp #stage [data-tp-stem] { display: none !important; }
 
-/* ═══ 역사적 고점·저점 핀 & 주도주 레이어 ═══ */
+/* ═══ 역사적 고점·저점 지시선 (Stem) & 핀 레이어 ═══ */
+.tp-stem-layer {
+  pointer-events: none;
+}
+.tp-stem {
+  stroke-width: 1.2;
+  stroke-dasharray: 2 3;
+  opacity: 0.6;
+  transition: opacity 0.2s, stroke-width 0.2s;
+}
+.tp-stem-dot {
+  opacity: 0.85;
+  filter: drop-shadow(0 0 4px currentColor);
+}
 .tp-layer {
   position: absolute;
   inset: 0;
@@ -1973,6 +1988,7 @@ var App = {
 
     var gBg   = S('g'); wires.appendChild(gBg);
     var gMkt  = S('g', { id: 'marketLayer' }); wires.appendChild(gMkt);
+    var gTpStem = S('g', { id: 'tpStemLayer', class: 'tp-stem-layer' }); wires.appendChild(gTpStem);
     var gStem = S('g'); wires.appendChild(gStem);
     var gEdge = S('g', { id: 'edgeLayer' }); wires.appendChild(gEdge);
 
@@ -2050,6 +2066,7 @@ var App = {
     var gDim = S('g', { class: 'mkt-dim' });  gMkt.appendChild(gDim);
     var gHi  = S('g', { 'clip-path': 'url(#rangeClipPath)' }); gMkt.appendChild(gHi);
 
+    var allTps = [];
     (data.markets || []).forEach(function (mk) {
       var pts = mk.series.filter(function (p) { return p[0] >= from && p[0] <= to; });
       if (pts.length < 2) return;
@@ -2126,20 +2143,119 @@ var App = {
         App.marketPoints.push({ mkId: mk.id, year: p[0], x: x, y: y, track: mk.track, dot: dot, halo: halo });
       });
 
-      /* 역사적 고점·저점 및 주도주 핀 렌더링 */
-      if (tpLayer && Array.isArray(mk.turningPoints)) {
+      /* 역사적 고점·저점 및 주도주 데이터 수집 */
+      if (Array.isArray(mk.turningPoints)) {
         mk.turningPoints.forEach(function (tp) {
           if (tp.year < from || tp.year > to) return;
           var tpx = X(tp.year, tp.month || 6);
           var pt = pts.find(function (p) { return p[0] === tp.year; });
           var tpy = pt ? Y(pt[1]) : (up ? base - BAND * 0.75 : base + BAND * 0.75);
+          allTps.push({
+            mk: mk,
+            tp: tp,
+            ax: tpx,
+            ay: tpy,
+            track: mk.track,
+            up: up,
+            isPeak: tp.type === 'peak'
+          });
+        });
+      }
+    });
 
-          var isPeak = tp.type === 'peak';
+    /* ── 역사적 고점·저점 핀 & 주도주 충돌 방지 정렬 렌더링 ── */
+    if (tpLayer) {
+      ['world', 'korea'].forEach(function (tr) {
+        var list = allTps.filter(function (item) { return item.track === tr; });
+        list.sort(function (a, b) { return a.ax - b.ax; });
+
+        var placed = [];
+        var BOX_W = 118, BOX_H = 38;
+
+        list.forEach(function (item) {
+          var ax = item.ax, ay = item.ay;
+          var up = item.up;
+
+          // 다단 레벨 슬롯 [세로오프셋 dy, 가로미세조정 dx]
+          var offsets = up
+            ? [
+                [-34, 0], [-76, 0], [+24, 0], [-118, 0],
+                [-55, -28], [-55, +28], [-96, -24], [-96, +24],
+                [+50, -20], [+50, +20]
+              ]
+            : [
+                [+34, 0], [+76, 0], [-24, 0], [+118, 0],
+                [+55, -28], [+55, +28], [+96, -24], [+96, +24],
+                [-50, -20], [-50, +20]
+              ];
+
+          var chosen = null;
+          for (var i = 0; i < offsets.length; i++) {
+            var dy = offsets[i][0], dx = offsets[i][1];
+            var candX = ax + dx;
+            var candY = ay + dy;
+
+            var hit = false;
+            for (var p = 0; p < placed.length; p++) {
+              if (Math.abs(candX - placed[p].bx) < BOX_W && Math.abs(candY - placed[p].by) < BOX_H) {
+                hit = true;
+                break;
+              }
+            }
+            if (!hit) {
+              chosen = { bx: candX, by: candY };
+              break;
+            }
+          }
+
+          if (!chosen) {
+            // 최소 겹침 위치 탐색
+            var bestScore = Infinity;
+            for (var j = 0; j < offsets.length; j++) {
+              var cX = ax + offsets[j][1], cY = ay + offsets[j][0];
+              var score = 0;
+              for (var k = 0; k < placed.length; k++) {
+                var ox = Math.max(0, BOX_W - Math.abs(cX - placed[k].bx));
+                var oy = Math.max(0, BOX_H - Math.abs(cY - placed[k].by));
+                score += ox * oy;
+              }
+              if (score < bestScore) {
+                bestScore = score;
+                chosen = { bx: cX, by: cY };
+              }
+            }
+          }
+
+          placed.push({ bx: chosen.bx, by: chosen.by });
+
+          var bx = chosen.bx, by = chosen.by;
+          var mk = item.mk, tp = item.tp, isPeak = item.isPeak;
+
+          // 곡선 위 앵커(ax, ay)와 뱃지(bx, by)를 잇는 지시선
+          if (gTpStem) {
+            var stem = S('line', {
+              x1: ax, y1: ay, x2: bx, y2: by,
+              stroke: mk.color, class: 'tp-stem',
+              'data-mkt': mk.id, 'data-tp-stem': '1'
+            });
+            stem.style.color = mk.color;
+            gTpStem.appendChild(stem);
+
+            var sdot = S('circle', {
+              cx: ax, cy: ay, r: 3,
+              fill: mk.color, class: 'tp-stem-dot',
+              'data-mkt': mk.id, 'data-tp-stem': '1'
+            });
+            sdot.style.color = mk.color;
+            gTpStem.appendChild(sdot);
+          }
+
+          // HTML 핀 뱃지
           var pin = document.createElement('div');
           pin.className = 'tp-pin tp-' + tp.type + ' tp-mkt-' + mk.id;
           pin.dataset.mkt = mk.id;
-          pin.style.left = tpx.toFixed(1) + 'px';
-          pin.style.top = tpy.toFixed(1) + 'px';
+          pin.style.left = bx.toFixed(1) + 'px';
+          pin.style.top = by.toFixed(1) + 'px';
           pin.style.setProperty('--c', mk.color);
 
           var topLeaders = (tp.leaders || []).slice(0, 3).map(function (l) { return l.name; }).join(' · ');
@@ -2164,14 +2280,14 @@ var App = {
             if (App.open && App.open.id === 'tp:' + mk.id + ':' + tp.year + ':' + (tp.month || 0)) {
               App.closeCard();
             } else {
-              App.openTurningPointCard(tp, mk, tpx, tpy, pin);
+              App.openTurningPointCard(tp, mk, bx, by, pin);
             }
           });
 
           tpLayer.appendChild(pin);
         });
-      }
-    });
+      });
+    }
 
     /* ── 노드 배치 (트랙별 레인 충돌 회피) ── */
     var evs = data.events.slice().sort(function (a, b) {
