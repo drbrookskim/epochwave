@@ -28,7 +28,7 @@
     var list = document.getElementById('chatList');
     var b = document.createElement('div');
     b.className = 'chat-msg ' + role;
-    b.innerHTML = '<div class="chat-bubble">' + esc(text) + '</div>';
+    b.innerHTML = '<div class="chat-bubble">' + esc(String(text || '').trim()) + '</div>';
     list.appendChild(b);
     list.scrollTop = list.scrollHeight;
     return b;
@@ -149,7 +149,15 @@
     var found = [];
 
     refs.forEach(function (ref) {
-      if (ref.indexOf('mkt:') === 0) {
+      if (ref.indexOf('tp:') === 0) {
+        var tpPin = document.querySelector('.tp-pin[data-tp-id="' + ref + '"]');
+        if (tpPin) {
+          tpPin.classList.add('is-chat-highlight');
+          var pinX = parseFloat(tpPin.style.left) || 0;
+          var pinY = parseFloat(tpPin.style.top) || 0;
+          found.push({ kind: 'tp', x: pinX, y: pinY, ref: tpPin });
+        }
+      } else if (ref.indexOf('mkt:') === 0) {
         var parts = ref.split(':');
         var mp = App.marketPoints.find(function (p) { return p.mkId === parts[1] && String(p.year) === parts[2]; });
         if (mp) {

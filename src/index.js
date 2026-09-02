@@ -53,7 +53,7 @@ function topMoves(series, n = 3) {
 }
 
 function buildSystemPrompt(data) {
-  // 사건·주가 데이터를 통째로 근거 자료로 준다 — 지어내지 말고 이 안에서만 답하게 한다.
+  // 사건·주가·고점/저점·주도주 데이터를 통째로 근거 자료로 준다 — 지어내지 말고 이 안에서만 답하게 한다.
   const compact = {
     range: data.meta.range,
     events: data.events.map((e) => ({
@@ -63,24 +63,28 @@ function buildSystemPrompt(data) {
     markets: (data.markets || []).map((m) => ({
       id: m.id, label: m.label,
       notes: (m.notes || []).map((n) => ({ year: n.year, headline: n.headline })),
+      turningPoints: (m.turningPoints || []).map((tp) => ({
+        year: tp.year, month: tp.month, type: tp.type, title: tp.title, value: tp.value, change: tp.change,
+        leaders: (tp.leaders || []).map((l) => `${l.name}(${l.desc})`).join(", ")
+      })),
       series: m.series,             // [[연도,값], ...] — 특정 연도 값 조회용
       ...topMoves(m.series),        // 등락률 상위/하위 — 이미 계산됨, 다시 계산하지 말 것
     })),
   };
 
   return (
-    "당신은 'Back to the Future — 1955→2026' 역사 연표 웹사이트의 안내 챗봇이다. " +
-    "아래 DATA에 있는 사건과 주가 경제사만 근거로 한국어로 짧고 정확하게 답한다. " +
-    "markets[].topGainers/topLosers 에는 연도별 등락률 상위·하위가 이미 계산되어 있다 — " +
-    "'가장 많이 오른/떨어진 해' 같은 질문은 이 값을 그대로 인용하고 71개 연도를 직접 재계산하지 마라. " +
-    "series 는 특정 연도의 값을 조회할 때만 참고한다. " +
+    "당신은 'Back to the Future — 1955→2026' 역사 연표의 시간여행 금융·역사 AI 가이드다. " +
+    "서비스의 핵심 컨셉은 'Roads? Where we're going, we don't need roads. 1955년부터 현재까지의 역사적 사건에 따른 주가의 흐름을 알아보자'이다. " +
+    "당신의 존재 이유는 사용자가 70년의 방대한 역사와 4대 증시(NASDAQ, NYSE, 코스피, 코스닥)의 소용돌이 속에서 길을 잃지 않도록, " +
+    "역사적 대사건이 터졌을 때 시장이 어떻게 반응했는지, 역사적 고점과 저점은 언제 형성되었으며, 그 시대를 이끈 핵심 주도주(대장주)가 무엇이었는지를 명쾌하게 연결해주는 내비게이터 역할을 하는 것이다. " +
+    "아래 DATA에 있는 사건(events), 4대 증시 곡선(markets), 역사적 고점·저점(turningPoints), 주도주(leaders)만을 근거로 한국어로 짧고 정확하게 답한다 (2~4문장). " +
     "DATA에 없는 내용은 추측하지 말고 모른다고 말한다. " +
-    "내부적으로 생각할 때는 간결하게 핵심만 짚고, 같은 계산을 여러 번 재확인하지 말고 바로 결론을 낸다.\n\n" +
+    "내부적으로 생각할 때는 간결하게 핵심만 짚고 바로 결론을 낸다.\n\n" +
     "DATA:\n" + JSON.stringify(compact) + "\n\n" +
     "반드시 아래 형식의 순수 JSON 한 개만 출력한다 (마크다운, 설명, 코드블록 금지):\n" +
     '{"reply":"사용자에게 보여줄 한국어 답변(2~4문장)","refs":["관련id", ...]}\n' +
     "refs 규칙: 답변에서 언급한 사건은 그 id를(예:\"1997-11\"), " +
-    "언급한 주가 지점은 \"mkt:마켓id:연도\" 형식으로(예:\"mkt:kospi:1997\") 넣는다. " +
+    "언급한 고점·저점은 \"tp:마켓id:연도\"(예:\"tp:nasdaq:2000\") 또는 연도별 주가 지점은 \"mkt:마켓id:연도\"(예:\"mkt:kospi:1997\") 형식으로 넣는다. " +
     "DATA에 실제로 존재하는 id만 쓰고, 관련 없으면 refs는 빈 배열로 둔다. 최대 5개."
   );
 }
@@ -164,11 +168,15 @@ async function handleChatPost(request, env) {
 
   const validEventIds = new Set(data.events.map((e) => e.id));
   const validMarketRefs = new Set();
-  for (const m of data.markets || []) for (const [y] of m.series) validMarketRefs.add(`mkt:${m.id}:${y}`);
+  const validTpRefs = new Set();
+  for (const m of data.markets || []) {
+    for (const [y] of m.series) validMarketRefs.add(`mkt:${m.id}:${y}`);
+    for (const tp of m.turningPoints || []) validTpRefs.add(`tp:${m.id}:${tp.year}`);
+  }
 
   const reply = parsed && typeof parsed.reply === "string" ? parsed.reply : raw.trim() || "죄송해요, 답변을 만들지 못했어요.";
   const refs = Array.isArray(parsed && parsed.refs)
-    ? parsed.refs.filter((r) => typeof r === "string" && (validEventIds.has(r) || validMarketRefs.has(r))).slice(0, 5)
+    ? parsed.refs.filter((r) => typeof r === "string" && (validEventIds.has(r) || validMarketRefs.has(r) || validTpRefs.has(r))).slice(0, 5)
     : [];
 
   if (sessionId) {

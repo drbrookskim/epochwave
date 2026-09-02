@@ -972,6 +972,11 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   50%{ filter:drop-shadow(0 0 14px currentColor) }
 }
 .mkt-halo.is-chat-highlight{ opacity:1; r:8px; fill:none; stroke:var(--amber); stroke-width:2px }
+.tp-pin.is-chat-highlight{ animation:chatTpPulse 1.3s ease-in-out infinite; z-index:15 }
+@keyframes chatTpPulse{
+  0%,100%{ transform:translate(-50%,-50%) scale(1); filter:drop-shadow(0 0 6px var(--amber)) }
+  50%{ transform:translate(-50%,-55%) scale(1.15); filter:drop-shadow(0 0 20px var(--amber)) }
+}
 
 /* ═══ AI 가이드 챗봇 ═══ */
 .chat-toggle{
@@ -1402,34 +1407,34 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   <!-- ══ AI 가이드 챗봇 ══ -->
   <button type="button" id="chatToggle" class="chat-toggle" aria-expanded="false" aria-controls="chatPanel">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg>
-    <span>AI 가이드</span>
+    <span>시간여행 AI 가이드</span>
   </button>
 
-  <section id="chatPanel" class="chat-panel" hidden aria-label="AI 가이드 챗봇">
+  <section id="chatPanel" class="chat-panel" hidden aria-label="시간여행 AI 가이드">
     <header class="chat-head">
       <div>
-        <span class="chat-title">AI 가이드</span>
-        <span class="chat-sub">Gemma-4 · 이 연표 안에서만 답합니다</span>
+        <span class="chat-title">TIME TRAVEL AI GUIDE</span>
+        <span class="chat-sub">역사적 사건 · 4대 증시 · 고점·저점 · 주도주 내비게이터</span>
       </div>
       <button type="button" id="chatClose" class="chat-close" aria-label="닫기">×</button>
     </header>
 
     <div id="chatList" class="chat-list">
       <div class="chat-msg assistant">
-        <div class="chat-bubble">
-          안녕하세요! 1955~2026년 한국사·세계사와 주가 흐름에 대해 물어보세요.
-          답변에 나온 사건은 연표에서 바로 짚어드려요.
-        </div>
+        <div class="chat-bubble">안녕하세요! 1955~2026년 시간여행 AI 가이드입니다. ⚡
+역사적 사건과 4대 증시(나스닥·NYSE·코스피·코스닥)의 고점·저점, 그 당시 시장을 이끈 주도주의 흐름을 안내해 드립니다.
+궁금한 점을 물어보시면 답변과 함께 연표의 사건과 주가 지점을 바로 짚어드려요!</div>
       </div>
       <div class="chat-suggests">
-        <button type="button" class="chat-suggest">1997년에 무슨 일이 있었어?</button>
-        <button type="button" class="chat-suggest">KOSPI가 가장 많이 오른 시기는?</button>
-        <button type="button" class="chat-suggest">6월 민주항쟁이 뭐야?</button>
+        <button type="button" class="chat-suggest">2000년 닷컴버블 나스닥 고점과 당시 주도주는?</button>
+        <button type="button" class="chat-suggest">1997년 IMF 외환위기 때 코스피 저점과 반등 과정은?</button>
+        <button type="button" class="chat-suggest">2008년 금융위기 때 증시 폭락과 이후 주도주는?</button>
+        <button type="button" class="chat-suggest">1971년 닉슨쇼크가 글로벌 증시에 미친 영향은?</button>
       </div>
     </div>
 
     <form id="chatForm" class="chat-form">
-      <input type="text" id="chatInput" class="chat-input" placeholder="궁금한 걸 물어보세요…" autocomplete="off" maxlength="300">
+      <input type="text" id="chatInput" class="chat-input" placeholder="사건, 주가 고점·저점, 주도주에 대해 물어보세요…" autocomplete="off" maxlength="300">
       <button type="submit" id="chatSend" class="chat-send" aria-label="전송">↑</button>
     </form>
   </section>
@@ -2263,6 +2268,8 @@ var App = {
           var pin = document.createElement('div');
           pin.className = 'tp-pin tp-' + tp.type + ' tp-mkt-' + mk.id;
           pin.dataset.mkt = mk.id;
+          pin.dataset.tpId = 'tp:' + mk.id + ':' + tp.year;
+          pin.dataset.year = String(tp.year);
           pin.style.left = bx.toFixed(1) + 'px';
           pin.style.top = by.toFixed(1) + 'px';
           pin.style.setProperty('--c', mk.color);
@@ -3071,7 +3078,7 @@ var App = {
     var list = document.getElementById('chatList');
     var b = document.createElement('div');
     b.className = 'chat-msg ' + role;
-    b.innerHTML = '<div class="chat-bubble">' + esc(text) + '</div>';
+    b.innerHTML = '<div class="chat-bubble">' + esc(String(text || '').trim()) + '</div>';
     list.appendChild(b);
     list.scrollTop = list.scrollHeight;
     return b;
@@ -3192,7 +3199,15 @@ var App = {
     var found = [];
 
     refs.forEach(function (ref) {
-      if (ref.indexOf('mkt:') === 0) {
+      if (ref.indexOf('tp:') === 0) {
+        var tpPin = document.querySelector('.tp-pin[data-tp-id="' + ref + '"]');
+        if (tpPin) {
+          tpPin.classList.add('is-chat-highlight');
+          var pinX = parseFloat(tpPin.style.left) || 0;
+          var pinY = parseFloat(tpPin.style.top) || 0;
+          found.push({ kind: 'tp', x: pinX, y: pinY, ref: tpPin });
+        }
+      } else if (ref.indexOf('mkt:') === 0) {
         var parts = ref.split(':');
         var mp = App.marketPoints.find(function (p) { return p.mkId === parts[1] && String(p.year) === parts[2]; });
         if (mp) {

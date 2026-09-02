@@ -328,6 +328,8 @@
           var pin = document.createElement('div');
           pin.className = 'tp-pin tp-' + tp.type + ' tp-mkt-' + mk.id;
           pin.dataset.mkt = mk.id;
+          pin.dataset.tpId = 'tp:' + mk.id + ':' + tp.year;
+          pin.dataset.year = String(tp.year);
           pin.style.left = bx.toFixed(1) + 'px';
           pin.style.top = by.toFixed(1) + 'px';
           pin.style.setProperty('--c', mk.color);

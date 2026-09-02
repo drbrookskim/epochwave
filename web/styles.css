@@ -962,6 +962,11 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   50%{ filter:drop-shadow(0 0 14px currentColor) }
 }
 .mkt-halo.is-chat-highlight{ opacity:1; r:8px; fill:none; stroke:var(--amber); stroke-width:2px }
+.tp-pin.is-chat-highlight{ animation:chatTpPulse 1.3s ease-in-out infinite; z-index:15 }
+@keyframes chatTpPulse{
+  0%,100%{ transform:translate(-50%,-50%) scale(1); filter:drop-shadow(0 0 6px var(--amber)) }
+  50%{ transform:translate(-50%,-55%) scale(1.15); filter:drop-shadow(0 0 20px var(--amber)) }
+}
 
 /* ═══ AI 가이드 챗봇 ═══ */
 .chat-toggle{
