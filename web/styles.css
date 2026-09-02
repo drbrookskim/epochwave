@@ -468,7 +468,10 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .mkt-halo.is-hover{opacity:1; r:6.6px; stroke:var(--ink); stroke-width:1}
 .mkt-halo.is-active{opacity:1; r:8px; stroke:var(--ink); stroke-width:1.4}
 #app.no-mkt #marketLayer{display:none}
-#app.has-open #marketLayer{opacity:.35; transition:opacity .3s}
+#app.has-open #marketLayer{opacity:.25; transition:opacity .3s}
+#app.has-open .tp-layer{opacity:.2; pointer-events:none !important; transition:opacity .3s}
+#app.has-open .tp-stem-layer{opacity:.15; transition:opacity .3s}
+#app.has-open #quote{display:none !important}
 
 /* 주가 툴팁 */
 #quote{
@@ -818,13 +821,9 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 #scroller::-webkit-scrollbar-thumb{background:rgba(140,165,220,.3); border-radius:99px}
 /* 무대는 스크롤 영역 높이를 그대로 채운다 — 노드가 화면 밖으로 잘리지 않도록 */
 #stage{position:relative; height:100%; min-height:var(--stage-min)}
-#wires{position:absolute; inset:0; width:100%; height:100%; overflow:visible}
-#nodes,#cards{position:absolute; inset:0}
-/* #nodes 는 노드 버튼들을 담는 빈 오버레이라, 빈 영역은 그대로 두면 밑에 깔린
-   #wires 의 주가 곡선 히트서클로 클릭이 전달되지 않는다 — 빈 곳만 통과시킨다. */
-#nodes{pointer-events:none}
+#nodes{position:absolute; inset:0; pointer-events:none}
+#cards{position:absolute; inset:0; pointer-events:none; z-index:30}
 .node{pointer-events:auto}
-#cards{pointer-events:none}
 
 /* 트랙·눈금 */
 .era-band{opacity:.16}
@@ -874,21 +873,31 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .node.is-open .dot{transform:scale(1.16); background:radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--c) 34%, #101828), #0C1120 74%);
   box-shadow:0 0 0 9px color-mix(in srgb, var(--c) 18%, transparent), 0 0 34px color-mix(in srgb, var(--c) 55%, transparent)}
 .node.is-open .lbl,.node.is-open .nm{color:var(--ink)}
-#app.has-open .node:not(.is-open){opacity:.42; transition:opacity .3s}
+#app.has-open .node:not(.is-open){opacity:.25; pointer-events:none; transition:opacity .3s}
 
 /* ═══ 카드 ═══ */
 .card{
   position:absolute; left:var(--cx); top:var(--cy); width:var(--cw);
   max-height:var(--cmh); display:flex; flex-direction:column;
-  pointer-events:auto; overflow:hidden;
-  background:linear-gradient(168deg, color-mix(in srgb, var(--c) 13%, var(--panel)), var(--panel) 46%);
-  border:1px solid color-mix(in srgb, var(--c) 42%, transparent); border-radius:16px;
-  box-shadow:0 24px 60px rgba(0,0,0,.62), 0 0 0 1px rgba(255,255,255,.03) inset,
-             0 0 40px color-mix(in srgb, var(--c) 18%, transparent);
+  pointer-events:auto; overflow:hidden; z-index:31;
+  background:linear-gradient(168deg, color-mix(in srgb, var(--c) 14%, var(--panel)), var(--panel) 46%);
+  border:1px solid color-mix(in srgb, var(--c) 44%, transparent); border-radius:16px;
+  box-shadow:0 24px 64px rgba(0,0,0,.78), 0 0 0 1px rgba(255,255,255,.05) inset,
+             0 0 42px color-mix(in srgb, var(--c) 22%, transparent);
   will-change:clip-path;
 }
-.card-head{flex:0 0 auto; padding:16px 18px 13px; border-bottom:1px solid var(--line);
+.card-head{position:relative; flex:0 0 auto; padding:16px 44px 13px 18px; border-bottom:1px solid var(--line);
   background:linear-gradient(180deg, color-mix(in srgb, var(--c) 16%, transparent), transparent)}
+.card-close{
+  position:absolute; top:12px; right:14px; width:28px; height:28px; border-radius:50%;
+  border:1px solid var(--line); background:rgba(255,255,255,.06); color:var(--dim);
+  font-size:16px; display:grid; place-items:center; cursor:pointer;
+  transition:all .15s ease; line-height:1; z-index:5; padding:0;
+}
+.card-close:hover{
+  color:var(--ink); border-color:rgba(255,255,255,.35); background:rgba(255,255,255,.16);
+  transform:scale(1.08);
+}
 .card-when{display:flex; align-items:center; gap:8px; margin-bottom:7px}
 .card-when .ym{font-family:Orbitron,sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.09em; color:var(--c)}
 .card-when .era{font-size:10px; letter-spacing:.1em; color:var(--faint); padding:2px 8px; border:1px solid var(--line); border-radius:99px}

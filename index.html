@@ -478,7 +478,10 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .mkt-halo.is-hover{opacity:1; r:6.6px; stroke:var(--ink); stroke-width:1}
 .mkt-halo.is-active{opacity:1; r:8px; stroke:var(--ink); stroke-width:1.4}
 #app.no-mkt #marketLayer{display:none}
-#app.has-open #marketLayer{opacity:.35; transition:opacity .3s}
+#app.has-open #marketLayer{opacity:.25; transition:opacity .3s}
+#app.has-open .tp-layer{opacity:.2; pointer-events:none !important; transition:opacity .3s}
+#app.has-open .tp-stem-layer{opacity:.15; transition:opacity .3s}
+#app.has-open #quote{display:none !important}
 
 /* 주가 툴팁 */
 #quote{
@@ -828,13 +831,9 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 #scroller::-webkit-scrollbar-thumb{background:rgba(140,165,220,.3); border-radius:99px}
 /* 무대는 스크롤 영역 높이를 그대로 채운다 — 노드가 화면 밖으로 잘리지 않도록 */
 #stage{position:relative; height:100%; min-height:var(--stage-min)}
-#wires{position:absolute; inset:0; width:100%; height:100%; overflow:visible}
-#nodes,#cards{position:absolute; inset:0}
-/* #nodes 는 노드 버튼들을 담는 빈 오버레이라, 빈 영역은 그대로 두면 밑에 깔린
-   #wires 의 주가 곡선 히트서클로 클릭이 전달되지 않는다 — 빈 곳만 통과시킨다. */
-#nodes{pointer-events:none}
+#nodes{position:absolute; inset:0; pointer-events:none}
+#cards{position:absolute; inset:0; pointer-events:none; z-index:30}
 .node{pointer-events:auto}
-#cards{pointer-events:none}
 
 /* 트랙·눈금 */
 .era-band{opacity:.16}
@@ -884,21 +883,31 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .node.is-open .dot{transform:scale(1.16); background:radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--c) 34%, #101828), #0C1120 74%);
   box-shadow:0 0 0 9px color-mix(in srgb, var(--c) 18%, transparent), 0 0 34px color-mix(in srgb, var(--c) 55%, transparent)}
 .node.is-open .lbl,.node.is-open .nm{color:var(--ink)}
-#app.has-open .node:not(.is-open){opacity:.42; transition:opacity .3s}
+#app.has-open .node:not(.is-open){opacity:.25; pointer-events:none; transition:opacity .3s}
 
 /* ═══ 카드 ═══ */
 .card{
   position:absolute; left:var(--cx); top:var(--cy); width:var(--cw);
   max-height:var(--cmh); display:flex; flex-direction:column;
-  pointer-events:auto; overflow:hidden;
-  background:linear-gradient(168deg, color-mix(in srgb, var(--c) 13%, var(--panel)), var(--panel) 46%);
-  border:1px solid color-mix(in srgb, var(--c) 42%, transparent); border-radius:16px;
-  box-shadow:0 24px 60px rgba(0,0,0,.62), 0 0 0 1px rgba(255,255,255,.03) inset,
-             0 0 40px color-mix(in srgb, var(--c) 18%, transparent);
+  pointer-events:auto; overflow:hidden; z-index:31;
+  background:linear-gradient(168deg, color-mix(in srgb, var(--c) 14%, var(--panel)), var(--panel) 46%);
+  border:1px solid color-mix(in srgb, var(--c) 44%, transparent); border-radius:16px;
+  box-shadow:0 24px 64px rgba(0,0,0,.78), 0 0 0 1px rgba(255,255,255,.05) inset,
+             0 0 42px color-mix(in srgb, var(--c) 22%, transparent);
   will-change:clip-path;
 }
-.card-head{flex:0 0 auto; padding:16px 18px 13px; border-bottom:1px solid var(--line);
+.card-head{position:relative; flex:0 0 auto; padding:16px 44px 13px 18px; border-bottom:1px solid var(--line);
   background:linear-gradient(180deg, color-mix(in srgb, var(--c) 16%, transparent), transparent)}
+.card-close{
+  position:absolute; top:12px; right:14px; width:28px; height:28px; border-radius:50%;
+  border:1px solid var(--line); background:rgba(255,255,255,.06); color:var(--dim);
+  font-size:16px; display:grid; place-items:center; cursor:pointer;
+  transition:all .15s ease; line-height:1; z-index:5; padding:0;
+}
+.card-close:hover{
+  color:var(--ink); border-color:rgba(255,255,255,.35); background:rgba(255,255,255,.16);
+  transform:scale(1.08);
+}
 .card-when{display:flex; align-items:center; gap:8px; margin-bottom:7px}
 .card-when .ym{font-family:Orbitron,sans-serif; font-weight:700; font-size:12.5px; letter-spacing:.09em; color:var(--c)}
 .card-when .era{font-size:10px; letter-spacing:.1em; color:var(--faint); padding:2px 8px; border:1px solid var(--line); border-radius:99px}
@@ -2636,7 +2645,9 @@ var App = {
     var stage = App.stage;
     var originR = opts.originR != null ? opts.originR : NODE_R;
 
-    var CARD_W = Math.min(380, Math.max(252, scroller.clientWidth - 44));
+    /* 1. 반응형 카드 너비 */
+    var CARD_W = Math.min(380, Math.max(260, vw - 36));
+    var PAD = 16;
 
     /* ── 카드 DOM (먼저 만들어 높이를 잰다) ── */
     var card = document.createElement('article');
@@ -2645,47 +2656,95 @@ var App = {
     card.setAttribute('aria-label', opts.ariaLabel);
     card.style.setProperty('--c', opts.color);
     card.style.setProperty('--cw', CARD_W + 'px');
-    card.style.setProperty('--cmh', (stage.h - 46) + 'px');
     card.style.setProperty('--cx', '0px');
     card.style.setProperty('--cy', '0px');
     card.style.clipPath = 'inset(0 100% 100% 0' + R;
     card.innerHTML = opts.html;
+
+    /* 닫기 (✕) 버튼 자동 주입 */
+    var headEl = card.querySelector('.card-head');
+    if (headEl) {
+      var closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'card-close';
+      closeBtn.setAttribute('aria-label', '카드 닫기');
+      closeBtn.innerHTML = '&times;';
+      closeBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        App.closeCard();
+      });
+      headEl.appendChild(closeBtn);
+    }
+
     card.addEventListener('click', function (e) { e.stopPropagation(); });
     cardsEl.appendChild(card);
     if (opts.afterRender) opts.afterRender(card);
 
     var H = card.offsetHeight;
 
-    /* ── 카드가 화면 안에 들어오도록 필요한 만큼만 스크롤 ── */
-    var vw = scroller.clientWidth;
-    var sc = scroller.scrollLeft;
-    /* 노드 옆에 카드를 놓을 가로 여유가 없으면 세로 배치로 전환한다 */
+    /* ── 2. 가로 배치 & 화면 잘림/가려짐 방지 ── */
     var narrow = CARD_W + GAP + 40 > vw;
-
     var target, cx;
+
     if (narrow) {
-      target = opts.x - vw / 2;                       // 노드를 화면 중앙으로
-      target = Math.max(0, Math.min(target, stage.w - vw));
-      cx = opts.x - 30;                               // 앵커 모서리를 노드 바로 옆에
-      cx = Math.max(target + 12, Math.min(cx, target + vw - CARD_W - 12));
+      target = Math.max(0, Math.min(opts.x - vw / 2, stage.w - vw));
+      cx = Math.max(target + PAD, Math.min(opts.x - 30, target + vw - CARD_W - PAD));
     } else {
-      var need = CARD_W + GAP + 60;
-      target = sc;
-      if (opts.x - sc > vw - need) target = opts.x - (vw - need);
-      if (opts.x - sc < 100) target = opts.x - 100;
+      var placeRight = true;
+      if (opts.x - sc > vw - (CARD_W + GAP + 40)) {
+        placeRight = false;
+      } else if (opts.x - sc < (CARD_W + GAP + 40)) {
+        placeRight = true;
+      } else {
+        placeRight = (opts.x - sc <= vw * 0.5);
+      }
+
+      cx = placeRight ? (opts.x + GAP) : (opts.x - GAP - CARD_W);
+
+      // 노드와 카드가 둘 다 화면에 여유롭게 들어오도록 scroll target 계산
+      var minX = Math.min(opts.x - 30, cx);
+      var maxX = Math.max(opts.x + 30, cx + CARD_W);
+
+      if (maxX - minX <= vw - PAD * 2) {
+        if (minX < sc + PAD) {
+          target = minX - PAD;
+        } else if (maxX > sc + vw - PAD) {
+          target = maxX - vw + PAD;
+        } else {
+          target = sc;
+        }
+      } else {
+        target = placeRight ? (opts.x - PAD - 40) : (cx - PAD);
+      }
       target = Math.max(0, Math.min(target, stage.w - vw));
-      cx = (opts.x - target <= vw * 0.5) ? opts.x + GAP : opts.x - GAP - CARD_W;
+
+      // 가로 뷰포트 내 완벽 수용 보정 (화면 밖 1px도 잘리지 않음)
+      cx = Math.max(target + PAD, Math.min(cx, target + vw - CARD_W - PAD));
     }
-    cx = Math.max(14, Math.min(cx, stage.w - CARD_W - 14));
+
+    cx = Math.max(PAD, Math.min(cx, stage.w - CARD_W - PAD));
     if (target !== sc) scroller.scrollTo({ left: target, behavior: App.reduced ? 'auto' : 'smooth' });
 
-    /* 수직으로는 트랙 바깥쪽으로 비켜 놓는다 —
-       노드와 앵커 모서리가 대각선으로 벌어져야 엣지가 눈에 보인다 */
+    /* ── 3. 세로 배치 & 하단 잘림/가려짐 방지 ── */
     var cyTop = opts.track === 'world' ? opts.y + VOFF : opts.y - VOFF - H;
-    cyTop = Math.max(14, Math.min(cyTop, stage.h - H - 32));  // 32 = 가로 스크롤바 여유
+    var minTop = 14;
+    var maxBottom = stage.h - 26; // 하단 가로 스크롤바 및 여백 여유
+    var maxAvailH = maxBottom - minTop;
 
-    card.style.setProperty('--cx', cx + 'px');
-    card.style.setProperty('--cy', cyTop + 'px');
+    if (H > maxAvailH) H = maxAvailH;
+
+    if (cyTop + H > maxBottom) {
+      cyTop = maxBottom - H;
+    }
+    if (cyTop < minTop) {
+      cyTop = minTop;
+    }
+
+    // cyTop 위치로부터 무대 하단까지 남은 높이로 동적 max-height 설정
+    var dynCmh = Math.max(160, maxBottom - cyTop);
+    card.style.setProperty('--cmh', dynCmh + 'px');
+    card.style.setProperty('--cx', cx.toFixed(1) + 'px');
+    card.style.setProperty('--cy', cyTop.toFixed(1) + 'px');
 
     /* ── 앵커 = 노드에서 가장 가까운 모서리 = 사각형의 시작점 ── */
     var cornerX = (opts.x <= cx + CARD_W / 2) ? 'left' : 'right';
