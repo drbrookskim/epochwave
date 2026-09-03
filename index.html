@@ -483,6 +483,33 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 #app.has-open .tp-stem-layer{opacity:.15; transition:opacity .3s}
 #app.has-open #quote{display:none !important}
 
+/* ═══ 사건 ↔ 주가 상관관계 시각 연동 ═══ */
+@keyframes dotCorrelatedPulse {
+  0% { r: 5.6px; filter: drop-shadow(0 0 6px currentColor); }
+  100% { r: 7.2px; filter: drop-shadow(0 0 14px #ffb03a); }
+}
+.mkt-dot.is-correlated {
+  r: 6.2px !important; stroke-width: 2px !important; stroke: #fff !important;
+  animation: dotCorrelatedPulse 1.1s ease-in-out infinite alternate !important;
+}
+.mkt-halo.is-correlated {
+  opacity: 1 !important; r: 10px !important; stroke: var(--amber) !important; stroke-width: 1.8px !important;
+}
+.tp-pin.is-correlated {
+  box-shadow: 0 0 16px var(--c), 0 0 24px rgba(255,176,58,.5) !important;
+  transform: scale(1.08) !important;
+  border-color: #fff !important;
+  z-index: 10 !important;
+}
+#app.has-open #marketLayer .mkt-dot.is-correlated,
+#app.has-open #marketLayer .mkt-halo.is-correlated {
+  opacity: 1 !important;
+}
+#app.has-open .tp-layer .tp-pin.is-correlated {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
 /* 주가 툴팁 */
 #quote{
   position:absolute; left:var(--qx); top:var(--qy); transform:translate(-50%,-100%);
@@ -751,7 +778,9 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 }
 .tp-leader-name-wrap {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
 }
 .tp-leader-badge {
@@ -936,6 +965,14 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .fig{font-size:10.5px; color:var(--dim); padding:2.5px 8px; border-radius:99px;
   border:1px solid var(--line); background:rgba(255,255,255,.03)}
 .fig::before{content:"◆"; font-size:6px; vertical-align:2px; margin-right:5px; opacity:.55}
+.fig.fig-link{
+  color: var(--cyan); border-color: rgba(77,226,240,.35); background: rgba(77,226,240,.07);
+  text-decoration: none; cursor: pointer; transition: all .15s; pointer-events: auto !important;
+}
+.fig.fig-link:hover{
+  background: rgba(77,226,240,.2); border-color: var(--cyan); color: #fff; box-shadow: 0 0 8px rgba(77,226,240,.35);
+  transform: translateY(-1px);
+}
 
 /* 주가 팝업 안의 경제사 각주 — 급등락의 배경, 클릭 불필요 */
 .side.mkt-econ .side-tag{font-weight:700; letter-spacing:.1em}
@@ -947,6 +984,263 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .fig.mkt-jump{color:var(--cyan); border-color:rgba(77,226,240,.35); background:rgba(77,226,240,.08)}
 .fig.mkt-jump::before{content:none}
 .mkt-empty{margin:10px 0 2px; font-size:12.5px; color:var(--dim)}
+
+/* ═══ 사건 카드 내 Market Impact (주가 영향) 스타일 ═══ */
+.ev-impact-badge {
+  font-family: Orbitron, "Noto Sans KR", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ev-impact-badge.shock {
+  background: rgba(255, 75, 75, 0.15);
+  border-color: rgba(255, 80, 80, 0.45);
+  color: #FF7B7B;
+}
+.ev-impact-badge.rally {
+  background: rgba(72, 209, 138, 0.15);
+  border-color: rgba(72, 209, 138, 0.45);
+  color: #48D18A;
+}
+.ev-impact-badge.stagflation {
+  background: rgba(255, 176, 58, 0.15);
+  border-color: rgba(255, 176, 58, 0.45);
+  color: #FFB03A;
+}
+.ev-impact-badge.reform {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.45);
+  color: #C084FC;
+}
+.ev-impact-badge.volatility {
+  background: rgba(77, 226, 240, 0.15);
+  border-color: rgba(77, 226, 240, 0.45);
+  color: #4DE2F0;
+}
+
+.side.ev-mkt-impact {
+  border-left-color: #4DA3FF !important;
+  background: linear-gradient(180deg, rgba(77, 163, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border-radius: 0 8px 8px 0;
+  margin-top: 10px;
+}
+.ev-impact-summary {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.5;
+  margin: 6px 0 4px;
+}
+.ev-impact-detail {
+  font-size: 11.5px;
+  color: var(--dim);
+  line-height: 1.55;
+  margin: 0 0 10px;
+}
+.ev-mkt-econ-note {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #E2E8F0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+}
+.ev-mkt-econ-tag {
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: .05em;
+  margin-right: 4px;
+}
+.ev-mkt-stats-wrap {
+  margin-bottom: 10px;
+}
+.ev-mkt-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  gap: 6px;
+}
+.ev-mkt-stat-chip {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 6px;
+  padding: 5px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ev-mkt-stat-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--mc, #4DA3FF);
+  transform: translateY(-1px);
+}
+.ev-stat-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--mc, #4DA3FF);
+  letter-spacing: .04em;
+}
+.ev-stat-val {
+  font-family: Orbitron, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.ev-stat-chg {
+  font-family: Orbitron, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+}
+.ev-stat-chg.up { color: #48D18A; }
+.ev-stat-chg.dn { color: #FF6B6B; }
+
+.ev-mkt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+.ev-jump-mkt-btn, .ev-jump-tp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.15s;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+}
+.ev-jump-mkt-btn {
+  border-color: rgba(77, 163, 255, 0.35);
+  color: #6BB5FF;
+}
+.ev-jump-mkt-btn:hover {
+  background: rgba(77, 163, 255, 0.15);
+  border-color: #4DA3FF;
+  box-shadow: 0 0 10px rgba(77, 163, 255, 0.3);
+  transform: translateX(2px);
+}
+.ev-jump-tp-btn {
+  border-color: rgba(255, 176, 58, 0.35);
+  color: #FFB03A;
+}
+.ev-jump-tp-btn:hover {
+  background: rgba(255, 176, 58, 0.15);
+  border-color: #FFB03A;
+  box-shadow: 0 0 10px rgba(255, 176, 58, 0.3);
+  transform: translateX(2px);
+}
+
+/* ═══ 주도주 기업 공식 홈페이지 링크 스타일 ═══ */
+.tp-links-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.tp-company-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--cyan);
+  background: rgba(77, 226, 240, 0.08);
+  border: 1px solid rgba(77, 226, 240, 0.3);
+  border-radius: 4px;
+  padding: 1.5px 6px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.tp-company-link:hover {
+  background: rgba(77, 226, 240, 0.22);
+  border-color: var(--cyan);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(77, 226, 240, 0.4);
+  transform: translateY(-1px);
+}
+.tp-link-icon {
+  font-size: 8px;
+  line-height: 1;
+}
+
+/* ═══ 사건 카드 및 주가 팝업 내 기업 공식 홈페이지 링크 ═══ */
+.ev-mkt-companies, .mkt-comp-sec {
+  margin-top: 10px;
+  padding: 8px 10px 10px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(77, 163, 255, 0.22);
+  border-radius: 8px;
+}
+.ev-comp-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 7px;
+}
+.ev-comp-icon {
+  font-size: 11px;
+}
+.ev-comp-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6BB5FF;
+  letter-spacing: .03em;
+}
+.ev-comp-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.ev-company-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #E2E8F0;
+  background: rgba(77, 163, 255, 0.09);
+  border: 1px solid rgba(77, 163, 255, 0.3);
+  border-radius: 5px;
+  padding: 3px 8px;
+  text-decoration: none;
+  transition: all 0.15s;
+  cursor: pointer;
+  pointer-events: auto !important;
+}
+.ev-company-link:hover {
+  background: rgba(77, 163, 255, 0.24);
+  border-color: #4DA3FF;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(77, 163, 255, 0.4);
+  transform: translateY(-1px);
+}
+.ev-comp-name {
+  color: #F8FAFC;
+  font-weight: 700;
+}
+.ev-comp-btn {
+  font-size: 9.5px;
+  color: var(--cyan);
+  font-weight: 700;
+}
 
 /* 콘텐츠 스태거 */
 .card .stagger{opacity:0; transform:translateY(7px)}
@@ -2342,6 +2636,12 @@ var App = {
         '<span class="lbl">' + ev.year + '.' + String(ev.month).padStart(2, '0') + '</span>' +
         '<span class="nm">' + ev.title + '</span>';
 
+      b.addEventListener('mouseenter', function () {
+        if (!App.open) App.highlightMarketYear(ev.year, true);
+      });
+      b.addEventListener('mouseleave', function () {
+        if (!App.open) App.highlightMarketYear(null, false);
+      });
       b.addEventListener('click', function (e) {
         e.stopPropagation();
         if (App.open && App.open.id === ev.id) App.closeCard();
@@ -2478,6 +2778,21 @@ var App = {
   App.hideQuote = function () {
     var tip = document.getElementById('quote');
     if (tip) tip.hidden = true;
+  };
+
+  /* ══════════ 사건 ↔ 증시 연도 하이라이트 인터랙션 ══════════ */
+  App.highlightMarketYear = function (year, on) {
+    if (!App.marketPoints) return;
+    App.marketPoints.forEach(function (mp) {
+      var match = on && mp.year === year;
+      mp.dot.classList.toggle('is-correlated', match);
+      mp.halo.classList.toggle('is-correlated', match);
+    });
+    var tpPins = document.querySelectorAll('#turningPoints .tp-pin');
+    Array.prototype.forEach.call(tpPins, function (pin) {
+      var match = on && Number(pin.dataset.year) === year;
+      pin.classList.toggle('is-correlated', match);
+    });
   };
 
   /* ══════════ 기간 선택 — 노드·줄기를 숨기고 시대·눈금을 흐리게 ══════════ */
@@ -2620,10 +2935,225 @@ var App = {
   }
   App._esc = esc;
 
+  /* ── 각 기업 공식 홈페이지 매핑 ── */
+  var COMPANY_URLS = {
+    // 미국/글로벌 테크·AI
+    'Apple': 'https://www.apple.com',
+    '애플': 'https://www.apple.com',
+    'Microsoft': 'https://www.microsoft.com',
+    '마이크로소프트': 'https://www.microsoft.com',
+    'Intel': 'https://www.intel.com',
+    '인텔': 'https://www.intel.com',
+    'Nvidia': 'https://www.nvidia.com',
+    '엔비디아': 'https://www.nvidia.com',
+    'OpenAI': 'https://openai.com',
+    'Google': 'https://about.google',
+    'Alphabet': 'https://abc.xyz',
+    '구글': 'https://about.google',
+    'Amazon': 'https://www.aboutamazon.com',
+    '아마존': 'https://www.aboutamazon.com',
+    'Meta': 'https://about.meta.com',
+    'Tesla': 'https://www.tesla.com',
+    '테슬라': 'https://www.tesla.com',
+    'Cisco Systems': 'https://www.cisco.com',
+    'Qualcomm': 'https://www.qualcomm.com',
+    'Yahoo!': 'https://www.yahoo.com',
+    'eBay': 'https://www.ebay.com',
+    'RIM (블랙베리)': 'https://www.blackberry.com',
+    'Broadcom': 'https://www.broadcom.com',
+    'IBM': 'https://www.ibm.com',
+    'Xerox': 'https://www.xerox.com',
+    'Polaroid': 'https://www.polaroid.com',
+    'Eastman Kodak': 'https://www.kodak.com',
+    'Sony': 'https://www.sony.com',
+    '소니': 'https://www.sony.com',
+    'TSMC': 'https://www.tsmc.com',
+    'ASML': 'https://www.asml.com',
+
+    // 미국 에너지/금융/산업
+    'ExxonMobil': 'https://corporate.exxonmobil.com',
+    'Schlumberger': 'https://www.slb.com',
+    'Occidental': 'https://www.oxy.com',
+    'Chevron': 'https://www.chevron.com',
+    'Enphase Energy': 'https://enphase.com',
+    'General Electric': 'https://www.geaerospace.com',
+    'GE Aerospace': 'https://www.geaerospace.com',
+    'Procter & Gamble': 'https://us.pg.com',
+    'Pfizer': 'https://www.pfizer.com',
+    'Citigroup': 'https://www.citigroup.com',
+    'Bank of America': 'https://www.bankofamerica.com',
+    'JPMorgan Chase': 'https://www.jpmorganchase.com',
+    'Johnson & Johnson': 'https://www.jnj.com',
+    'Berkshire Hathaway': 'https://www.berkshirehathaway.com',
+    'UnitedHealth': 'https://www.unitedhealthgroup.com',
+    'Eli Lilly': 'https://www.lilly.com',
+    'Caterpillar': 'https://www.caterpillar.com',
+
+    // 한국 반도체·전자·플랫폼
+    '삼성전자': 'https://www.samsung.com/sec/',
+    '삼성': 'https://www.samsung.com/sec/',
+    'SK하이닉스': 'https://www.skhynix.com',
+    'LG전자': 'https://www.lge.co.kr',
+    'LG': 'https://www.lge.co.kr',
+    'NAVER': 'https://www.navercorp.com',
+    '네이버': 'https://www.navercorp.com',
+    '카카오': 'https://www.kakaocorp.com',
+    '다음(Daum)': 'https://www.daum.net',
+    '한글과컴퓨터': 'https://www.hancom.com',
+    'SK텔레콤': 'https://www.sktelecom.com',
+    '한국이동통신': 'https://www.sktelecom.com',
+    'KT': 'https://www.kt.com',
+
+    // 한국 중공업·자동차·소재·배터리
+    '현대차': 'https://www.hyundai.com',
+    '현대': 'https://www.hyundai.com',
+    '기아': 'https://www.kia.com',
+    '현대건설': 'https://www.hdec.kr',
+    '현대중공업': 'https://www.hd-hyundai.co.kr',
+    '현대미포조선': 'https://www.hmd.co.kr',
+    'POSCO': 'https://www.posco.com',
+    '포항제철': 'https://www.posco.com',
+    '대림산업': 'https://www.dlenc.co.kr',
+    '삼환기업': 'http://www.samwhan.co.kr',
+    '두산중공업': 'https://www.doosanenerbility.com',
+    '두산에너빌리티': 'https://www.doosanenerbility.com',
+    '한화에어로스페이스': 'https://www.hanwhaaerospace.co.kr',
+    '한화솔루션': 'https://www.hanwhasolutions.com',
+    '한미반도체': 'https://www.hanmisemi.com',
+    'LG화학': 'https://www.lgchem.com',
+    'LG에너지솔루션': 'https://www.lgensol.com',
+    '삼성SDI': 'https://www.samsungsdi.co.kr',
+    'SK이노베이션': 'https://www.skinnovation.com',
+    'S-Oil': 'https://www.s-oil.com',
+    '에코프로': 'https://www.ecopro.co.kr',
+    '에코프로비엠': 'https://www.ecoprobm.co.kr',
+    '엘앤에프': 'http://www.landf.co.kr',
+    '포스코DX': 'https://www.poscodx.com',
+    '레인보우로보틱스': 'https://www.rainbow-robotics.com',
+
+    // 한국 바이오·소비재·금융
+    '셀트리온': 'https://www.celltrion.com',
+    '삼성바이오로직스': 'https://samsungbiologics.com',
+    '유한양행': 'https://www.yuhan.co.kr',
+    '씨젠': 'https://www.seegene.co.kr',
+    '신풍제약': 'https://www.shinpoong.co.kr',
+    '메디톡스': 'https://www.medytox.com',
+    '휴젤': 'https://www.hugel.co.kr',
+    '클래시스': 'https://www.classys.com',
+    '삼양식품': 'https://www.samyangfoods.com',
+    '삼립식품': 'https://spcsamlip.co.kr',
+    '태평양화학(아모레)': 'https://www.apgroup.com',
+    '아모레퍼시픽': 'https://www.apgroup.com',
+    'JYP Ent.': 'https://www.jype.com',
+    '기업은행': 'https://www.ibk.co.kr',
+    '삼성물산': 'https://www.samsungcnt.com',
+    '새롬기술': 'https://www.solborn.co.kr',
+    '골드뱅크': 'https://ko.wikipedia.org/wiki/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC',
+    '메가스터디': 'https://www.megastudy.net',
+    '서울반도체': 'http://www.seoulsemicon.com'
+  };
+  App.COMPANY_URLS = COMPANY_URLS;
+
+  function getCompanyUrlByName(name) {
+    if (!name) return null;
+    var clean = String(name).trim();
+    if (COMPANY_URLS[clean]) return COMPANY_URLS[clean];
+    for (var k in COMPANY_URLS) {
+      if (k.length >= 2 && (clean.indexOf(k) !== -1 || k.indexOf(clean) !== -1)) {
+        return COMPANY_URLS[k];
+      }
+    }
+    return null;
+  }
+
+  function getLeaderLinks(ld) {
+    if (Array.isArray(ld.links) && ld.links.length > 0) return ld.links;
+    if (ld.url) return [{ name: ld.name, url: ld.url }];
+
+    var name = ld.name;
+    if (COMPANY_URLS[name]) return [{ name: name, url: COMPANY_URLS[name] }];
+
+    var parts = name.split(/[&·,/]/).map(function (s) { return s.trim(); }).filter(Boolean);
+    var res = [];
+    parts.forEach(function (part) {
+      var u = getCompanyUrlByName(part);
+      if (u) res.push({ name: part, url: u });
+    });
+    return res;
+  }
+
+  function getEventRelatedCompanies(ev) {
+    var yr = ev.year;
+    var list = [];
+    var seen = {};
+
+    function add(name, url) {
+      if (!name || !url || seen[name]) return;
+      seen[name] = true;
+      list.push({ name: name, url: url });
+    }
+
+    // 1. 해당 연도의 turningPoints 주도주
+    (App.data.markets || []).forEach(function (mk) {
+      (mk.turningPoints || []).forEach(function (tp) {
+        if (tp.year === yr) {
+          (tp.leaders || []).forEach(function (ld) {
+            var links = getLeaderLinks(ld);
+            links.forEach(function (lk) { add(lk.name, lk.url); });
+          });
+        }
+      });
+    });
+
+    // 2. 사건 제목, 본문, figures에서 언급된 기업
+    var fullText = [
+      ev.title,
+      ev.korea && ev.korea.headline,
+      ev.korea && ev.korea.body,
+      ev.world && ev.world.headline,
+      ev.world && ev.world.body,
+      (ev.korea && ev.korea.figures || []).join(' '),
+      (ev.world && ev.world.figures || []).join(' ')
+    ].join(' ');
+
+    for (var comp in COMPANY_URLS) {
+      if (comp.length >= 2 && fullText.indexOf(comp) !== -1) {
+        add(comp, COMPANY_URLS[comp]);
+      }
+    }
+
+    // 3. 만약 리스트가 적으면(2개 미만), 인접한 연도(±3년)의 주도주 보충
+    if (list.length < 2) {
+      var allTps = [];
+      (App.data.markets || []).forEach(function (mk) {
+        (mk.turningPoints || []).forEach(function (tp) {
+          allTps.push({ tp: tp, dist: Math.abs(tp.year - yr) });
+        });
+      });
+      allTps.sort(function (a, b) { return a.dist - b.dist; });
+      for (var i = 0; i < allTps.length && list.length < 4; i++) {
+        (allTps[i].tp.leaders || []).forEach(function (ld) {
+          var links = getLeaderLinks(ld);
+          links.forEach(function (lk) {
+            if (list.length < 4) add(lk.name, lk.url);
+          });
+        });
+      }
+    }
+
+    return list;
+  }
+
   function sideHTML(kind, d, delay) {
     if (!d) return '';
     var tag = kind === 'world' ? 'WORLD · 세계' : 'KOREA · 한국';
     var figs = (d.figures || []).map(function (f) {
+      var cUrl = getCompanyUrlByName(f);
+      if (cUrl) {
+        return '<a href="' + esc(cUrl) + '" target="_blank" rel="noopener noreferrer" class="fig fig-link" title="' + esc(f) + ' 공식 홈페이지 열기 (새 창)">' +
+          esc(f) + ' ↗' +
+        '</a>';
+      }
       return '<span class="fig">' + esc(f) + '</span>';
     }).join('');
     return '' +
@@ -2634,6 +3164,108 @@ var App = {
         '</div>' +
         '<p class="side-body">' + esc(d.body) + '</p>' +
         (figs ? '<div class="figs">' + figs + '</div>' : '') +
+      '</section>';
+  }
+
+  /* ── 사건 당시 시장 반응 (Market Impact) HTML 렌더러 ── */
+  function marketImpactHTML(ev, delay) {
+    var impact = ev.marketImpact;
+    var yr = ev.year;
+    var stats = [];
+    var econNotes = [];
+    var tps = [];
+
+    (App.data.markets || []).forEach(function (mk) {
+      var pt = (mk.series || []).find(function (p) { return p[0] === yr; });
+      if (pt) {
+        var idx = mk.series.findIndex(function (p) { return p[0] === yr; });
+        var prev = idx > 0 ? mk.series[idx - 1][1] : null;
+        var chg = prev != null ? ((pt[1] - prev) / prev * 100) : null;
+        stats.push({ mk: mk, val: pt[1], chg: chg, pt: pt });
+      }
+      (mk.notes || []).forEach(function (n) {
+        if (n.year === yr && !econNotes.some(function (en) { return en.note.headline === n.headline; })) {
+          econNotes.push({ mk: mk, note: n });
+        }
+      });
+      (mk.turningPoints || []).forEach(function (tp) {
+        if (tp.year === yr) {
+          tps.push({ mk: mk, tp: tp });
+        }
+      });
+    });
+
+    if (!impact && stats.length === 0 && econNotes.length === 0) return '';
+
+    var statsHTML = stats.map(function (s) {
+      return '' +
+        '<div class="ev-mkt-stat-chip" style="--mc:' + s.mk.color + '" data-mkt-id="' + s.mk.id + '" data-year="' + yr + '">' +
+          '<span class="ev-stat-name">' + s.mk.label + '</span>' +
+          '<span class="ev-stat-val">' + s.val.toLocaleString() + '</span>' +
+          (s.chg != null
+            ? '<span class="ev-stat-chg ' + (s.chg >= 0 ? 'up' : 'dn') + '">' + (s.chg >= 0 ? '▲' : '▼') + Math.abs(s.chg).toFixed(1) + '%</span>'
+            : '') +
+        '</div>';
+    }).join('');
+
+    var primaryMk = (ev.anchor === 'korea'
+      ? stats.find(function (s) { return s.mk.id === 'kospi'; })
+      : (stats.find(function (s) { return s.mk.id === 'nasdaq'; }) || stats.find(function (s) { return s.mk.id === 'nyse'; })))
+      || stats[0];
+
+    var jumpBtnHTML = primaryMk ? (
+      '<button type="button" class="ev-jump-mkt-btn" data-mkt-id="' + primaryMk.mk.id + '" data-year="' + yr + '" style="--mc:' + primaryMk.mk.color + '">' +
+        '<span>📈 ' + yr + '년 ' + primaryMk.mk.label + ' 곡선 보기</span> →' +
+      '</button>'
+    ) : '';
+
+    var tpBtnHTML = tps.length > 0 ? (
+      '<button type="button" class="ev-jump-tp-btn" data-mkt-id="' + tps[0].mk.id + '" data-year="' + yr + '" style="--mc:' + tps[0].mk.color + '">' +
+        '<span>' + (tps[0].tp.type === 'peak' ? '▲ 역사적 고점' : '▼ 역사적 저점') + ' & 주도주 보기</span> →' +
+      '</button>'
+    ) : '';
+
+    var econNoteHTML = econNotes.length > 0 ? (
+      '<div class="ev-mkt-econ-note">' +
+        '<span class="ev-mkt-econ-tag" style="color:' + econNotes[0].mk.color + '">경제사 실록</span> ' +
+        esc(econNotes[0].note.headline) + ' — ' + esc(econNotes[0].note.body) +
+      '</div>'
+    ) : '';
+
+    // 관련 기업 공식 홈페이지 링크 리스트
+    var relatedComps = getEventRelatedCompanies(ev);
+    var compsHTML = relatedComps.length > 0 ? (
+      '<div class="ev-mkt-companies">' +
+        '<div class="ev-comp-header">' +
+          '<span class="ev-comp-icon">🏢</span>' +
+          '<span class="ev-comp-title">당시 시장 주도 기업 공식 홈페이지</span>' +
+        '</div>' +
+        '<div class="ev-comp-grid">' +
+          relatedComps.map(function (c) {
+            return '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer" class="ev-company-link" title="' + esc(c.name) + ' 공식 홈페이지 열기 (새 창)">' +
+              '<span class="ev-comp-name">' + esc(c.name) + '</span>' +
+              '<span class="ev-comp-btn">공식 홈 ↗</span>' +
+            '</a>';
+          }).join('') +
+        '</div>' +
+      '</div>'
+    ) : '';
+
+    var summaryText = impact ? impact.summary : (econNotes.length > 0 ? econNotes[0].note.body : '');
+    var detailText = impact && impact.detail ? impact.detail : '';
+
+    return '' +
+      '<section class="side ev-mkt-impact stagger" style="animation-delay:' + delay + 'ms">' +
+        '<div class="side-top">' +
+          '<span class="side-tag" style="color:#4DA3FF">MARKET IMPACT · 주가 & 시장 반응</span>' +
+          (impact ? '<span class="ev-impact-badge ' + (impact.type || '') + '">' + esc(impact.tag) + '</span>' : '') +
+        '</div>' +
+        (summaryText ? '<p class="ev-impact-summary">' + esc(summaryText) + '</p>' : '') +
+        (detailText ? '<p class="ev-impact-detail">' + esc(detailText) + '</p>' : '') +
+        (econNoteHTML || '') +
+        (compsHTML || '') +
+        (statsHTML ? '<div class="ev-mkt-stats-wrap"><div class="ev-mkt-stats-grid">' + statsHTML + '</div></div>' : '') +
+        '<div class="ev-mkt-actions">' + jumpBtnHTML + tpBtnHTML + '</div>' +
       '</section>';
   }
 
@@ -2687,6 +3319,10 @@ var App = {
     }
 
     card.addEventListener('click', function (e) { e.stopPropagation(); });
+    // 카드 내부의 모든 공식 홈페이지 링크 클릭 시 안전한 새 창 열기 및 이벤트 전파 방지
+    Array.prototype.forEach.call(card.querySelectorAll('a[target="_blank"]'), function (a) {
+      a.addEventListener('click', function (e) { e.stopPropagation(); });
+    });
     cardsEl.appendChild(card);
     if (opts.afterRender) opts.afterRender(card);
 
@@ -2837,6 +3473,12 @@ var App = {
   /* ══════════ 사건 카드 ══════════ */
   App.openCard = function (ev, nodeEl, pos, instant) {
     var era = pos.era;
+    var impactBadge = ev.marketImpact ? (
+      '<span class="ev-impact-badge ' + (ev.marketImpact.type || '') + '">' +
+        esc(ev.marketImpact.tag) +
+      '</span>'
+    ) : '';
+
     App._openUnfold({
       id: ev.id, x: pos.x, y: pos.y, track: pos.track, color: era.color,
       ariaLabel: ev.title,
@@ -2845,6 +3487,7 @@ var App = {
           '<div class="card-when stagger" style="animation-delay:0ms">' +
             '<span class="ym">' + ev.year + '.' + String(ev.month).padStart(2, '0') + '</span>' +
             '<span class="era">' + esc(era.label || '') + '</span>' +
+            impactBadge +
           '</div>' +
           '<h2 class="card-title stagger" style="animation-delay:60ms">' + esc(ev.title) + '</h2>' +
           (ev.note ? '<p class="card-note stagger" style="animation-delay:110ms">' + esc(ev.note) + '</p>' : '') +
@@ -2852,9 +3495,73 @@ var App = {
         '<div class="card-body">' +
           sideHTML('world', ev.world, 150) +
           sideHTML('korea', ev.korea, 210) +
+          marketImpactHTML(ev, 260) +
         '</div>',
-      activate: function () { nodeEl.classList.add('is-open'); nodeEl.setAttribute('aria-expanded', 'true'); },
-      deactivate: function () { nodeEl.classList.remove('is-open'); nodeEl.setAttribute('aria-expanded', 'false'); }
+      afterRender: function (card) {
+        // 당시 주가 곡선 바로가기 버튼
+        var jumpMktBtn = card.querySelector('.ev-jump-mkt-btn');
+        if (jumpMktBtn) {
+          jumpMktBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var mktId = jumpMktBtn.dataset.mktId;
+            var yr = Number(jumpMktBtn.dataset.year);
+            var mp = (App.marketPoints || []).find(function (p) { return p.mkId === mktId && p.year === yr; })
+                     || (App.marketPoints || []).find(function (p) { return p.year === yr; });
+            if (mp) {
+              var mk = (App.data.markets || []).find(function (m) { return m.id === mp.mkId; });
+              var pt = mk && (mk.series || []).find(function (p) { return p[0] === yr; });
+              if (mk && pt) {
+                App.openMarketCard(mk, pt, mp.x, mp.y, mp.dot);
+              }
+            }
+          });
+        }
+
+        // 당시 고점/저점 주도주 바로가기 버튼
+        var jumpTpBtn = card.querySelector('.ev-jump-tp-btn');
+        if (jumpTpBtn) {
+          jumpTpBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var mktId = jumpTpBtn.dataset.mktId;
+            var yr = Number(jumpTpBtn.dataset.year);
+            var mk = (App.data.markets || []).find(function (m) { return m.id === mktId; });
+            var tp = mk && (mk.turningPoints || []).find(function (t) { return t.year === yr; });
+            if (tp) {
+              var pin = document.querySelector('.tp-pin[data-mkt="' + mktId + '"][data-year="' + yr + '"]');
+              var pinX = pin ? parseFloat(pin.style.left) : pos.x;
+              var pinY = pin ? parseFloat(pin.style.top) : pos.y;
+              App.openTurningPointCard(tp, mk, pinX, pinY, pin);
+            }
+          });
+        }
+
+        // 지수 미니 칩 클릭 시 해당 지수 카드로 이동
+        Array.prototype.forEach.call(card.querySelectorAll('.ev-mkt-stat-chip'), function (chip) {
+          chip.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var mktId = chip.dataset.mktId;
+            var yr = Number(chip.dataset.year);
+            var mp = (App.marketPoints || []).find(function (p) { return p.mkId === mktId && p.year === yr; });
+            if (mp) {
+              var mk = (App.data.markets || []).find(function (m) { return m.id === mktId; });
+              var pt = mk && (mk.series || []).find(function (p) { return p[0] === yr; });
+              if (mk && pt) {
+                App.openMarketCard(mk, pt, mp.x, mp.y, mp.dot);
+              }
+            }
+          });
+        });
+      },
+      activate: function () {
+        nodeEl.classList.add('is-open');
+        nodeEl.setAttribute('aria-expanded', 'true');
+        if (App.highlightMarketYear) App.highlightMarketYear(ev.year, true);
+      },
+      deactivate: function () {
+        nodeEl.classList.remove('is-open');
+        nodeEl.setAttribute('aria-expanded', 'false');
+        if (App.highlightMarketYear) App.highlightMarketYear(null, false);
+      }
     }, instant);
   };
 
@@ -2881,6 +3588,41 @@ var App = {
           '<p class="side-body">' + esc(econNote.body) + '</p>' +
         '</section>';
       delay += 45;
+    }
+
+    var mktComps = [];
+    var mktSeen = {};
+    (App.data.markets || []).forEach(function (m) {
+      (m.turningPoints || []).forEach(function (tp) {
+        if (tp.year === point[0]) {
+          (tp.leaders || []).forEach(function (ld) {
+            var links = getLeaderLinks(ld);
+            links.forEach(function (lk) {
+              if (!mktSeen[lk.name]) { mktSeen[lk.name] = true; mktComps.push(lk); }
+            });
+          });
+        }
+      });
+    });
+
+    var compSecHTML = '';
+    if (mktComps.length > 0) {
+      compSecHTML =
+        '<section class="side mkt-comp-sec stagger" style="animation-delay:' + delay + 'ms">' +
+          '<div class="side-top">' +
+            '<span class="side-tag" style="color:' + mk.color + '">LEADERS · ' + point[0] + '년 대표 기업</span>' +
+            '<span class="side-head">공식 홈페이지 바로가기</span>' +
+          '</div>' +
+          '<div class="ev-comp-grid">' +
+            mktComps.map(function (c) {
+              return '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer" class="ev-company-link" title="' + esc(c.name) + ' 공식 홈페이지 열기">' +
+                '<span class="ev-comp-name">' + esc(c.name) + '</span>' +
+                '<span class="ev-comp-btn">공식 홈 ↗</span>' +
+              '</a>';
+            }).join('') +
+          '</div>' +
+        '</section>';
+      delay += 40;
     }
 
     var relHTML = related.length
@@ -2918,7 +3660,7 @@ var App = {
               '</p>'
             : '') +
         '</header>' +
-        '<div class="card-body">' + econHTML + relHTML + '</div>',
+        '<div class="card-body">' + econHTML + compSecHTML + relHTML + '</div>',
       afterRender: function (card) {
         Array.prototype.forEach.call(card.querySelectorAll('.mkt-rel'), function (sec) {
           sec.addEventListener('click', function () {
@@ -2955,11 +3697,24 @@ var App = {
           '</div>' +
           '<div class="tp-leaders-list">' +
             tp.leaders.map(function (ld) {
+              var links = getLeaderLinks(ld);
+              var linksHTML = '';
+              if (links && links.length > 0) {
+                linksHTML = '<div class="tp-links-wrap">' +
+                  links.map(function (lk) {
+                    return '<a href="' + esc(lk.url) + '" target="_blank" rel="noopener noreferrer" class="tp-company-link" title="' + esc(lk.name) + ' 공식 홈페이지 열기 (새 창)">' +
+                      '<span class="tp-link-icon">↗</span>' + esc(lk.name) + ' 공식 홈' +
+                    '</a>';
+                  }).join('') +
+                '</div>';
+              }
+
               return (
                 '<div class="tp-leader-item">' +
                   '<div class="tp-leader-name-wrap">' +
                     '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
                     '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
+                    linksHTML +
                   '</div>' +
                   (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
                 '</div>'

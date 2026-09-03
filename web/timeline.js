@@ -402,6 +402,12 @@
         '<span class="lbl">' + ev.year + '.' + String(ev.month).padStart(2, '0') + '</span>' +
         '<span class="nm">' + ev.title + '</span>';
 
+      b.addEventListener('mouseenter', function () {
+        if (!App.open) App.highlightMarketYear(ev.year, true);
+      });
+      b.addEventListener('mouseleave', function () {
+        if (!App.open) App.highlightMarketYear(null, false);
+      });
       b.addEventListener('click', function (e) {
         e.stopPropagation();
         if (App.open && App.open.id === ev.id) App.closeCard();
@@ -538,6 +544,21 @@
   App.hideQuote = function () {
     var tip = document.getElementById('quote');
     if (tip) tip.hidden = true;
+  };
+
+  /* ══════════ 사건 ↔ 증시 연도 하이라이트 인터랙션 ══════════ */
+  App.highlightMarketYear = function (year, on) {
+    if (!App.marketPoints) return;
+    App.marketPoints.forEach(function (mp) {
+      var match = on && mp.year === year;
+      mp.dot.classList.toggle('is-correlated', match);
+      mp.halo.classList.toggle('is-correlated', match);
+    });
+    var tpPins = document.querySelectorAll('#turningPoints .tp-pin');
+    Array.prototype.forEach.call(tpPins, function (pin) {
+      var match = on && Number(pin.dataset.year) === year;
+      pin.classList.toggle('is-correlated', match);
+    });
   };
 
   /* ══════════ 기간 선택 — 노드·줄기를 숨기고 시대·눈금을 흐리게 ══════════ */
