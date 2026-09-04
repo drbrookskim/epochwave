@@ -1242,6 +1242,54 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   font-weight: 700;
 }
 
+/* ═══ 상단 퀵 기업 링크 바 ═══ */
+.ev-quick-companies {
+  margin: 4px 0 10px;
+  padding: 8px 10px;
+  background: rgba(77, 163, 255, 0.08);
+  border: 1px solid rgba(77, 163, 255, 0.28);
+  border-radius: 8px;
+}
+.ev-quick-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #6BB5FF;
+  letter-spacing: .02em;
+  margin-bottom: 6px;
+}
+.ev-quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.ev-quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(77, 226, 240, 0.4);
+  border-radius: 5px;
+  padding: 3px 8px;
+  text-decoration: none;
+  transition: all 0.15s;
+  cursor: pointer;
+  pointer-events: auto !important;
+}
+.ev-quick-chip:hover {
+  background: rgba(77, 226, 240, 0.22);
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px rgba(77, 226, 240, 0.45);
+  transform: translateY(-1px);
+}
+.ev-quick-arrow {
+  font-size: 9.5px;
+  color: var(--cyan);
+  font-weight: 700;
+}
+
 /* 콘텐츠 스태거 */
 .card .stagger{opacity:0; transform:translateY(7px)}
 .card.revealing .stagger{animation:rise .42s var(--fx) forwards}
@@ -2168,7 +2216,24 @@ var App = {
       });
   }
 
-  tryFetch(0);
+  /* ── 0. HTML 내 인라인 데이터 우선 로드 (오프라인/로컬/CORS 완벽 방지) ── */
+  var inlineDataEl = document.getElementById('timeline-data');
+  if (inlineDataEl && inlineDataEl.textContent.trim()) {
+    try {
+      App.data = JSON.parse(inlineDataEl.textContent);
+      var t = App.data.meta && App.data.meta.range ? App.data.meta.range.to : 2026;
+      if (!presUserModified) {
+        presState.year = t;
+        renderPres();
+      }
+      loaded = true;
+      ready();
+    } catch (e) {
+      tryFetch(0);
+    }
+  } else {
+    tryFetch(0);
+  }
 
   btn.addEventListener('click', function () {
     if (failed || !App.data || charging) return;
@@ -2716,9 +2781,23 @@ var App = {
       }, 160);
     });
 
-    /* ── 세로 휠을 가로 스크롤로 — 연표는 가로로만 흐른다 ── */
+    /* ── 세로 휠을 가로 스크롤로 — 연표는 가로로만 흐른다 (카드 내부 휠은 카드 스크롤 허용) ── */
     scroller.addEventListener('wheel', function (e) {
       if (e.ctrlKey) return;                       // 브라우저 확대/축소는 건드리지 않음
+
+      // 카드 위에서 마우스 휠을 굴릴 때는 카드의 세로 스크롤을 가로채지 않는다!
+      var insideCard = e.target.closest && e.target.closest('.card');
+      if (insideCard) {
+        var body = insideCard.querySelector('.card-body');
+        if (body && body.scrollHeight > body.clientHeight) {
+          var canScrollDown = e.deltaY > 0 && body.scrollTop + body.clientHeight < body.scrollHeight - 1;
+          var canScrollUp = e.deltaY < 0 && body.scrollTop > 1;
+          if (canScrollDown || canScrollUp) {
+            return; // 카드 내부 세로 스크롤 허용
+          }
+        }
+      }
+
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;  // 트랙패드 가로 스와이프는 그대로
       if (!e.deltaY) return;
       e.preventDefault();
@@ -3319,9 +3398,21 @@ var App = {
     }
 
     card.addEventListener('click', function (e) { e.stopPropagation(); });
-    // 카드 내부의 모든 공식 홈페이지 링크 클릭 시 안전한 새 창 열기 및 이벤트 전파 방지
+    // 카드 위에서의 휠은 카드의 기본 스크롤 동작이 일어나도록 이벤트 전파 중지
+    card.addEventListener('wheel', function (e) { e.stopPropagation(); }, { passive: true });
+
+    // 카드 내부의 모든 외부 링크 클릭 시 안전하고 확실한 새 창 열기 보장
     Array.prototype.forEach.call(card.querySelectorAll('a[target="_blank"]'), function (a) {
-      a.addEventListener('click', function (e) { e.stopPropagation(); });
+      a.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var href = a.getAttribute('href') || a.href;
+        if (href && href !== '#' && !href.startsWith('javascript:')) {
+          try {
+            window.open(href, '_blank', 'noopener,noreferrer');
+            e.preventDefault();
+          } catch (err) {}
+        }
+      });
     });
     cardsEl.appendChild(card);
     if (opts.afterRender) opts.afterRender(card);
@@ -3371,23 +3462,24 @@ var App = {
     cx = Math.max(PAD, Math.min(cx, stage.w - CARD_W - PAD));
     if (target !== sc) scroller.scrollTo({ left: target, behavior: App.reduced ? 'auto' : 'smooth' });
 
-    /* ── 3. 세로 배치 & 하단 잘림/가려짐 방지 ── */
+    /* ── 3. 세로 배치 & 화면(뷰포트) 잘림/가려짐 방지 ── */
+    var viewH = (scroller && scroller.clientHeight) || window.innerHeight || 600;
     var cyTop = opts.track === 'world' ? opts.y + VOFF : opts.y - VOFF - H;
     var minTop = 14;
-    var maxBottom = stage.h - 26; // 하단 가로 스크롤바 및 여백 여유
-    var maxAvailH = maxBottom - minTop;
+    var maxBottom = Math.min(stage.h, viewH) - 18; // 뷰포트 하단 바깥으로 넘어가지 않음
+    var maxAvailH = Math.max(180, maxBottom - minTop);
 
     if (H > maxAvailH) H = maxAvailH;
 
     if (cyTop + H > maxBottom) {
-      cyTop = maxBottom - H;
+      cyTop = Math.max(minTop, maxBottom - H);
     }
     if (cyTop < minTop) {
       cyTop = minTop;
     }
 
-    // cyTop 위치로부터 무대 하단까지 남은 높이로 동적 max-height 설정
-    var dynCmh = Math.max(160, maxBottom - cyTop);
+    // 뷰포트 바닥을 넘지 않도록 안전한 동적 max-height 설정
+    var dynCmh = Math.min(maxAvailH, Math.max(180, maxBottom - cyTop));
     card.style.setProperty('--cmh', dynCmh + 'px');
     card.style.setProperty('--cx', cx.toFixed(1) + 'px');
     card.style.setProperty('--cy', cyTop.toFixed(1) + 'px');
@@ -3479,6 +3571,21 @@ var App = {
       '</span>'
     ) : '';
 
+    var relatedComps = getEventRelatedCompanies(ev);
+    var quickBarHTML = relatedComps.length > 0 ? (
+      '<div class="ev-quick-companies stagger" style="animation-delay:110ms">' +
+        '<div class="ev-quick-title">🏢 관련 기업 공식 홈페이지</div>' +
+        '<div class="ev-quick-chips">' +
+          relatedComps.map(function (c) {
+            return '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer" class="ev-quick-chip" title="' + esc(c.name) + ' 공식 홈페이지 열기 (새 창)">' +
+              '<span class="ev-quick-name">' + esc(c.name) + '</span>' +
+              '<span class="ev-quick-arrow">↗</span>' +
+            '</a>';
+          }).join('') +
+        '</div>' +
+      '</div>'
+    ) : '';
+
     App._openUnfold({
       id: ev.id, x: pos.x, y: pos.y, track: pos.track, color: era.color,
       ariaLabel: ev.title,
@@ -3493,6 +3600,7 @@ var App = {
           (ev.note ? '<p class="card-note stagger" style="animation-delay:110ms">' + esc(ev.note) + '</p>' : '') +
         '</header>' +
         '<div class="card-body">' +
+          quickBarHTML +
           sideHTML('world', ev.world, 150) +
           sideHTML('korea', ev.korea, 210) +
           marketImpactHTML(ev, 260) +
@@ -3992,6 +4100,3694 @@ var App = {
     });
   };
 })();
+</script>
+<script id="timeline-data" type="application/json">
+{
+  "meta": {
+    "title": "Back to the Future — 1955에서 2026까지",
+    "range": {
+      "from": 1955,
+      "to": 2026
+    },
+    "version": 1
+  },
+  "eras": [
+    {
+      "id": "cold-war",
+      "label": "냉전 고착",
+      "from": 1955,
+      "to": 1969,
+      "color": "#5B86C4"
+    },
+    {
+      "id": "detente",
+      "label": "데탕트와 유신",
+      "from": 1970,
+      "to": 1979,
+      "color": "#D4913F"
+    },
+    {
+      "id": "neo-cold-war",
+      "label": "신냉전과 민주화",
+      "from": 1980,
+      "to": 1991,
+      "color": "#D2544A"
+    },
+    {
+      "id": "globalization",
+      "label": "탈냉전과 세계화",
+      "from": 1992,
+      "to": 2000,
+      "color": "#3FA08C"
+    },
+    {
+      "id": "war-on-terror",
+      "label": "테러와 금융위기",
+      "from": 2001,
+      "to": 2010,
+      "color": "#8B68C4"
+    },
+    {
+      "id": "mobile-era",
+      "label": "모바일과 팬데믹",
+      "from": 2011,
+      "to": 2020,
+      "color": "#3B92E0"
+    },
+    {
+      "id": "ai-era",
+      "label": "AI와 진영 재편",
+      "from": 2021,
+      "to": 2026,
+      "color": "#E85AA8"
+    }
+  ],
+  "markets": [
+    {
+      "id": "nasdaq",
+      "label": "NASDAQ",
+      "track": "world",
+      "color": "#A855F7",
+      "note": "1971년 100p 산출 시작 · 연말 종가 기준 · 로그 스케일",
+      "series": [
+        [
+          1971,
+          114
+        ],
+        [
+          1972,
+          134
+        ],
+        [
+          1973,
+          92
+        ],
+        [
+          1974,
+          60
+        ],
+        [
+          1975,
+          78
+        ],
+        [
+          1976,
+          90
+        ],
+        [
+          1977,
+          98
+        ],
+        [
+          1978,
+          118
+        ],
+        [
+          1979,
+          151
+        ],
+        [
+          1980,
+          202
+        ],
+        [
+          1981,
+          196
+        ],
+        [
+          1982,
+          232
+        ],
+        [
+          1983,
+          279
+        ],
+        [
+          1984,
+          247
+        ],
+        [
+          1985,
+          325
+        ],
+        [
+          1986,
+          349
+        ],
+        [
+          1987,
+          330
+        ],
+        [
+          1988,
+          381
+        ],
+        [
+          1989,
+          455
+        ],
+        [
+          1990,
+          374
+        ],
+        [
+          1991,
+          586
+        ],
+        [
+          1992,
+          677
+        ],
+        [
+          1993,
+          777
+        ],
+        [
+          1994,
+          752
+        ],
+        [
+          1995,
+          1052
+        ],
+        [
+          1996,
+          1291
+        ],
+        [
+          1997,
+          1570
+        ],
+        [
+          1998,
+          2193
+        ],
+        [
+          1999,
+          4069
+        ],
+        [
+          2000,
+          2471
+        ],
+        [
+          2001,
+          1950
+        ],
+        [
+          2002,
+          1336
+        ],
+        [
+          2003,
+          2003
+        ],
+        [
+          2004,
+          2175
+        ],
+        [
+          2005,
+          2205
+        ],
+        [
+          2006,
+          2415
+        ],
+        [
+          2007,
+          2652
+        ],
+        [
+          2008,
+          1577
+        ],
+        [
+          2009,
+          2269
+        ],
+        [
+          2010,
+          2653
+        ],
+        [
+          2011,
+          2605
+        ],
+        [
+          2012,
+          3020
+        ],
+        [
+          2013,
+          4177
+        ],
+        [
+          2014,
+          4736
+        ],
+        [
+          2015,
+          5007
+        ],
+        [
+          2016,
+          5383
+        ],
+        [
+          2017,
+          6903
+        ],
+        [
+          2018,
+          6635
+        ],
+        [
+          2019,
+          8973
+        ],
+        [
+          2020,
+          12888
+        ],
+        [
+          2021,
+          15645
+        ],
+        [
+          2022,
+          10466
+        ],
+        [
+          2023,
+          15011
+        ],
+        [
+          2024,
+          19300
+        ],
+        [
+          2025,
+          21500
+        ],
+        [
+          2026,
+          23000
+        ]
+      ],
+      "notes": [
+        {
+          "year": 1974,
+          "headline": "스태그플레이션 저점",
+          "body": "1차 오일쇼크로 지수 60p까지 추락."
+        },
+        {
+          "year": 1987,
+          "headline": "블랙먼데이",
+          "body": "10월 19일 하루 22.6% 폭락하며 투매."
+        },
+        {
+          "year": 2000,
+          "headline": "닷컴버블 정점과 붕괴",
+          "body": "3월 5,048p 사상 최고치 후 2년간 -78% 폭락."
+        },
+        {
+          "year": 2008,
+          "headline": "금융위기 바닥",
+          "body": "리먼 브라더스 파산으로 1,265p까지 급락."
+        },
+        {
+          "year": 2021,
+          "headline": "유동성 파티 정점",
+          "body": "코로나 언택트 수혜로 16,000p 돌파."
+        },
+        {
+          "year": 2024,
+          "headline": "AI 혁명 신고가",
+          "body": "엔비디아 중심 생성형 AI 랠리."
+        }
+      ],
+      "turningPoints": [
+        {
+          "year": 1974,
+          "month": 10,
+          "type": "trough",
+          "title": "1차 오일쇼크·스태그플레이션 저점",
+          "value": "54.3p (장중)",
+          "change": "-60%",
+          "desc": "아랍-이스라엘 전쟁과 석유 금수조치로 유가가 4배 폭등하며 전 세계 스태그플레이션 발발",
+          "leaders": [
+            {
+              "name": "Exxon & Mobil",
+              "desc": "산유국 유가 폭등에 따른 정유 메이저 이익 급증",
+              "url": "https://corporate.exxonmobil.com",
+              "links": [
+                {
+                  "name": "ExxonMobil",
+                  "url": "https://corporate.exxonmobil.com"
+                },
+                {
+                  "name": "Mobil",
+                  "url": "https://corporate.exxonmobil.com"
+                }
+              ]
+            },
+            {
+              "name": "Intel",
+              "desc": "최초의 8비트 마이크로프로세서 8080 발표로 PC 시대 잉태",
+              "url": "https://www.intel.com"
+            },
+            {
+              "name": "Schlumberger",
+              "desc": "에너지 시추 및 탐사 유전 서비스 독점",
+              "url": "https://www.slb.com"
+            }
+          ]
+        },
+        {
+          "year": 1987,
+          "month": 10,
+          "type": "trough",
+          "title": "블랙먼데이 폭락 바닥",
+          "value": "330p",
+          "change": "-35%",
+          "desc": "10월 19일 하루 22.6% 대폭락. 컴퓨터 자동 프로그램 매매의 연쇄 투매 충격",
+          "leaders": [
+            {
+              "name": "Apple",
+              "desc": "매킨토시 II 출시로 그래픽 인터페이스(GUI) PC 혁명",
+              "url": "https://www.apple.com"
+            },
+            {
+              "name": "Microsoft",
+              "desc": "Windows 2.0 및 MS-DOS IBM-PC 독점 체제 굳히기",
+              "url": "https://www.microsoft.com"
+            },
+            {
+              "name": "Intel",
+              "desc": "32비트 80386 프로세서로 고성능 PC 시장 장악",
+              "url": "https://www.intel.com"
+            }
+          ]
+        },
+        {
+          "year": 2000,
+          "month": 3,
+          "type": "peak",
+          "title": "닷컴버블 사상 최고치",
+          "value": "5,048p (장중)",
+          "change": "+400%",
+          "desc": "인터넷 혁명 광풍 속에 닷컴 기업들이 천문학적 밸류를 받으며 나스닥 5,000선 사상 최초 돌파",
+          "leaders": [
+            {
+              "name": "Cisco Systems",
+              "desc": "인터넷 백본망 라우터 독점으로 일시적 세계 시총 1위(5,500억 달러)",
+              "url": "https://www.cisco.com"
+            },
+            {
+              "name": "Microsoft",
+              "desc": "Windows 98/2000과 인터넷 익스플로러 세계 장악",
+              "url": "https://www.microsoft.com"
+            },
+            {
+              "name": "Intel",
+              "desc": "닷컴 서버 및 가정용 펜티엄 III 프로세서 폭풍 수혜",
+              "url": "https://www.intel.com"
+            },
+            {
+              "name": "Qualcomm",
+              "desc": "CDMA 2G/3G 이동통신 원천기술 로열티 독점",
+              "url": "https://www.qualcomm.com"
+            },
+            {
+              "name": "Yahoo!",
+              "desc": "인터넷 관문 포털의 황제",
+              "url": "https://www.yahoo.com"
+            }
+          ]
+        },
+        {
+          "year": 2002,
+          "month": 10,
+          "type": "trough",
+          "title": "닷컴버블 붕괴 바닥",
+          "value": "1,108p (장중)",
+          "change": "-78%",
+          "desc": "수많은 닷컴 벤처 파산과 회계부정(엔론·월드컴), 9·11 테러 충격이 겹쳐 고점 대비 -78% 폭락",
+          "leaders": [
+            {
+              "name": "eBay",
+              "desc": "실적 흑자 달성한 전자상거래 최후의 승자",
+              "url": "https://www.ebay.com"
+            },
+            {
+              "name": "Amazon",
+              "desc": "도서에서 전자기기로 생존 확장",
+              "url": "https://www.aboutamazon.com"
+            },
+            {
+              "name": "Microsoft",
+              "desc": "막대한 현금흐름으로 하락장 방어",
+              "url": "https://www.microsoft.com"
+            }
+          ]
+        },
+        {
+          "year": 2007,
+          "month": 10,
+          "type": "peak",
+          "title": "아이폰 출시 및 스마트폰 혁명 개막",
+          "value": "2,859p",
+          "change": "+158%",
+          "desc": "스티브 잡스의 아이폰 1세대 발표와 글로벌 유동성 팽창으로 모바일 컴퓨팅 시대 개막",
+          "leaders": [
+            {
+              "name": "Apple",
+              "desc": "아이폰 1세대 발표로 모바일 생태계 패러다임 전환",
+              "url": "https://www.apple.com"
+            },
+            {
+              "name": "Google",
+              "desc": "검색엔진 광고 독점 및 안드로이드 OS 인수",
+              "url": "https://about.google"
+            },
+            {
+              "name": "RIM (블랙베리)",
+              "desc": "쿼티 키보드 탑재 기업용 스마트폰 최전성기",
+              "url": "https://www.blackberry.com"
+            }
+          ]
+        },
+        {
+          "year": 2009,
+          "month": 3,
+          "type": "trough",
+          "title": "서브프라임 금융위기 바닥",
+          "value": "1,265p (장중)",
+          "change": "-55%",
+          "desc": "리먼 브라더스 파산과 글로벌 신용경색. 미 연준의 양적완화(QE) 개시로 대세 반등 시작",
+          "leaders": [
+            {
+              "name": "Apple",
+              "desc": "앱스토어 폭발적 성장과 아이폰 3GS 글로벌 히트",
+              "url": "https://www.apple.com"
+            },
+            {
+              "name": "Amazon",
+              "desc": "AWS 클라우드 컴퓨팅 선점과 킨들 전자책 독점",
+              "url": "https://www.aboutamazon.com"
+            }
+          ]
+        },
+        {
+          "year": 2021,
+          "month": 11,
+          "type": "peak",
+          "title": "팬데믹 제로금리 유동성 파티 정점",
+          "value": "16,057p (장중)",
+          "change": "+140%",
+          "desc": "코로나19 대응 무제한 양적완화와 재택·언택트 수요 폭발로 빅테크 천문학적 랠리",
+          "leaders": [
+            {
+              "name": "Apple",
+              "desc": "사상 최초 기업가치 3조 달러 돌파",
+              "url": "https://www.apple.com"
+            },
+            {
+              "name": "Microsoft",
+              "desc": "Azure 클라우드 성장과 오피스365 구독 경제 장악",
+              "url": "https://www.microsoft.com"
+            },
+            {
+              "name": "Tesla",
+              "desc": "전기차 연간 100만 대 양산 성공과 시총 1조 달러 클럽",
+              "url": "https://www.tesla.com"
+            },
+            {
+              "name": "Nvidia",
+              "desc": "게이밍 GPU 및 데이터센터 AI 가속 칩 품귀",
+              "url": "https://www.nvidia.com"
+            },
+            {
+              "name": "Alphabet",
+              "desc": "유튜브 및 디지털 검색 광고 실적 폭증",
+              "url": "https://abc.xyz"
+            }
+          ]
+        },
+        {
+          "year": 2022,
+          "month": 10,
+          "type": "trough",
+          "title": "40년 만의 인플레·연준 자이언트스텝 저점",
+          "value": "10,088p",
+          "change": "-37%",
+          "desc": "연준의 4연속 75bp 자이언트스텝 금리인상과 우크라이나 전쟁으로 성장주 멀티플 급락",
+          "leaders": [
+            {
+              "name": "Occidental & Chevron",
+              "desc": "에너지 가격 급등 속 워런 버핏의 가치주 집중 매수",
+              "url": "https://www.oxy.com",
+              "links": [
+                {
+                  "name": "Occidental",
+                  "url": "https://www.oxy.com"
+                },
+                {
+                  "name": "Chevron",
+                  "url": "https://www.chevron.com"
+                }
+              ]
+            },
+            {
+              "name": "Enphase Energy",
+              "desc": "유럽 에너지 독립 추진 속 태양광 마이크로인버터 방어",
+              "url": "https://enphase.com"
+            }
+          ]
+        },
+        {
+          "year": 2024,
+          "month": 12,
+          "type": "peak",
+          "title": "생성형 AI 인프라 슈퍼사이클 신고가",
+          "value": "19,300~23,000p",
+          "change": "+90%",
+          "desc": "ChatGPT발 생성형 AI 혁명으로 데이터센터 반도체 및 클라우드 인프라 지출 폭발",
+          "leaders": [
+            {
+              "name": "Nvidia",
+              "desc": "생성형 AI GPU(H100/Blackwell) 독점 공급으로 세계 시총 1위",
+              "url": "https://www.nvidia.com"
+            },
+            {
+              "name": "Microsoft",
+              "desc": "OpenAI 최대 주주이자 코파일럿 상용화 선도",
+              "url": "https://www.microsoft.com"
+            },
+            {
+              "name": "Broadcom",
+              "desc": "빅테크 맞춤형 AI ASIC 칩 및 광통신 장비 독점",
+              "url": "https://www.broadcom.com"
+            },
+            {
+              "name": "Meta",
+              "desc": "오픈소스 Llama AI 모델과 AI 광고 타깃팅 고효율화",
+              "url": "https://about.meta.com"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nyse",
+      "label": "NYSE",
+      "track": "world",
+      "color": "#38BDF8",
+      "note": "1955~2026 뉴욕증시 종합지수 · 로그 스케일",
+      "series": [
+        [
+          1955,
+          450
+        ],
+        [
+          1956,
+          470
+        ],
+        [
+          1957,
+          400
+        ],
+        [
+          1958,
+          550
+        ],
+        [
+          1959,
+          600
+        ],
+        [
+          1960,
+          580
+        ],
+        [
+          1961,
+          720
+        ],
+        [
+          1962,
+          630
+        ],
+        [
+          1963,
+          750
+        ],
+        [
+          1964,
+          840
+        ],
+        [
+          1965,
+          920
+        ],
+        [
+          1966,
+          800
+        ],
+        [
+          1967,
+          960
+        ],
+        [
+          1968,
+          1040
+        ],
+        [
+          1969,
+          920
+        ],
+        [
+          1970,
+          900
+        ],
+        [
+          1971,
+          1020
+        ],
+        [
+          1972,
+          1180
+        ],
+        [
+          1973,
+          980
+        ],
+        [
+          1974,
+          690
+        ],
+        [
+          1975,
+          900
+        ],
+        [
+          1976,
+          1070
+        ],
+        [
+          1977,
+          950
+        ],
+        [
+          1978,
+          960
+        ],
+        [
+          1979,
+          1080
+        ],
+        [
+          1980,
+          1360
+        ],
+        [
+          1981,
+          1230
+        ],
+        [
+          1982,
+          1410
+        ],
+        [
+          1983,
+          1650
+        ],
+        [
+          1984,
+          1670
+        ],
+        [
+          1985,
+          2110
+        ],
+        [
+          1986,
+          2420
+        ],
+        [
+          1987,
+          2470
+        ],
+        [
+          1988,
+          2780
+        ],
+        [
+          1989,
+          3530
+        ],
+        [
+          1990,
+          3300
+        ],
+        [
+          1991,
+          4170
+        ],
+        [
+          1992,
+          4360
+        ],
+        [
+          1993,
+          4660
+        ],
+        [
+          1994,
+          4590
+        ],
+        [
+          1995,
+          6160
+        ],
+        [
+          1996,
+          7410
+        ],
+        [
+          1997,
+          9700
+        ],
+        [
+          1998,
+          12290
+        ],
+        [
+          1999,
+          14690
+        ],
+        [
+          2000,
+          13200
+        ],
+        [
+          2001,
+          11480
+        ],
+        [
+          2002,
+          8800
+        ],
+        [
+          2003,
+          11120
+        ],
+        [
+          2004,
+          12120
+        ],
+        [
+          2005,
+          12480
+        ],
+        [
+          2006,
+          14180
+        ],
+        [
+          2007,
+          14680
+        ],
+        [
+          2008,
+          9030
+        ],
+        [
+          2009,
+          11150
+        ],
+        [
+          2010,
+          12580
+        ],
+        [
+          2011,
+          12580
+        ],
+        [
+          2012,
+          14260
+        ],
+        [
+          2013,
+          18480
+        ],
+        [
+          2014,
+          20590
+        ],
+        [
+          2015,
+          20440
+        ],
+        [
+          2016,
+          22390
+        ],
+        [
+          2017,
+          26740
+        ],
+        [
+          2018,
+          25070
+        ],
+        [
+          2019,
+          32310
+        ],
+        [
+          2020,
+          37560
+        ],
+        [
+          2021,
+          47660
+        ],
+        [
+          2022,
+          38400
+        ],
+        [
+          2023,
+          47700
+        ],
+        [
+          2024,
+          58820
+        ],
+        [
+          2025,
+          66000
+        ],
+        [
+          2026,
+          69000
+        ]
+      ],
+      "notes": [
+        {
+          "year": 1968,
+          "headline": "니프티 피프티 랠리",
+          "body": "50개 대형 우량주 집중 매수 전성기."
+        },
+        {
+          "year": 1974,
+          "headline": "오일쇼크 스태그플레이션",
+          "body": "유가 급등과 금리 상승으로 가치주 급락."
+        },
+        {
+          "year": 1982,
+          "headline": "볼커 긴축 종결",
+          "body": "금리 인하 전환으로 18년 대세상승 시작."
+        },
+        {
+          "year": 2000,
+          "headline": "구경제 가치주 정점",
+          "body": "GE·엑손모빌 등 거대 복합기업 전성기."
+        },
+        {
+          "year": 2008,
+          "headline": "서브프라임 금융위기",
+          "body": "월가 투자은행 연쇄 붕괴로 반토막."
+        },
+        {
+          "year": 2024,
+          "headline": "비만치료제·인프라 랠리",
+          "body": "일라이릴리·JP모건 중심 신고가."
+        }
+      ],
+      "turningPoints": [
+        {
+          "year": 1968,
+          "month": 11,
+          "type": "peak",
+          "title": "니프티 피프티(Nifty Fifty) 전성기",
+          "value": "1,040p",
+          "change": "+130%",
+          "desc": "어떤 불황에도 무너지지 않는 50개 대형 우량주에 기관 투자가 집중된 시대",
+          "leaders": [
+            {
+              "name": "IBM",
+              "desc": "메인프레임 System/360으로 세계 컴퓨터 시장 독점",
+              "url": "https://www.ibm.com"
+            },
+            {
+              "name": "Xerox",
+              "desc": "보통용지 복사기 특허로 사무실 자동화 독점",
+              "url": "https://www.xerox.com"
+            },
+            {
+              "name": "Polaroid",
+              "desc": "즉석카메라 열풍으로 고성장",
+              "url": "https://www.polaroid.com"
+            },
+            {
+              "name": "Eastman Kodak",
+              "desc": "필름 시장의 글로벌 지배자",
+              "url": "https://www.kodak.com"
+            }
+          ]
+        },
+        {
+          "year": 1974,
+          "month": 10,
+          "type": "trough",
+          "title": "1차 오일쇼크·스태그플레이션 저점",
+          "value": "690p",
+          "change": "-42%",
+          "desc": "원자재 가격 급등과 금리 상승으로 전통 제조업과 다각화 대기업 밸류에이션 붕괴",
+          "leaders": [
+            {
+              "name": "Exxon & Mobil",
+              "desc": "원유 배럴당 3달러에서 12달러로 급등하며 에너지 메이저 이익 폭발",
+              "url": "https://corporate.exxonmobil.com",
+              "links": [
+                {
+                  "name": "ExxonMobil",
+                  "url": "https://corporate.exxonmobil.com"
+                },
+                {
+                  "name": "Mobil",
+                  "url": "https://corporate.exxonmobil.com"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "year": 1982,
+          "month": 8,
+          "type": "trough",
+          "title": "볼커 초고금리 종결·대세 상승 반등",
+          "value": "1,410p",
+          "change": "-15%",
+          "desc": "연준 볼커 의장이 인플레이션을 진압한 후 통화 완화로 전환, 18년 강세장의 서막",
+          "leaders": [
+            {
+              "name": "General Electric",
+              "desc": "잭 웰치 회장 취임과 비수익 사업 매각 및 금융(GE캐피털) 육성",
+              "url": "https://www.geaerospace.com"
+            },
+            {
+              "name": "Procter & Gamble",
+              "desc": "브랜드 파워와 필수소비재 글로벌 확장",
+              "url": "https://us.pg.com"
+            }
+          ]
+        },
+        {
+          "year": 2000,
+          "month": 1,
+          "type": "peak",
+          "title": "구경제 가치주와 금융 메가뱅크 정점",
+          "value": "14,690p",
+          "change": "+220%",
+          "desc": "글로벌 규제 완화 속에 초대형 금융·제조 복합기업들의 전성기",
+          "leaders": [
+            {
+              "name": "General Electric",
+              "desc": "세계 최대 복합기업이자 글로벌 시총 1위(6,000억 달러)",
+              "url": "https://www.geaerospace.com"
+            },
+            {
+              "name": "ExxonMobil",
+              "desc": "엑손과 모빌 합병으로 초대형 에너지 제국",
+              "url": "https://corporate.exxonmobil.com"
+            },
+            {
+              "name": "Pfizer",
+              "desc": "비아그라·리피토 블록버스터 신약 전성기",
+              "url": "https://www.pfizer.com"
+            },
+            {
+              "name": "Citigroup",
+              "desc": "투자은행과 상업은행을 결합한 글로벌 메가뱅크",
+              "url": "https://www.citigroup.com"
+            }
+          ]
+        },
+        {
+          "year": 2007,
+          "month": 10,
+          "type": "peak",
+          "title": "글로벌 원자재·금융 슈퍼사이클 고점",
+          "value": "14,680p",
+          "change": "+66%",
+          "desc": "중국 인프라 고성장과 주택담보대출 팽창이 맞물린 글로벌 대호황 정점",
+          "leaders": [
+            {
+              "name": "ExxonMobil",
+              "desc": "유가 140달러 돌파로 사상 최대 순이익과 세계 시총 1위",
+              "url": "https://corporate.exxonmobil.com"
+            },
+            {
+              "name": "Citigroup & Bank of America",
+              "desc": "부동산 주택저당증권(MBS) 및 신용 파생상품 팽창",
+              "url": "https://www.citigroup.com",
+              "links": [
+                {
+                  "name": "Citigroup",
+                  "url": "https://www.citigroup.com"
+                },
+                {
+                  "name": "Bank of America",
+                  "url": "https://www.bankofamerica.com"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "year": 2009,
+          "month": 3,
+          "type": "trough",
+          "title": "서브프라임 금융위기 바닥",
+          "value": "9,030p",
+          "change": "-39%",
+          "desc": "리먼 브라더스 파산과 AIG 구제금융. 1930년대 대공황 이후 최악의 은행 위기",
+          "leaders": [
+            {
+              "name": "JPMorgan Chase",
+              "desc": "베어스턴스와 워싱턴뮤추얼을 흡수하며 미국 최강의 은행으로 부상",
+              "url": "https://www.jpmorganchase.com"
+            },
+            {
+              "name": "Johnson & Johnson",
+              "desc": "최고 신용등급(AAA)과 헬스케어 필수재로 하락장 방어",
+              "url": "https://www.jnj.com"
+            }
+          ]
+        },
+        {
+          "year": 2021,
+          "month": 12,
+          "type": "peak",
+          "title": "리오프닝 및 경기순환주 최고점",
+          "value": "47,660p",
+          "change": "+90%",
+          "desc": "백신 보급 후 억눌렸던 글로벌 소비 폭발과 기업 실적 회복으로 신고가 경신",
+          "leaders": [
+            {
+              "name": "Berkshire Hathaway",
+              "desc": "워런 버핏의 금융·보험·철도 가치주 포트폴리오 사상 최고치",
+              "url": "https://www.berkshirehathaway.com"
+            },
+            {
+              "name": "JPMorgan Chase",
+              "desc": "기업 M&A 및 기업공개(IPO) 수수료 사상 최대",
+              "url": "https://www.jpmorganchase.com"
+            },
+            {
+              "name": "UnitedHealth",
+              "desc": "미국 최대 민간 의료보험과 헬스케어 서비스 장악",
+              "url": "https://www.unitedhealthgroup.com"
+            }
+          ]
+        },
+        {
+          "year": 2024,
+          "month": 12,
+          "type": "peak",
+          "title": "비만치료제·AI 전력인프라 신고가 랠리",
+          "value": "58,820~69,000p",
+          "change": "+50%",
+          "desc": "GLP-1 비만치료제 혁명과 AI 데이터센터용 전력·원전·항공 인프라 붐",
+          "leaders": [
+            {
+              "name": "Eli Lilly",
+              "desc": "마운자로·젭바운드 비만치료제 신약으로 세계 최대 헬스케어 기업 등극",
+              "url": "https://www.lilly.com"
+            },
+            {
+              "name": "JPMorgan Chase",
+              "desc": "미국 지역은행 위기 속 퍼스트리퍼블릭 인수하며 금융 독점 심화",
+              "url": "https://www.jpmorganchase.com"
+            },
+            {
+              "name": "GE Aerospace",
+              "desc": "항공 엔진 수주 폭발과 성공적 기업분할",
+              "url": "https://www.geaerospace.com"
+            },
+            {
+              "name": "Caterpillar",
+              "desc": "글로벌 인프라 및 광산 기계 수요 독점",
+              "url": "https://www.caterpillar.com"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kospi",
+      "label": "코스피",
+      "track": "korea",
+      "color": "#FF5757",
+      "note": "1975~2026 코스피 종합주가지수 · 로그 스케일",
+      "series": [
+        [
+          1975,
+          90
+        ],
+        [
+          1976,
+          103
+        ],
+        [
+          1977,
+          125
+        ],
+        [
+          1978,
+          144
+        ],
+        [
+          1979,
+          119
+        ],
+        [
+          1980,
+          107
+        ],
+        [
+          1981,
+          131
+        ],
+        [
+          1982,
+          128
+        ],
+        [
+          1983,
+          121
+        ],
+        [
+          1984,
+          142
+        ],
+        [
+          1985,
+          163
+        ],
+        [
+          1986,
+          272
+        ],
+        [
+          1987,
+          525
+        ],
+        [
+          1988,
+          907
+        ],
+        [
+          1989,
+          909
+        ],
+        [
+          1990,
+          696
+        ],
+        [
+          1991,
+          610
+        ],
+        [
+          1992,
+          678
+        ],
+        [
+          1993,
+          866
+        ],
+        [
+          1994,
+          1027
+        ],
+        [
+          1995,
+          882
+        ],
+        [
+          1996,
+          651
+        ],
+        [
+          1997,
+          376
+        ],
+        [
+          1998,
+          562
+        ],
+        [
+          1999,
+          1028
+        ],
+        [
+          2000,
+          504
+        ],
+        [
+          2001,
+          693
+        ],
+        [
+          2002,
+          627
+        ],
+        [
+          2003,
+          810
+        ],
+        [
+          2004,
+          895
+        ],
+        [
+          2005,
+          1379
+        ],
+        [
+          2006,
+          1434
+        ],
+        [
+          2007,
+          1897
+        ],
+        [
+          2008,
+          1124
+        ],
+        [
+          2009,
+          1682
+        ],
+        [
+          2010,
+          2051
+        ],
+        [
+          2011,
+          1825
+        ],
+        [
+          2012,
+          1997
+        ],
+        [
+          2013,
+          2011
+        ],
+        [
+          2014,
+          1915
+        ],
+        [
+          2015,
+          1961
+        ],
+        [
+          2016,
+          2026
+        ],
+        [
+          2017,
+          2467
+        ],
+        [
+          2018,
+          2041
+        ],
+        [
+          2019,
+          2197
+        ],
+        [
+          2020,
+          2873
+        ],
+        [
+          2021,
+          2977
+        ],
+        [
+          2022,
+          2236
+        ],
+        [
+          2023,
+          2655
+        ],
+        [
+          2024,
+          2399
+        ],
+        [
+          2025,
+          3100
+        ],
+        [
+          2026,
+          3300
+        ]
+      ],
+      "notes": [
+        {
+          "year": 1978,
+          "headline": "중동 건설주 파동",
+          "body": "오일머니 수주 붐으로 삼환기업 등 10배 폭등."
+        },
+        {
+          "year": 1989,
+          "headline": "3저 호황 1,000p 돌파",
+          "body": "저유가·저달러·저금리로 금융·무역·건설 폭등."
+        },
+        {
+          "year": 1994,
+          "headline": "삼성전자 반도체 랠리",
+          "body": "64M D램 세계최초 개발로 대형 수출주 약진."
+        },
+        {
+          "year": 1998,
+          "headline": "IMF 외환위기 바닥",
+          "body": "외환 고갈로 지수 277p까지 추락."
+        },
+        {
+          "year": 2007,
+          "headline": "조선·철강 차이나 랠리",
+          "body": "현대중공업·POSCO 등 중후장대 대세 상승."
+        },
+        {
+          "year": 2011,
+          "headline": "차·화·정 랠리",
+          "body": "자동차·화학·정유가 지수 2,231p 견인."
+        },
+        {
+          "year": 2021,
+          "headline": "동학개미 삼천피 3,316p",
+          "body": "개인 100조 순매수로 사상 최고치 달성."
+        },
+        {
+          "year": 2024,
+          "headline": "HBM 반도체·밸류업",
+          "body": "SK하이닉스 엔비디아 독점 및 주주환원 랠리."
+        }
+      ],
+      "turningPoints": [
+        {
+          "year": 1978,
+          "month": 6,
+          "type": "peak",
+          "title": "중동 건설주 파동 정점",
+          "value": "144p",
+          "change": "+60%",
+          "desc": "중동 산유국의 오일머니 건설 수주 붐으로 증시 사상 최초의 투기적 광풍 발생",
+          "leaders": [
+            {
+              "name": "삼환기업",
+              "desc": "사우디 고속도로 공사 수주로 1년 만에 주가 10배 폭등",
+              "url": "http://www.samwhan.co.kr"
+            },
+            {
+              "name": "현대건설",
+              "desc": "주베일 산업항 공사 등 20세기 최대 역사 수주",
+              "url": "https://www.hdec.kr"
+            },
+            {
+              "name": "대림산업",
+              "desc": "중동 정유 플랜트 건설 수주 호황",
+              "url": "https://www.dlenc.co.kr"
+            }
+          ]
+        },
+        {
+          "year": 1980,
+          "month": 1,
+          "type": "trough",
+          "title": "10·26 사태 및 2차 오일쇼크 저점",
+          "value": "107p",
+          "change": "-26%",
+          "desc": "박정희 대통령 서거, 신군부 정국 혼란, 1980년 경제성장률 -1.6% 역성장",
+          "leaders": [
+            {
+              "name": "삼립식품",
+              "desc": "식품·빵 등 생필품 중심 경기방어",
+              "url": "https://spcsamlip.co.kr"
+            },
+            {
+              "name": "유한양행",
+              "desc": "의약품 필수 소비재",
+              "url": "https://www.yuhan.co.kr"
+            }
+          ]
+        },
+        {
+          "year": 1989,
+          "month": 4,
+          "type": "peak",
+          "title": "3저 호황·사상 첫 1,000선 돌파",
+          "value": "1,015p (장중)",
+          "change": "+520%",
+          "desc": "저달러·저유가·저금리 3저 호황과 서울올림픽 특수로 수출 폭발, 코스피 1,000p 시대 개막",
+          "leaders": [
+            {
+              "name": "금융·무역·건설 트로이카",
+              "desc": "대우증권, 대우, 현대종합상사, 현대건설 등 시세 폭발",
+              "url": "https://www.posco.com"
+            },
+            {
+              "name": "포항제철",
+              "desc": "1988년 국민주 1호 상장과 조강 생산 세계적 확장",
+              "url": "https://www.posco.com"
+            }
+          ]
+        },
+        {
+          "year": 1992,
+          "month": 8,
+          "type": "trough",
+          "title": "깡통계좌 정리와 버블 붕괴 바닥",
+          "value": "459p",
+          "change": "-55%",
+          "desc": "과도한 신용 매수 깡통계좌 강제 정리 및 8·24 증시안정화 특륭 3조 원 투입 바닥",
+          "leaders": [
+            {
+              "name": "태평양화학(아모레)",
+              "desc": "저PER 혁명 주도, 자산주·가치주 열풍",
+              "url": "https://www.apgroup.com"
+            },
+            {
+              "name": "한국이동통신",
+              "desc": "무선호출(삐삐) 보급 개막",
+              "url": "https://www.sktelecom.com"
+            }
+          ]
+        },
+        {
+          "year": 1994,
+          "month": 11,
+          "type": "peak",
+          "title": "외국인 한도 확대와 반도체 블루칩 랠리",
+          "value": "1,145p",
+          "change": "+150%",
+          "desc": "외국인 주식투자 한도 확대와 삼성전자의 64M D램 세계 최초 개발로 대형 수출주 약진",
+          "leaders": [
+            {
+              "name": "삼성전자",
+              "desc": "64M D램 세계 최초 개발로 글로벌 메모리 반도체 1위 도약",
+              "url": "https://www.samsung.com/sec/"
+            },
+            {
+              "name": "한국이동통신",
+              "desc": "선경(SK)그룹 인수 및 이동전화 보급 급증",
+              "url": "https://www.sktelecom.com"
+            },
+            {
+              "name": "포항제철",
+              "desc": "글로벌 최고 수준의 원가 경쟁력",
+              "url": "https://www.posco.com"
+            }
+          ]
+        },
+        {
+          "year": 1998,
+          "month": 6,
+          "type": "trough",
+          "title": "IMF 외환위기 국가부도 바닥",
+          "value": "277p",
+          "change": "-76%",
+          "desc": "외환보유고 고갈로 국가부도 위기, 대기업 연쇄 부도와 고금리(30%) 속 최악의 바닥",
+          "leaders": [
+            {
+              "name": "삼성물산",
+              "desc": "외환위기 극복 금모으기 운동 주도 및 무역 상사",
+              "url": "https://www.samsungcnt.com"
+            },
+            {
+              "name": "LG전자",
+              "desc": "고환율 수혜로 가전제품 수출 급반등",
+              "url": "https://www.lge.co.kr"
+            }
+          ]
+        },
+        {
+          "year": 2007,
+          "month": 10,
+          "type": "peak",
+          "title": "적립식 펀드 붐과 차이나 인프라 랠리",
+          "value": "2,085p (장중)",
+          "change": "+310%",
+          "desc": "국민 적립식 펀드 열풍과 중국의 폭발적 인프라 투자로 사상 첫 코스피 2,000선 돌파",
+          "leaders": [
+            {
+              "name": "현대중공업",
+              "desc": "조선 수주 1위로 주가 55만 원 돌파, 삼성전자에 이어 시총 2위 등극",
+              "url": "https://www.hd-hyundai.co.kr"
+            },
+            {
+              "name": "POSCO",
+              "desc": "중국 철강 수요 폭증으로 주가 76만 원 사상 최고치",
+              "url": "https://www.posco.com"
+            },
+            {
+              "name": "현대미포조선",
+              "desc": "중소형 특수선 마진 폭발로 4년간 주가 15배 폭등",
+              "url": "https://www.hmd.co.kr"
+            },
+            {
+              "name": "두산중공업",
+              "desc": "원전·담수화 플랜트 전 세계 수주",
+              "url": "https://www.doosanenerbility.com"
+            }
+          ]
+        },
+        {
+          "year": 2008,
+          "month": 10,
+          "type": "trough",
+          "title": "글로벌 금융위기 환율 급등 바닥",
+          "value": "938p (장중)",
+          "change": "-55%",
+          "desc": "리먼 파산으로 원·달러 환율 1,500원 돌파, 외국인의 무차별 매도로 패닉 투매",
+          "leaders": [
+            {
+              "name": "현대차",
+              "desc": "미국 실직자 할부 유예(어슈어런스) 마케팅 대성공과 점유율 급등",
+              "url": "https://www.hyundai.com"
+            },
+            {
+              "name": "KT&G",
+              "desc": "높은 배당수익률과 무차입 경영의 독보적 방어력",
+              "url": "https://www.ktng.com"
+            }
+          ]
+        },
+        {
+          "year": 2011,
+          "month": 5,
+          "type": "peak",
+          "title": "차·화·정(자동차·화학·정유) 랠리 정점",
+          "value": "2,231p",
+          "change": "+138%",
+          "desc": "중국 내수 부양책과 글로벌 수요 폭증으로 3대 주도주가 지수 상승을 독점 견인",
+          "leaders": [
+            {
+              "name": "현대차 & 기아",
+              "desc": "YF쏘나타·K5 글로벌 디자인 돌풍과 사상 최대 영업이익",
+              "url": "https://www.hyundai.com",
+              "links": [
+                {
+                  "name": "현대차",
+                  "url": "https://www.hyundai.com"
+                },
+                {
+                  "name": "기아",
+                  "url": "https://www.kia.com"
+                }
+              ]
+            },
+            {
+              "name": "LG화학",
+              "desc": "석유화학 스프레드 호황 및 GM 볼트 전기차 배터리 독점 공급",
+              "url": "https://www.lgchem.com"
+            },
+            {
+              "name": "SK이노베이션 & S-Oil",
+              "desc": "정제마진 폭등과 아시아 정유 수출 호황",
+              "url": "https://www.skinnovation.com",
+              "links": [
+                {
+                  "name": "SK이노베이션",
+                  "url": "https://www.skinnovation.com"
+                },
+                {
+                  "name": "S-Oil",
+                  "url": "https://www.s-oil.com"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "year": 2020,
+          "month": 3,
+          "type": "trough",
+          "title": "코로나19 팬데믹 서킷브레이커 바닥",
+          "value": "1,439p",
+          "change": "-35%",
+          "desc": "전 세계 락다운 공포로 증시 연쇄 서킷브레이커 발동, 10년 전 수준으로 급락",
+          "leaders": [
+            {
+              "name": "씨젠",
+              "desc": "코로나 진단키트 긴급승인으로 6개월 만에 주가 10배 폭등",
+              "url": "https://www.seegene.co.kr"
+            },
+            {
+              "name": "신풍제약",
+              "desc": "치료제 임상 테마로 30배 이상 급등",
+              "url": "https://www.shinpoong.co.kr"
+            }
+          ]
+        },
+        {
+          "year": 2021,
+          "month": 6,
+          "type": "peak",
+          "title": "동학개미운동·사상 첫 삼천피(3,300p) 돌파",
+          "value": "3,316p (장중)",
+          "change": "+130%",
+          "desc": "개인 투자자가 100조 원 이상 순매수하며 외국인 매도를 압도한 사상 최대 유동성 랠리",
+          "leaders": [
+            {
+              "name": "삼성전자",
+              "desc": "개인 매수세 결집으로 96,800원 사상 최고가 터치",
+              "url": "https://www.samsung.com/sec/"
+            },
+            {
+              "name": "SK하이닉스",
+              "desc": "글로벌 D램 슈퍼사이클 수혜",
+              "url": "https://www.skhynix.com"
+            },
+            {
+              "name": "카카오 & NAVER",
+              "desc": "국민 메신저·포털 기반 언택트·핀테크 플랫폼 대세",
+              "url": "https://www.kakaocorp.com",
+              "links": [
+                {
+                  "name": "카카오",
+                  "url": "https://www.kakaocorp.com"
+                },
+                {
+                  "name": "NAVER",
+                  "url": "https://www.navercorp.com"
+                }
+              ]
+            },
+            {
+              "name": "LG에너지솔루션·삼성SDI",
+              "desc": "글로벌 완성차 전기차 배터리 수주잔고 폭증",
+              "url": "https://www.lgensol.com",
+              "links": [
+                {
+                  "name": "LG에너지솔루션",
+                  "url": "https://www.lgensol.com"
+                },
+                {
+                  "name": "삼성SDI",
+                  "url": "https://www.samsungsdi.co.kr"
+                }
+              ]
+            },
+            {
+              "name": "삼성바이오로직스·셀트리온",
+              "desc": "바이오 의약품 CMO 및 항체치료제 전성기",
+              "url": "https://samsungbiologics.com",
+              "links": [
+                {
+                  "name": "삼성바이오로직스",
+                  "url": "https://samsungbiologics.com"
+                },
+                {
+                  "name": "셀트리온",
+                  "url": "https://www.celltrion.com"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "year": 2022,
+          "month": 9,
+          "type": "trough",
+          "title": "글로벌 긴축·레고랜드 사태 저점",
+          "value": "2,134p",
+          "change": "-36%",
+          "desc": "원달러 환율 1,440원 돌파, 국내 단기자금시장 경색(레고랜드 사태)과 미 연준 금리인상 충격",
+          "leaders": [
+            {
+              "name": "한화에어로스페이스",
+              "desc": "폴란드 K9 자주포 및 천무 대규모 수출로 K-방산 개막",
+              "url": "https://www.hanwhaaerospace.co.kr"
+            },
+            {
+              "name": "한화솔루션",
+              "desc": "미국 인플레이션 감축법(IRA) 최대 수혜주",
+              "url": "https://www.hanwhasolutions.com"
+            }
+          ]
+        },
+        {
+          "year": 2024,
+          "month": 12,
+          "type": "peak",
+          "title": "HBM 반도체 독점 및 밸류업 랠리",
+          "value": "2,800~3,300p",
+          "change": "+55%",
+          "desc": "엔비디아 HBM 공급망 독점과 정부의 기업 밸류업 프로그램(자사주 소각/배당 확대)",
+          "leaders": [
+            {
+              "name": "SK하이닉스",
+              "desc": "엔비디아 HBM3E 독점 납품으로 주가 25만 원 돌파 신고가",
+              "url": "https://www.skhynix.com"
+            },
+            {
+              "name": "현대차",
+              "desc": "역대 최대 15조 원 영업이익과 자사주 소각 밸류업 선도",
+              "url": "https://www.hyundai.com"
+            },
+            {
+              "name": "한미반도체",
+              "desc": "HBM 제작 핵심 장비(TC본더) 독점 납품으로 10배 폭등",
+              "url": "https://www.hanmisemi.com"
+            },
+            {
+              "name": "삼양식품",
+              "desc": "불닭볶음면 글로벌 열풍으로 식품주 역사상 최고 랠리",
+              "url": "https://www.samyangfoods.com"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kosdaq",
+      "label": "코스닥",
+      "track": "korea",
+      "color": "#F59E0B",
+      "note": "1996년 1,000p 산출 시작 · 연말 종가 기준 · 로그 스케일",
+      "series": [
+        [
+          1996,
+          651
+        ],
+        [
+          1997,
+          462
+        ],
+        [
+          1998,
+          310
+        ],
+        [
+          1999,
+          2561
+        ],
+        [
+          2000,
+          525
+        ],
+        [
+          2001,
+          722
+        ],
+        [
+          2002,
+          444
+        ],
+        [
+          2003,
+          448
+        ],
+        [
+          2004,
+          380
+        ],
+        [
+          2005,
+          702
+        ],
+        [
+          2006,
+          606
+        ],
+        [
+          2007,
+          704
+        ],
+        [
+          2008,
+          332
+        ],
+        [
+          2009,
+          514
+        ],
+        [
+          2010,
+          511
+        ],
+        [
+          2011,
+          500
+        ],
+        [
+          2012,
+          496
+        ],
+        [
+          2013,
+          499
+        ],
+        [
+          2014,
+          543
+        ],
+        [
+          2015,
+          682
+        ],
+        [
+          2016,
+          631
+        ],
+        [
+          2017,
+          798
+        ],
+        [
+          2018,
+          671
+        ],
+        [
+          2019,
+          670
+        ],
+        [
+          2020,
+          968
+        ],
+        [
+          2021,
+          1034
+        ],
+        [
+          2022,
+          679
+        ],
+        [
+          2023,
+          867
+        ],
+        [
+          2024,
+          880
+        ],
+        [
+          2025,
+          950
+        ],
+        [
+          2026,
+          1020
+        ]
+      ],
+      "notes": [
+        {
+          "year": 1998,
+          "headline": "IMF 바닥",
+          "body": "개장 초기 310p까지 추락."
+        },
+        {
+          "year": 2000,
+          "headline": "닷컴 광풍 2,925p",
+          "body": "새롬기술 150배 등 전설적 벤처 광풍."
+        },
+        {
+          "year": 2004,
+          "headline": "버블 소멸 바닥",
+          "body": "카드 대란과 벤처 비리로 336p 추락."
+        },
+        {
+          "year": 2008,
+          "headline": "리먼 파산 역사적 최저",
+          "body": "키코 사태로 지수 245p 바닥 기록."
+        },
+        {
+          "year": 2015,
+          "headline": "한미약품발 바이오 랠리",
+          "body": "셀트리온 등 바이오시밀러 전성기."
+        },
+        {
+          "year": 2021,
+          "headline": "천스닥 1,062p 돌파",
+          "body": "21년 만에 1,000선 돌파 유동성 랠리."
+        },
+        {
+          "year": 2023,
+          "headline": "에코프로 2차전지 광풍",
+          "body": "에코프로 주가 15배 폭등 150만 원 돌파."
+        }
+      ],
+      "turningPoints": [
+        {
+          "year": 1998,
+          "month": 6,
+          "type": "trough",
+          "title": "IMF 외환위기 바닥",
+          "value": "310p",
+          "change": "-52%",
+          "desc": "코스닥 개장 초기 IMF 충격으로 거래 대금 급감과 중소기업 유동성 위기",
+          "leaders": [
+            {
+              "name": "기업은행",
+              "desc": "국책은행 중심 중소기업 지원",
+              "url": "https://www.ibk.co.kr"
+            }
+          ]
+        },
+        {
+          "year": 2000,
+          "month": 3,
+          "type": "peak",
+          "title": "닷컴 광풍·사상 최고치 (2,925p)",
+          "value": "2,925p (장중)",
+          "change": "+840%",
+          "desc": "정부의 벤처 육성책과 인터넷 열풍으로 코스닥 거래대금이 거래소를 추월한 전설적 투기 장세",
+          "leaders": [
+            {
+              "name": "새롬기술",
+              "desc": "무료 인터넷 전화 다이얼패드 발표로 주가 150배 폭등",
+              "url": "https://www.solborn.co.kr"
+            },
+            {
+              "name": "다음(Daum)",
+              "desc": "한메일넷 가입자 1,000만 돌파로 인터넷 포털 1위",
+              "url": "https://www.daum.net"
+            },
+            {
+              "name": "한글과컴퓨터",
+              "desc": "국민 아래아한글 살리기 운동 후 벤처 대장주 부상",
+              "url": "https://www.hancom.com"
+            },
+            {
+              "name": "골드뱅크",
+              "desc": "광고 보면 돈 주는 모델로 상장 후 수십 배 폭등",
+              "url": "https://ko.wikipedia.org/wiki/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC"
+            }
+          ]
+        },
+        {
+          "year": 2004,
+          "month": 8,
+          "type": "trough",
+          "title": "닷컴 버블 소멸 및 신용카드 대란 바닥",
+          "value": "336p",
+          "change": "-88%",
+          "desc": "무수히 많은 닷컴 벤처 파산과 벤처 게이트 비리, 가계 신용카드 대란으로 4년간 침체",
+          "leaders": [
+            {
+              "name": "NHN (네이버)",
+              "desc": "지식iN과 한게임 성공으로 실적 기반 IT 우량주로 탈바꿈",
+              "url": "https://www.navercorp.com"
+            },
+            {
+              "name": "메가스터디",
+              "desc": "초고속 인터넷 보급과 사교육 e러닝 독점",
+              "url": "https://www.megastudy.net"
+            }
+          ]
+        },
+        {
+          "year": 2008,
+          "month": 10,
+          "type": "trough",
+          "title": "리먼 브라더스 파산 역사적 최저점",
+          "value": "245p (장중)",
+          "change": "-65%",
+          "desc": "글로벌 신용경색과 중소기업 키코(KIKO) 환손실 사태로 코스닥 사상 최저치 추락",
+          "leaders": [
+            {
+              "name": "메가스터디",
+              "desc": "안정적 수강료 현금 유입으로 방어",
+              "url": "https://www.megastudy.net"
+            },
+            {
+              "name": "서울반도체",
+              "desc": "글로벌 특허 기반 LED 조명 원천기술 독점",
+              "url": "http://www.seoulsemicon.com"
+            }
+          ]
+        },
+        {
+          "year": 2015,
+          "month": 7,
+          "type": "peak",
+          "title": "한미약품발 K-바이오 열풍",
+          "value": "782p",
+          "change": "+140%",
+          "desc": "한미약품의 조 단위 글로벌 신약 기술수출(L/O)로 코스닥 바이오 기업 밸류에이션 폭발",
+          "leaders": [
+            {
+              "name": "셀트리온",
+              "desc": "세계 최초 항체 바이오시밀러 램시마 유럽 점유율 확대",
+              "url": "https://www.celltrion.com"
+            },
+            {
+              "name": "바이로메드(헬릭스미스)",
+              "desc": "당뇨병성 신경병증 유전자 치료제 임상 3상 진입",
+              "url": "https://www.helixmith.com"
+            },
+            {
+              "name": "메디톡스",
+              "desc": "보툴리눔 톡신 메디톡신 아시아 수출 호황",
+              "url": "https://www.medytox.com"
+            }
+          ]
+        },
+        {
+          "year": 2020,
+          "month": 3,
+          "type": "trough",
+          "title": "코로나19 팬데믹 서킷브레이커 바닥",
+          "value": "419.5p (장중)",
+          "change": "-40%",
+          "desc": "코스닥 시장 사이드카 및 서킷브레이커 연쇄 발동, 패닉 투매 속 최저점",
+          "leaders": [
+            {
+              "name": "씨젠",
+              "desc": "RT-PCR 진단키트 전 세계 긴급 수출로 사상 최대 실적 폭증",
+              "url": "https://www.seegene.co.kr"
+            },
+            {
+              "name": "수젠텍 & EDGC",
+              "desc": "신속항원 및 항체 진단키트 테마 형성",
+              "url": "https://sugentech.com",
+              "links": [
+                {
+                  "name": "수젠텍",
+                  "url": "https://sugentech.com"
+                },
+                {
+                  "name": "EDGC",
+                  "url": "https://www.edgc.com"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "year": 2021,
+          "month": 8,
+          "type": "peak",
+          "title": "21년 만의 천스닥(1,000p) 돌파",
+          "value": "1,062p (장중)",
+          "change": "+150%",
+          "desc": "닷컴 버블 이후 21년 만에 1,000선 돌파. K-바이오, 2차전지 소재, K-콘텐츠 삼총사 랠리",
+          "leaders": [
+            {
+              "name": "셀트리온헬스케어 & 제약",
+              "desc": "코로나 항체치료제 렉키로나 공급 기대",
+              "url": "https://www.celltrion.com",
+              "links": [
+                {
+                  "name": "셀트리온",
+                  "url": "https://www.celltrion.com"
+                }
+              ]
+            },
+            {
+              "name": "에코프로비엠 & 엘앤에프",
+              "desc": "하이니켈 양극재 미국·유럽 배터리 수주 폭풍",
+              "url": "https://www.ecoprobm.co.kr",
+              "links": [
+                {
+                  "name": "에코프로비엠",
+                  "url": "https://www.ecoprobm.co.kr"
+                },
+                {
+                  "name": "엘앤에프",
+                  "url": "http://www.landf.co.kr"
+                }
+              ]
+            },
+            {
+              "name": "카카오게임즈 & 펄어비스",
+              "desc": "오딘 흥행과 붉은사막 글로벌 기대감",
+              "url": "https://www.kakaogamescorp.com",
+              "links": [
+                {
+                  "name": "카카오게임즈",
+                  "url": "https://www.kakaogamescorp.com"
+                },
+                {
+                  "name": "펄어비스",
+                  "url": "https://www.pearlabyss.com"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "year": 2022,
+          "month": 10,
+          "type": "trough",
+          "title": "미 연준 긴축 및 성장주 밸류에이션 침체 바닥",
+          "value": "650p",
+          "change": "-39%",
+          "desc": "금리 급등으로 미래 성장 기대감에 의존하던 바이오·플랫폼 기업 주가 급락",
+          "leaders": [
+            {
+              "name": "클래시스 & 휴젤",
+              "desc": "실적 기반 피부미용 의료기기 및 톡신 수출 호조",
+              "url": "https://www.classys.com",
+              "links": [
+                {
+                  "name": "클래시스",
+                  "url": "https://www.classys.com"
+                },
+                {
+                  "name": "휴젤",
+                  "url": "https://www.hugel.co.kr"
+                }
+              ]
+            },
+            {
+              "name": "JYP Ent.",
+              "desc": "K-POP 음반 판매 신기록으로 엔터주 방어",
+              "url": "https://www.jype.com"
+            }
+          ]
+        },
+        {
+          "year": 2023,
+          "month": 7,
+          "type": "peak",
+          "title": "2차전지 에코프로 광풍 고점",
+          "value": "956p (장중)",
+          "change": "+47%",
+          "desc": "에코프로 주가가 1년 만에 15배 폭등(153만 원)하며 개인 숏스퀴즈 매수세 결집",
+          "leaders": [
+            {
+              "name": "에코프로",
+              "desc": "지주사 주가 1년 만에 15배 폭등해 시총 30조 원 돌파",
+              "url": "https://www.ecopro.co.kr"
+            },
+            {
+              "name": "에코프로비엠",
+              "desc": "코스닥 시가총액 압도적 1위 등극",
+              "url": "https://www.ecoprobm.co.kr"
+            },
+            {
+              "name": "포스코DX",
+              "desc": "포스코그룹 2차전지 자동화 수혜",
+              "url": "https://www.poscodx.com"
+            },
+            {
+              "name": "레인보우로보틱스",
+              "desc": "삼성전자 투자 유치로 협동로봇 대장주 부상",
+              "url": "https://www.rainbow-robotics.com"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "1955-05",
+      "year": 1955,
+      "month": 5,
+      "era": "cold-war",
+      "anchor": "world",
+      "title": "바르샤바 조약기구 창설",
+      "icon": "flag",
+      "note": "마티 맥플라이가 도착한 그 해.",
+      "world": {
+        "headline": "냉전의 두 진영이 확정되다",
+        "figures": [
+          "니키타 흐루쇼프",
+          "콘라트 아데나워"
+        ],
+        "body": "서독의 NATO 가입에 맞서 소련과 동유럽 7개국이 바르샤바 조약을 맺었다. 유럽은 두 개의 군사블록으로 굳어졌다."
+      },
+      "korea": {
+        "headline": "전후 복구와 원조경제",
+        "figures": [
+          "이승만"
+        ],
+        "body": "휴전 2년째, 한국은 미국 원조에 기대 폐허를 복구하고 있었다. 제분·제당·면방의 삼백산업이 경제의 축이었다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 전후 경제 호황",
+        "summary": "냉전 블록 고착화 속 미국 전후 제조업 및 소비재 주도 NYSE 대세 상승장 전개.",
+        "detail": "아이젠하워 행정부 시기 냉전 국방 지출과 고속도로 건설 등 인프라 투자가 맞물려 미국 다우·NYSE 지수가 강세를 구가했습니다."
+      }
+    },
+    {
+      "id": "1956-10",
+      "year": 1956,
+      "month": 10,
+      "era": "cold-war",
+      "anchor": "world",
+      "title": "수에즈 위기",
+      "icon": "war",
+      "world": {
+        "headline": "옛 제국들의 마지막 무력시위",
+        "figures": [
+          "가말 압델 나세르",
+          "앤서니 이든"
+        ],
+        "body": "나세르가 수에즈 운하를 국유화하자 영국·프랑스·이스라엘이 침공했다. 미소의 압박에 결국 철군했다."
+      },
+      "korea": {
+        "headline": "이승만 3선, 조봉암의 약진",
+        "figures": [
+          "이승만",
+          "조봉암"
+        ],
+        "body": "정·부통령 선거에서 이승만이 3선했지만, 진보당 조봉암이 216만 표를 얻어 야권의 가능성을 보였다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 지정학·원자재 쇼크",
+        "summary": "수에즈 운하 봉쇄로 원유 수송 차질 우려 발생, 글로벌 증시 단기 변동성 확대.",
+        "detail": "중동 산유국과 유럽 간 원유 공급망 위협으로 해운·정유주는 급등한 반면 일반 제조업 지수는 일시 조정을 겪었습니다."
+      }
+    },
+    {
+      "id": "1957-10",
+      "year": 1957,
+      "month": 10,
+      "era": "cold-war",
+      "anchor": "world",
+      "title": "스푸트니크 1호",
+      "icon": "rocket",
+      "world": {
+        "headline": "인류 최초의 인공위성",
+        "figures": [
+          "세르게이 코롤료프",
+          "드와이트 아이젠하워"
+        ],
+        "body": "소련이 스푸트니크 1호를 궤도에 올리며 우주경쟁이 시작됐다. 충격을 받은 미국은 이듬해 NASA를 세웠다."
+      },
+      "korea": {
+        "headline": "장기집권의 그늘",
+        "figures": [
+          "이승만",
+          "조봉암"
+        ],
+        "body": "진보당 사건으로 조봉암이 구속되며 야권 탄압이 노골화됐다. 그는 1959년 처형됐다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 기술 경쟁 점화",
+        "summary": "스푸트니크 쇼크로 미국 우주항공·방산·전자주에 전례 없는 정부 R&D 투자 유입.",
+        "detail": "소련의 위성 발사 성공은 미국 NASA 창설과 국방과학 예산 폭증으로 이어져 하이테크 방산주 랠리의 모태가 되었습니다."
+      }
+    },
+    {
+      "id": "1958-12",
+      "year": 1958,
+      "month": 12,
+      "era": "cold-war",
+      "anchor": "korea",
+      "title": "2·4 파동",
+      "icon": "gavel",
+      "korea": {
+        "headline": "국가보안법, 여당 단독으로 통과되다",
+        "figures": [
+          "이승만",
+          "자유당"
+        ],
+        "body": "야당 의원들을 감금한 채 국가보안법 개정안이 자유당 단독으로 강행 통과됐다. 언론·정치 활동 규제가 크게 강화됐다."
+      },
+      "world": {
+        "headline": "유럽경제공동체(EEC) 출범",
+        "figures": [
+          "콘라트 아데나워",
+          "로베르 쉬망"
+        ],
+        "body": "그해 1월 로마 조약이 발효되며 프랑스·서독 등 6개국의 EEC가 문을 열었다. 오늘날 유럽연합의 뿌리다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 원조경제 혼란",
+        "summary": "정치적 긴장 고조 속 전후 원조 물자 의존형 한국 초기 삼백산업(제분·제당·면방직) 변동성.",
+        "detail": "대한증권거래소 설립 초기 미성숙한 시장 환경에서 정치 불안이 자금 조달에 제약을 가했습니다."
+      }
+    },
+    {
+      "id": "1960-04",
+      "year": 1960,
+      "month": 4,
+      "era": "cold-war",
+      "anchor": "korea",
+      "title": "4·19 혁명",
+      "icon": "protest",
+      "korea": {
+        "headline": "이승만 하야, 제1공화국의 종말",
+        "figures": [
+          "이승만",
+          "김주열",
+          "허정"
+        ],
+        "body": "3·15 부정선거 규탄 시위는 마산 앞바다에서 발견된 김주열의 시신으로 폭발했다. 4월 26일 이승만이 하야했다."
+      },
+      "world": {
+        "headline": "아프리카의 해",
+        "figures": [
+          "파트리스 루뭄바",
+          "샤를 드골"
+        ],
+        "body": "한 해에만 17개국이 독립하며 식민 질서가 무너졌다. 신생국들은 곧 냉전의 대리전장이 됐다."
+      },
+      "marketImpact": {
+        "type": "reform",
+        "tag": "🏛️ 체제 전환 전야",
+        "summary": "이승만 정권 붕괴와 민주화 열망 속 극심한 경제 혼란 및 환율 급변동.",
+        "detail": "정치적 격변으로 실물 경제가 일시 마비되었으나 향후 근대화 경제개발계획의 기반이 태동하는 계기가 되었습니다."
+      }
+    },
+    {
+      "id": "1961-05",
+      "year": 1961,
+      "month": 5,
+      "era": "cold-war",
+      "anchor": "korea",
+      "title": "5·16 군사정변",
+      "icon": "tank",
+      "korea": {
+        "headline": "박정희와 군부의 집권",
+        "figures": [
+          "박정희",
+          "장면",
+          "윤보선"
+        ],
+        "body": "제2공화국 장면 내각이 무너지고 군사혁명위원회가 권력을 잡았다. 18년 군부통치의 시작이었다."
+      },
+      "world": {
+        "headline": "베를린 장벽이 세워지다",
+        "figures": [
+          "니키타 흐루쇼프",
+          "존 F. 케네디"
+        ],
+        "body": "8월 동독이 하룻밤 사이 철조망을 치며 동서 베를린을 갈랐다. 냉전의 상징이 된 벽이었다."
+      },
+      "marketImpact": {
+        "type": "reform",
+        "tag": "🏛️ 국가주도 경제 개막",
+        "summary": "군사정부 수립 및 경제개발 5개년 계획 발표, 화폐개혁과 1962 증권파동의 도화선.",
+        "detail": "국가 주도형 수출 공업화가 시작되며 건설·제조업 중심으로 한국 자본시장의 기틀이 마련되기 시작했습니다."
+      }
+    },
+    {
+      "id": "1962-10",
+      "year": 1962,
+      "month": 10,
+      "era": "cold-war",
+      "anchor": "world",
+      "title": "쿠바 미사일 위기",
+      "icon": "bomb",
+      "world": {
+        "headline": "13일간 핵전쟁 직전",
+        "figures": [
+          "존 F. 케네디",
+          "니키타 흐루쇼프",
+          "피델 카스트로"
+        ],
+        "body": "소련의 쿠바 미사일 배치로 미소가 정면충돌했다. 해상봉쇄와 막후협상 끝에 철수로 마무리됐다."
+      },
+      "korea": {
+        "headline": "제1차 경제개발 5개년계획",
+        "figures": [
+          "박정희"
+        ],
+        "body": "수출주도 공업화가 시작됐다. 6월 화폐개혁은 실패했지만 개발국가의 골격이 잡혔다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 핵전쟁 공포 저점",
+        "summary": "미·소 핵전쟁 위기로 월가 패닉 셀링, 사태 타결 후 V자 급반등.",
+        "detail": "쿠바 해상 봉쇄 기간 동안 급락했던 NYSE는 케네디와 흐루쇼프의 극적 타결 직후 역사적 저점을 찍고 1960년대 중반 강세장으로 직행했습니다."
+      }
+    },
+    {
+      "id": "1963-11",
+      "year": 1963,
+      "month": 11,
+      "era": "cold-war",
+      "anchor": "world",
+      "title": "케네디 암살",
+      "icon": "shot",
+      "world": {
+        "headline": "댈러스의 총성",
+        "figures": [
+          "존 F. 케네디",
+          "린든 존슨",
+          "리 하비 오즈월드"
+        ],
+        "body": "케네디가 퍼레이드 중 피살되고 존슨이 승계했다. 베트남 개입은 이후 급속히 확대됐다."
+      },
+      "korea": {
+        "headline": "제3공화국 출범",
+        "figures": [
+          "박정희",
+          "윤보선"
+        ],
+        "body": "10월 대선에서 박정희가 윤보선을 15만 표 차로 꺾고 12월 취임했다. 민정 이양의 형식을 빌린 집권이었다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 단기 충격 흡수",
+        "summary": "케네디 대통령 암살 당일 미 증시 조기 폐장, 존슨 정부 출범 후 신속한 안도 랠리.",
+        "detail": "정치적 비극에 따른 단기 패닉은 다음날 린든 존슨의 안정적인 권력 승계와 감세 정책 기조로 빠르게 회복되었습니다."
+      }
+    },
+    {
+      "id": "1965-06",
+      "year": 1965,
+      "month": 6,
+      "era": "cold-war",
+      "anchor": "korea",
+      "title": "한일기본조약",
+      "icon": "handshake",
+      "korea": {
+        "headline": "국교 정상화와 굴욕외교 논란",
+        "figures": [
+          "박정희",
+          "이동원",
+          "김종필"
+        ],
+        "body": "무상 3억 달러의 청구권 자금으로 국교를 열었다. 식민지배 책임을 덮었다는 6·3 항쟁이 이를 격렬히 반대했다."
+      },
+      "world": {
+        "headline": "미국의 베트남 지상군 투입",
+        "figures": [
+          "린든 존슨"
+        ],
+        "body": "3월 다낭 상륙으로 미군의 전면 개입이 시작됐다. 한국도 전투부대를 파병하며 전쟁에 발을 들였다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 대규모 자본 유입",
+        "summary": "대일 청구권 자금 유입으로 포항제철·경부고속도로 등 한국 기간산업 투자 폭발.",
+        "detail": "정치적 반대 속에서도 5억 달러의 유무상 자금이 유입되며 한국 중화학공업 상장사들의 비약적 도약 발판이 마련되었습니다."
+      }
+    },
+    {
+      "id": "1966-03",
+      "year": 1966,
+      "month": 3,
+      "era": "cold-war",
+      "anchor": "korea",
+      "title": "브라운 각서",
+      "icon": "handshake",
+      "korea": {
+        "headline": "베트남 파병의 대가",
+        "figures": [
+          "박정희",
+          "윈스럽 브라운"
+        ],
+        "body": "주한미국대사 브라운과의 각서로 베트남 추가 파병에 대한 미국의 경제·군사 지원을 약속받았다. 한국군 전투부대가 대거 파병됐다."
+      },
+      "world": {
+        "headline": "문화대혁명의 서막",
+        "figures": [
+          "마오쩌둥",
+          "린뱌오"
+        ],
+        "body": "마오쩌둥이 홍위병을 동원해 당내 반대파를 숙청하기 시작했다. 10년간 중국 사회를 뒤흔든 혼란의 시작이었다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 베트남 특수 호황",
+        "summary": "베트남전 참전과 브라운 각서로 막대한 외화 획득 및 건설·수송·무역 특수 개막.",
+        "detail": "현대건설, 한진 등 한국 1세대 대기업들이 베트남 전선에서 자본과 시공 경험을 축적하며 성장의 전기를 마련했습니다."
+      }
+    },
+    {
+      "id": "1967-07",
+      "year": 1967,
+      "month": 7,
+      "era": "cold-war",
+      "anchor": "korea",
+      "title": "동백림 사건",
+      "icon": "shot",
+      "korea": {
+        "headline": "조작된 대규모 간첩단 사건",
+        "figures": [
+          "윤이상",
+          "중앙정보부"
+        ],
+        "body": "동베를린을 거쳐 북한과 접촉한 유학생·예술인 194명을 간첩단으로 몰았다. 작곡가 윤이상도 붙잡혀 옥고를 치렀다."
+      },
+      "world": {
+        "headline": "6일전쟁",
+        "figures": [
+          "레비 에슈콜",
+          "가말 압델 나세르"
+        ],
+        "body": "이스라엘이 선제공격해 엿새 만에 이집트·시리아·요르단을 격파했다. 골란고원·서안지구를 점령하며 중동 갈등의 뿌리를 남겼다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 공안 정국 긴장",
+        "summary": "동베를린 간첩단 사건 등 냉전 안보 위협 속에서도 제2차 경제개발계획 수출 드라이브 지속.",
+        "detail": "남북 긴장이 시장 심리를 억눌렀으나 차관 도입에 따른 섬유·경공업 수출 증가세가 주가 하방을 지지했습니다."
+      }
+    },
+    {
+      "id": "1969-07",
+      "year": 1969,
+      "month": 7,
+      "era": "cold-war",
+      "anchor": "world",
+      "title": "아폴로 11호 달 착륙",
+      "icon": "moon",
+      "world": {
+        "headline": "인간이 달을 밟다",
+        "figures": [
+          "닐 암스트롱",
+          "버즈 올드린"
+        ],
+        "body": "아폴로 11호가 고요의 바다에 착륙했다. 12년간의 우주경쟁은 미국의 승리로 기울었다."
+      },
+      "korea": {
+        "headline": "3선 개헌",
+        "figures": [
+          "박정희"
+        ],
+        "body": "9월 국회 별관에서 3선 개헌안이 변칙 통과됐다. 장기집권이 제도로 굳어지기 시작했다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 우주·전자 기술 혁신",
+        "summary": "아폴로 11호 달 착륙 성공으로 미국 반도체·전자·우주항공주(Nifty Fifty) 전성기 진입.",
+        "detail": "집적회로(IC)와 메인프레임 컴퓨터의 폭발적 보급으로 IBM, 제록스, 모토로라 등이 미 증시의 절대적 주도주로 군림했습니다."
+      }
+    },
+    {
+      "id": "1972-02",
+      "year": 1972,
+      "month": 2,
+      "era": "detente",
+      "anchor": "world",
+      "title": "닉슨의 중국 방문",
+      "icon": "handshake",
+      "world": {
+        "headline": "미국과 중국이 손을 잡다",
+        "figures": [
+          "리처드 닉슨",
+          "마오쩌둥",
+          "저우언라이"
+        ],
+        "body": "닉슨이 베이징을 찾아 마오와 만났다. 소련 견제를 위한 미중 접근으로 냉전 구도가 재편됐다."
+      },
+      "korea": {
+        "headline": "7·4 남북공동성명, 그리고 유신",
+        "figures": [
+          "박정희",
+          "이후락",
+          "김일성"
+        ],
+        "body": "7월 자주·평화·민족대단결 원칙에 합의했으나, 10월 유신헌법으로 종신집권 체제가 들어섰다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🌐 데탕트·무역로 개척",
+        "summary": "미·중 수교 화해 모드로 글로벌 지정학 리스크 완화 및 세계 교역 확대 기대감.",
+        "detail": "냉전 해체 조짐과 1971년 나스닥 출범 초기 IT·혁신 기업들의 자금 조달 활성화가 맞물렸습니다."
+      }
+    },
+    {
+      "id": "1973-10",
+      "year": 1973,
+      "month": 10,
+      "era": "detente",
+      "anchor": "world",
+      "title": "제1차 오일쇼크",
+      "icon": "oil",
+      "world": {
+        "headline": "석유가 무기가 되다",
+        "figures": [
+          "안와르 사다트",
+          "파이살 국왕"
+        ],
+        "body": "4차 중동전쟁과 OPEC의 감산으로 유가가 넉 달 만에 네 배 뛰었다. 전후 고성장 시대가 끝났다."
+      },
+      "korea": {
+        "headline": "중동 건설 붐",
+        "figures": [
+          "정주영",
+          "박정희"
+        ],
+        "body": "오일머니를 좇아 건설사들이 중동으로 나갔다. 위기가 역설적으로 외화 획득의 기회가 됐다."
+      },
+      "marketImpact": {
+        "type": "stagflation",
+        "tag": "⚖️ 1차 오일쇼크 폭락",
+        "summary": "원유 가격 4배 폭등, S&P 500 -48%·나스닥 -60% 폭락하며 역사상 최악의 스태그플레이션.",
+        "detail": "아랍 산유국의 석유 무기화로 비용 인플레이션이 폭발하며 전 세계 증시가 2년간 장기 침체에 빠졌습니다."
+      }
+    },
+    {
+      "id": "1975-04",
+      "year": 1975,
+      "month": 4,
+      "era": "detente",
+      "anchor": "world",
+      "title": "사이공 함락",
+      "icon": "war",
+      "world": {
+        "headline": "베트남 전쟁이 끝나다",
+        "figures": [
+          "제럴드 포드",
+          "레주언"
+        ],
+        "body": "북베트남군이 사이공에 입성하며 20년 전쟁이 종결됐다. 미국은 첫 패전을 기록했다."
+      },
+      "korea": {
+        "headline": "긴급조치 9호",
+        "figures": [
+          "박정희"
+        ],
+        "body": "인도차이나 공산화를 명분으로 5월 긴급조치 9호가 선포됐다. 유신헌법에 대한 비판 자체가 금지됐다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 냉전 지형 재편",
+        "summary": "베트남 공산화로 아시아 안보 리스크 고조, 한국은 중동 건설 붐으로 오일달러 흡수 전환.",
+        "detail": "동남아 도미노 우려 속에서도 삼환기업·현대건설 등 한국 건설사들이 사우디 등 중동 플랜트를 대거 수주하며 오일머니를 유치했습니다."
+      }
+    },
+    {
+      "id": "1976-08",
+      "year": 1976,
+      "month": 8,
+      "era": "detente",
+      "anchor": "korea",
+      "title": "판문점 도끼 사건",
+      "icon": "tank",
+      "korea": {
+        "headline": "미루나무 가지치기가 부른 일촉즉발",
+        "figures": [
+          "아서 보니파스",
+          "김일성"
+        ],
+        "body": "공동경비구역에서 나무 가지치기 작업 중 북한군이 미군 장교를 도끼로 살해했다. 한미는 전쟁 직전까지 무력시위로 맞섰다."
+      },
+      "world": {
+        "headline": "베트남 사회주의공화국 수립",
+        "figures": [
+          "레주언",
+          "팜반동"
+        ],
+        "body": "1975년 사이공 함락 이후 남북 베트남이 정식으로 통일됐다. 30년 독립·통일 전쟁이 마침표를 찍었다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 한반도 전쟁 위기",
+        "summary": "판문점 도끼만행으로 워싱턴·서울 데프콘 3 발령, 코리아 디스카운트 단기 부각.",
+        "detail": "일촉즉발의 전면전 위기로 장중 채권·주식 시장이 경색되었으나 미군의 단호한 대응 후 진정 국면으로 전환되었습니다."
+      }
+    },
+    {
+      "id": "1977-12",
+      "year": 1977,
+      "month": 12,
+      "era": "detente",
+      "anchor": "korea",
+      "title": "수출 100억 달러 달성",
+      "icon": "money",
+      "korea": {
+        "headline": "12년 만에 목표 100배 성장",
+        "figures": [
+          "박정희",
+          "남덕우"
+        ],
+        "body": "1962년 5천만 달러였던 수출이 100억 달러를 넘었다. 중화학공업 육성 정책의 성과였다."
+      },
+      "world": {
+        "headline": "사다트의 예루살렘 방문",
+        "figures": [
+          "안와르 사다트",
+          "메나헴 베긴"
+        ],
+        "body": "이집트 대통령이 적국 이스라엘 의회에서 연설하며 평화협상의 문을 열었다. 캠프데이비드 협정으로 이어졌다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 수출 100억 달러 금자탑",
+        "summary": "한국 수출 100억 달러 돌파, 중화학공업화 성공으로 상장 제조기업 이익 폭발.",
+        "detail": "조선·철강·전자 업종의 해외 진출이 본격화되며 국내 주식시장의 규모와 유동성이 한 단계 레벨업되었습니다."
+      }
+    },
+    {
+      "id": "1979-10",
+      "year": 1979,
+      "month": 10,
+      "era": "detente",
+      "anchor": "korea",
+      "title": "10·26 사건",
+      "icon": "shot",
+      "korea": {
+        "headline": "박정희 피살, 유신의 종말",
+        "figures": [
+          "박정희",
+          "김재규",
+          "차지철"
+        ],
+        "body": "중앙정보부장 김재규가 궁정동에서 박정희를 쏘았다. 18년 통치가 끝났으나 곧 신군부가 등장했다."
+      },
+      "world": {
+        "headline": "이란 혁명과 소련의 아프간 침공",
+        "figures": [
+          "아야톨라 호메이니",
+          "레오니트 브레즈네프"
+        ],
+        "body": "2월 이란 이슬람 혁명, 12월 소련의 아프가니스탄 침공으로 데탕트가 무너졌다."
+      },
+      "marketImpact": {
+        "type": "stagflation",
+        "tag": "⚖️ 2차 오일쇼크 & 국변",
+        "summary": "박정희 대통령 서거와 2차 석유파동 겹악재로 1980년 한국 경제 최초 역성장(-1.7%).",
+        "detail": "미국 연준 폴 볼커의 20% 초고금리 긴축과 국내 정치 공백이 맞물려 증시가 심각한 자금난을 겪었습니다."
+      }
+    },
+    {
+      "id": "1980-05",
+      "year": 1980,
+      "month": 5,
+      "era": "neo-cold-war",
+      "anchor": "korea",
+      "title": "5·18 광주민주화운동",
+      "icon": "protest",
+      "korea": {
+        "headline": "광주, 열흘간의 항쟁",
+        "figures": [
+          "전두환",
+          "윤상원",
+          "정동년"
+        ],
+        "body": "신군부의 계엄 확대에 맞서 광주 시민들이 무장 항쟁에 나섰고 계엄군에 진압됐다. 이후 민주화운동의 원점이 됐다."
+      },
+      "world": {
+        "headline": "신냉전의 시작",
+        "figures": [
+          "로널드 레이건",
+          "마거릿 대처"
+        ],
+        "body": "모스크바 올림픽 보이콧에 이어 11월 레이건이 당선되며 대소 강경노선이 굳어졌다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 정치 격변·신군부 집권",
+        "summary": "5·18 민주화운동과 비상계엄 전국 확대로 경제 심리 위축, KOSPI 100p 기준지수 출범 전야.",
+        "detail": "정치 불안정 속에서도 중화학공업 투자 조정과 기업 통폐합 등 구조조정이 이어지며 1980년대 초 시장 재편이 시작되었습니다."
+      }
+    },
+    {
+      "id": "1981-09",
+      "year": 1981,
+      "month": 9,
+      "era": "neo-cold-war",
+      "anchor": "korea",
+      "title": "88 서울올림픽 유치",
+      "icon": "flag",
+      "korea": {
+        "headline": "바덴바덴의 반전승",
+        "figures": [
+          "전두환",
+          "정주영"
+        ],
+        "body": "나고야에 밀릴 것이란 예상을 뒤엎고 서울이 1988년 올림픽 개최지로 선정됐다. 정권은 이를 정통성 확보에 활용했다."
+      },
+      "world": {
+        "headline": "레이건 취임과 암살 시도",
+        "figures": [
+          "로널드 레이건",
+          "존 힝클리"
+        ],
+        "body": "1월 취임한 레이건은 두 달 만에 저격당해 중상을 입었다. 강경 반공노선의 신냉전 시대가 본격화됐다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 올림픽 호재 & 경기 부양",
+        "summary": "88 서울올림픽 유치 성공으로 인프라·레저·건설주 기대감 고조, 대외 인지도 제고.",
+        "detail": "글로벌 경기 회복 조짐과 함께 국내 자본시장 개방 계획이 발표되며 장기 상승 기반이 구축되었습니다."
+      }
+    },
+    {
+      "id": "1983-10",
+      "year": 1983,
+      "month": 10,
+      "era": "neo-cold-war",
+      "anchor": "korea",
+      "title": "아웅산 묘소 폭탄테러",
+      "icon": "bomb",
+      "korea": {
+        "headline": "북한의 대통령 암살 시도",
+        "figures": [
+          "전두환",
+          "서석준"
+        ],
+        "body": "미얀마 순방 중 북한 특수부대가 설치한 폭탄이 터져 부총리 등 수행원 17명이 숨졌다. 전두환은 현장에 늦게 도착해 화를 면했다."
+      },
+      "world": {
+        "headline": "대한항공 007기 격추",
+        "figures": [
+          "로널드 레이건"
+        ],
+        "body": "소련 영공을 침범한 여객기를 소련 전투기가 격추해 269명 전원이 사망했다. 냉전 말기 긴장을 다시 끌어올렸다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 대북 안보 패닉",
+        "summary": "버마 아웅산 묘소 테러로 경제 부처 각료 대거 순국, 지정학적 위험 최고조.",
+        "detail": "서석준 부총리, 김재익 경제수석 등 경제 정책 브레인 상실 충격으로 증시가 일시 요동쳤으나 규제 완화 기조는 유지되었습니다."
+      }
+    },
+    {
+      "id": "1985-09",
+      "year": 1985,
+      "month": 9,
+      "era": "neo-cold-war",
+      "anchor": "korea",
+      "title": "첫 이산가족 상봉",
+      "icon": "handshake",
+      "korea": {
+        "headline": "분단 40년 만의 재회",
+        "figures": [
+          "전두환"
+        ],
+        "body": "고향방문단 형식으로 남북 이산가족 각 50명이 서울과 평양을 오가며 만났다. 짧은 만남 뒤 다시 헤어졌다."
+      },
+      "world": {
+        "headline": "페레스트로이카의 시작",
+        "figures": [
+          "미하일 고르바초프"
+        ],
+        "body": "그해 초 집권한 고르바초프가 개혁·개방 정책을 밀어붙이기 시작했다. 소련 체제의 근본을 흔든 변화였다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 플라자 합의 & 3저 호황",
+        "summary": "달러 약세·엔고 유도로 한국 수출 경쟁력 극대화, 코스피 사상 첫 대세상승 시작.",
+        "detail": "저유가·저금리·저원화의 3저 호황을 타고 무역수지가 사상 첫 흑자로 전환되며 KOSPI 1,000p 시대를 여는 불씨가 되었습니다."
+      }
+    },
+    {
+      "id": "1986-04",
+      "year": 1986,
+      "month": 4,
+      "era": "neo-cold-war",
+      "anchor": "world",
+      "title": "체르노빌 원전 사고",
+      "icon": "radiation",
+      "world": {
+        "headline": "원자력 시대의 균열",
+        "figures": [
+          "미하일 고르바초프"
+        ],
+        "body": "체르노빌 4호기가 폭발해 방사성 물질이 유럽 전역으로 퍼졌다. 소련 체제의 은폐 구조가 드러났다."
+      },
+      "korea": {
+        "headline": "아시안게임과 개헌 투쟁",
+        "figures": [
+          "전두환",
+          "김대중",
+          "김영삼"
+        ],
+        "body": "9월 서울 아시안게임의 성공 뒤편에서 직선제 개헌 1천만인 서명운동이 확산됐다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 원전·에너지주 재평가",
+        "summary": "체르노빌 원전 폭발로 원자력 산업 위축, 신재생·대체에너지 및 유럽 농업주 파장.",
+        "detail": "반면 글로벌 주식시장은 유가 하락과 저금리에 힘입어 1980년대 중반 유동성 장세를 이어갔습니다."
+      }
+    },
+    {
+      "id": "1987-06",
+      "year": 1987,
+      "month": 6,
+      "era": "neo-cold-war",
+      "anchor": "korea",
+      "title": "6월 민주항쟁",
+      "icon": "protest",
+      "korea": {
+        "headline": "직선제를 쟁취하다",
+        "figures": [
+          "박종철",
+          "이한열",
+          "노태우"
+        ],
+        "body": "박종철 고문치사와 이한열의 죽음이 시민을 거리로 불러냈다. 6·29 선언으로 대통령 직선제가 수용됐다."
+      },
+      "world": {
+        "headline": "페레스트로이카와 INF 조약",
+        "figures": [
+          "미하일 고르바초프",
+          "로널드 레이건"
+        ],
+        "body": "12월 중거리핵전력조약이 체결되며 처음으로 핵무기 종류 하나가 통째로 폐기됐다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 민주화 & 블랙먼데이",
+        "summary": "6월 항쟁으로 민주화 달성, 10월에는 월가 블랙먼데이(-22.6%) 쇼크 전이.",
+        "detail": "국내 임금 인상과 노사분규 속에서도 3저 호황에 힘입어 KOSPI는 500선을 돌파하며 미국발 블랙먼데이 충격을 상대적으로 잘 방어했습니다."
+      }
+    },
+    {
+      "id": "1988-09",
+      "year": 1988,
+      "month": 9,
+      "era": "neo-cold-war",
+      "anchor": "korea",
+      "title": "서울올림픽 개막",
+      "icon": "flag",
+      "korea": {
+        "headline": "동서 진영이 함께 모이다",
+        "figures": [
+          "노태우",
+          "후안 안토니오 사마란치"
+        ],
+        "body": "160개국이 참가해 냉전 이후 가장 큰 규모로 열렸다. 소련·동구권도 대거 참가해 데탕트의 상징이 됐다."
+      },
+      "world": {
+        "headline": "소련, 아프가니스탄 철군 시작",
+        "figures": [
+          "미하일 고르바초프"
+        ],
+        "body": "9년간 이어진 아프간 개입에서 소련군이 발을 빼기 시작했다. 냉전 해체의 신호탄 중 하나였다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 88 올림픽 & 트로이카 장세",
+        "summary": "서울올림픽 개최로 국가 브랜드 격상, 금융·무역·건설 트로이카 폭등 장세.",
+        "detail": "시중 유동성이 주식시장으로 대거 유입되며 주식 계좌 수가 폭증했고, 코스피는 마침내 1989년 1,000p 고지에 도달했습니다."
+      }
+    },
+    {
+      "id": "1989-11",
+      "year": 1989,
+      "month": 11,
+      "era": "neo-cold-war",
+      "anchor": "world",
+      "title": "베를린 장벽 붕괴",
+      "icon": "wall",
+      "world": {
+        "headline": "장벽이 무너지다",
+        "figures": [
+          "미하일 고르바초프",
+          "헬무트 콜"
+        ],
+        "body": "11월 9일 동독이 국경 개방을 발표하자 시민들이 장벽을 헐었다. 이듬해 독일이 통일됐다."
+      },
+      "korea": {
+        "headline": "북방정책",
+        "figures": [
+          "노태우"
+        ],
+        "body": "헝가리·폴란드와 잇달아 수교하며 공산권 외교의 문을 열었다. 1990년 소련, 1992년 중국과 수교했다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🌐 냉전 종식·동구권 개방",
+        "summary": "베를린 장벽 붕괴로 동유럽 시장 열리고 평화의 배당금(Peace Dividend) 수혜.",
+        "detail": "국방비 감축에 따른 재정 건전화와 글로벌 무역 확대 기대감으로 다우 및 유럽 증시가 장기 랠리에 시동을 걸었습니다."
+      }
+    },
+    {
+      "id": "1991-12",
+      "year": 1991,
+      "month": 12,
+      "era": "neo-cold-war",
+      "anchor": "world",
+      "title": "소련 해체",
+      "icon": "flag",
+      "world": {
+        "headline": "70년 만에 사라진 초강대국",
+        "figures": [
+          "미하일 고르바초프",
+          "보리스 옐친"
+        ],
+        "body": "12월 25일 고르바초프가 사임하며 소련이 공식 해체됐다. 냉전이 종결되고 미국 단극 체제가 열렸다."
+      },
+      "korea": {
+        "headline": "남북 UN 동시가입과 기본합의서",
+        "figures": [
+          "노태우",
+          "연형묵"
+        ],
+        "body": "9월 남북이 함께 UN에 가입하고, 12월 남북기본합의서를 채택했다. 화해와 불가침을 처음 문서화했다."
+      },
+      "marketImpact": {
+        "type": "reform",
+        "tag": "🏛️ 글로벌 자본시장 개방",
+        "summary": "소련 해체로 글로벌 단일 시장화 촉진, 1992년 한국 주식시장 외국인 직접투자 허용.",
+        "detail": "외국인 자금 유입이 시작되며 삼성전자, 포항제철 등 한국 대표 우량주(Blue Chip)의 가치 재평가가 시작되었습니다."
+      }
+    },
+    {
+      "id": "1993-02",
+      "year": 1993,
+      "month": 2,
+      "era": "globalization",
+      "anchor": "korea",
+      "title": "문민정부 출범",
+      "icon": "ballot",
+      "korea": {
+        "headline": "32년 만의 문민 대통령",
+        "figures": [
+          "김영삼"
+        ],
+        "body": "김영삼이 취임해 군내 사조직 하나회를 해체하고, 8월 금융실명제를 긴급명령으로 전격 실시했다."
+      },
+      "world": {
+        "headline": "유럽연합 출범",
+        "figures": [
+          "자크 들로르"
+        ],
+        "body": "11월 마스트리흐트 조약이 발효되며 EU가 탄생했다. 통합 유럽의 실험이 본격화됐다."
+      },
+      "marketImpact": {
+        "type": "reform",
+        "tag": "🏛️ 금융실명제 전격 단행",
+        "summary": "문민정부의 금융실명제 발표로 지하경제 자금 양성화, 단기 충격 후 투명성 프리미엄.",
+        "detail": "발표 초기 주가가 급락했으나 차명 거래가 근절되고 자본시장의 공정성이 확립되며 코스피 1,000선 재탈환의 디딤돌이 되었습니다."
+      }
+    },
+    {
+      "id": "1994-07",
+      "year": 1994,
+      "month": 7,
+      "era": "globalization",
+      "anchor": "korea",
+      "title": "김일성 사망",
+      "icon": "flag",
+      "korea": {
+        "headline": "북한, 김정일 체제로",
+        "figures": [
+          "김일성",
+          "김정일",
+          "김영삼"
+        ],
+        "body": "첫 남북정상회담을 보름 앞두고 김일성이 사망했다. 회담은 무산되고 북한은 고난의 행군에 들어갔다."
+      },
+      "world": {
+        "headline": "만델라의 취임, 르완다의 학살",
+        "figures": [
+          "넬슨 만델라"
+        ],
+        "body": "5월 남아공 최초의 흑인 대통령이 취임했다. 같은 해 르완다에서는 100일간 80만 명이 학살됐다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 북핵 1차 위기·김일성 사망",
+        "summary": "영변 핵시설 타격 검토 및 김일성 급사로 한반도 전쟁 공포 극대화, 단기 패닉.",
+        "detail": "외국인 매도세로 일시 조정받았으나 카터 방북과 제네바 합의로 리스크가 봉합되며 반도체 호황에 힘입어 반등했습니다."
+      }
+    },
+    {
+      "id": "1997-11",
+      "year": 1997,
+      "month": 11,
+      "era": "globalization",
+      "anchor": "korea",
+      "title": "IMF 외환위기",
+      "icon": "money",
+      "korea": {
+        "headline": "국가부도의 날",
+        "figures": [
+          "김영삼",
+          "임창열",
+          "김대중"
+        ],
+        "body": "외환보유고가 바닥나 IMF에 구제금융을 신청했다. 대량 실직과 구조조정이 사회의 모습을 바꿨다."
+      },
+      "world": {
+        "headline": "아시아 금융위기",
+        "figures": [
+          "미셸 캉드쉬"
+        ],
+        "body": "7월 태국 바트화 폭락에서 시작된 위기가 인도네시아와 한국으로 번졌다. 신흥국 금융개방의 대가였다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 국가 부도 IMF 외환위기",
+        "summary": "외환보유고 고갈로 구제금융 신청, 환율 2,000원 육박·코스피 280선 폭락.",
+        "detail": "대기업과 금융권 연쇄 부도로 코스피가 -60% 이상 추락했으나, 가혹한 구조조정 후 벤처IT 혁명의 토양을 낳았습니다."
+      }
+    },
+    {
+      "id": "2000-06",
+      "year": 2000,
+      "month": 6,
+      "era": "globalization",
+      "anchor": "korea",
+      "title": "6·15 남북정상회담",
+      "icon": "handshake",
+      "korea": {
+        "headline": "분단 55년 만의 첫 정상회담",
+        "figures": [
+          "김대중",
+          "김정일"
+        ],
+        "body": "평양에서 첫 남북정상회담이 열려 6·15 공동선언을 발표했다. 이산가족 상봉과 개성공단 논의가 뒤따랐다."
+      },
+      "world": {
+        "headline": "닷컴 버블 붕괴",
+        "figures": [
+          "앨런 그린스펀"
+        ],
+        "body": "3월 나스닥이 정점을 찍고 무너지며 인터넷 거품이 꺼졌다. 그럼에도 웹은 일상으로 파고들었다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 대북 테마 vs 닷컴 버블 붕괴",
+        "summary": "첫 남북정상회담으로 남북경협주 폭등, 그러나 글로벌 닷컴 버블 붕괴로 지수 폭락.",
+        "detail": "나스닥이 5,000선에서 -78% 폭락하는 과정에서 코스닥도 2,800선에서 500선으로 붕괴하며 극심한 옥석 가리기가 진행되었습니다."
+      }
+    },
+    {
+      "id": "2001-09",
+      "year": 2001,
+      "month": 9,
+      "era": "war-on-terror",
+      "anchor": "world",
+      "title": "9·11 테러",
+      "icon": "tower",
+      "world": {
+        "headline": "세계무역센터가 무너지다",
+        "figures": [
+          "조지 W. 부시",
+          "오사마 빈라덴"
+        ],
+        "body": "납치된 여객기가 쌍둥이빌딩과 펜타곤을 강타해 약 3천 명이 숨졌다. 20년에 걸친 대테러 전쟁이 시작됐다."
+      },
+      "korea": {
+        "headline": "파병 논쟁의 시작",
+        "figures": [
+          "김대중"
+        ],
+        "body": "아프간전 지원을 위한 국군 파병이 결정되며 명분과 국익을 둘러싼 논쟁이 일었다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 9·11 테러 대폭락",
+        "summary": "뉴욕 쌍둥이 빌딩 붕괴로 월가 거래 일주일 중단, 재개 후 항공·여행·보험주 폭락.",
+        "detail": "글로벌 안보 위기 속에서 연준이 공격적인 초저금리 정책을 도입하여 2000년대 중반 부동산 및 원자재 붐을 잉태했습니다."
+      }
+    },
+    {
+      "id": "2002-06",
+      "year": 2002,
+      "month": 6,
+      "era": "war-on-terror",
+      "anchor": "korea",
+      "title": "한일 월드컵 4강",
+      "icon": "ball",
+      "korea": {
+        "headline": "붉은 악마와 광화문",
+        "figures": [
+          "거스 히딩크",
+          "홍명보"
+        ],
+        "body": "한국이 사상 첫 4강에 올랐고 거리마다 수백만이 모였다. 같은 달 서해에서는 제2연평해전이 있었다."
+      },
+      "world": {
+        "headline": "유로화 통용 시작",
+        "figures": [
+          "빔 다위센베르흐"
+        ],
+        "body": "1월 12개국에서 유로 지폐와 동전이 유통되기 시작했다. 화폐 주권을 넘긴 초유의 실험이었다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 월드컵 4강 & 내수 활황",
+        "summary": "월드컵 신화로 국가 브랜드 파워 급상승, 카드 버블 전야의 내수 소비 팽창.",
+        "detail": "IT 거품 붕괴를 극복하고 삼성전자가 글로벌 반도체·모바일 1위로 도약하며 지수를 견인했습니다."
+      }
+    },
+    {
+      "id": "2003-02",
+      "year": 2003,
+      "month": 2,
+      "era": "war-on-terror",
+      "anchor": "korea",
+      "title": "노무현 정부 출범",
+      "icon": "ballot",
+      "korea": {
+        "headline": "원칙과 상식을 내세운 정부",
+        "figures": [
+          "노무현"
+        ],
+        "body": "지역주의 타파를 내세운 노무현이 취임했다. 탈권위주의 행보와 개혁 드라이브로 보수와 정면충돌했다."
+      },
+      "world": {
+        "headline": "이라크 전쟁 발발",
+        "figures": [
+          "조지 W. 부시",
+          "사담 후세인"
+        ],
+        "body": "대량살상무기 보유를 명분으로 미국이 이라크를 침공했다. 근거는 훗날 허위로 드러났고 장기 점령으로 이어졌다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 카드채 사태 & 이라크전",
+        "summary": "신용카드 대출 부실로 카드채 위기 발발, 미국 이라크 침공으로 유가 상승 압력.",
+        "detail": "SK글로벌 분식회계와 카드사 부실로 코스피가 512선까지 후퇴했으나 위기 수습 후 중국 특수 장세로 전환되었습니다."
+      }
+    },
+    {
+      "id": "2004-03",
+      "year": 2004,
+      "month": 3,
+      "era": "war-on-terror",
+      "anchor": "korea",
+      "title": "노무현 대통령 탄핵소추",
+      "icon": "gavel",
+      "korea": {
+        "headline": "헌정 사상 첫 대통령 탄핵안 가결",
+        "figures": [
+          "노무현",
+          "최병렬"
+        ],
+        "body": "선거법 위반 발언을 이유로 국회가 탄핵소추안을 가결했다. 5월 헌법재판소가 기각하며 두 달 만에 직무에 복귀했다."
+      },
+      "world": {
+        "headline": "페이스북 창립",
+        "figures": [
+          "마크 저커버그"
+        ],
+        "body": "하버드 기숙사에서 시작된 서비스가 훗날 전 세계 소셜미디어 지형을 바꿔놓았다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 대통령 탄핵소추 충격",
+        "summary": "헌정 사상 최초 대통령 탄핵 가결로 증시 당일 -5.5% 급락, 헌재 기각 후 정상화.",
+        "detail": "정치 불확실성은 단기에 그쳤으며, 브릭스(BRICs) 경제 성장과 차·화·정(자동차·화학·정유) 랠리로 상승 궤도에 복귀했습니다."
+      }
+    },
+    {
+      "id": "2007-01",
+      "year": 2007,
+      "month": 1,
+      "era": "war-on-terror",
+      "anchor": "world",
+      "title": "아이폰 발표",
+      "icon": "phone",
+      "world": {
+        "headline": "손안의 컴퓨터",
+        "figures": [
+          "스티브 잡스"
+        ],
+        "body": "잡스가 아이폰을 공개하며 모바일 인터넷 시대가 열렸다. 통신·미디어·유통의 지도가 다시 그려졌다."
+      },
+      "korea": {
+        "headline": "한미 FTA 타결",
+        "figures": [
+          "노무현"
+        ],
+        "body": "4월 한미 FTA가 타결되며 개방을 둘러싼 논쟁이 격화됐다. 발효는 2012년이었다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 모바일 스마트폰 혁명",
+        "summary": "스티브 잡스의 아이폰 공개로 모바일 컴퓨팅 개막, 애플·빅테크 15년 랠리 출발점.",
+        "detail": "글로벌 통신·인터넷 생태계가 모바일로 전환되며 애플, 구글 등이 세계 시가총액 1위를 독식하는 신호탄이 되었습니다."
+      }
+    },
+    {
+      "id": "2008-09",
+      "year": 2008,
+      "month": 9,
+      "era": "war-on-terror",
+      "anchor": "world",
+      "title": "리먼 브라더스 파산",
+      "icon": "money",
+      "world": {
+        "headline": "글로벌 금융위기",
+        "figures": [
+          "헨리 폴슨",
+          "벤 버냉키"
+        ],
+        "body": "서브프라임 부실로 리먼이 파산하며 세계 금융이 얼어붙었다. 대공황 이후 최악의 침체가 이어졌다."
+      },
+      "korea": {
+        "headline": "촛불집회와 환율 급등",
+        "figures": [
+          "이명박"
+        ],
+        "body": "쇠고기 수입 반대 촛불이 봄부터 이어졌고, 가을에는 원달러 환율이 1,500원을 넘었다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 리먼 파산·글로벌 금융위기",
+        "summary": "월가 4대 투자은행 리먼 브라더스 파산, S&P 500 -57%·코스피 900선 반토막 폭락.",
+        "detail": "서브프라임 모기지 부실이 전 세계 신용 경색을 불렀고, 사상 초유의 제로금리와 무제한 양적완화(QE) 시대가 열렸습니다."
+      }
+    },
+    {
+      "id": "2010-03",
+      "year": 2010,
+      "month": 3,
+      "era": "war-on-terror",
+      "anchor": "korea",
+      "title": "천안함 피격 사건",
+      "icon": "ship",
+      "korea": {
+        "headline": "백령도 앞바다의 침몰",
+        "figures": [
+          "이명박"
+        ],
+        "body": "해군 초계함 천안함이 서해에서 침몰해 46명이 전사했다. 정부는 북한의 어뢰 공격으로 결론 내렸다."
+      },
+      "world": {
+        "headline": "유럽 재정위기 확산",
+        "figures": [
+          "앙겔라 메르켈",
+          "게오르기오스 파판드레우"
+        ],
+        "body": "그리스가 구제금융을 신청하며 재정위기가 유럽 전역으로 번졌다. 유로존 존속 자체가 시험대에 올랐다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 대북 리스크 & 차·화·정 랠리",
+        "summary": "천안함 피격으로 지정학적 긴장 고조, 반면 중국 성장 수혜로 차·화·정 주도주 급등.",
+        "detail": "단기 대북 리스크보다 현대차, 기아, LG화학, 정유주 중심의 실적 모멘텀이 코스피 2,000선 돌파를 주도했습니다."
+      }
+    },
+    {
+      "id": "2011-03",
+      "year": 2011,
+      "month": 3,
+      "era": "mobile-era",
+      "anchor": "world",
+      "title": "동일본 대지진",
+      "icon": "earthquake",
+      "world": {
+        "headline": "후쿠시마 원전이 녹아내리다",
+        "figures": [
+          "간 나오토"
+        ],
+        "body": "규모 9.0 지진과 쓰나미로 2만여 명이 희생되고 후쿠시마 제1원전이 노심용융을 일으켰다."
+      },
+      "korea": {
+        "headline": "원전 안전 논쟁",
+        "figures": [
+          "이명박"
+        ],
+        "body": "국내 원전 정책 재검토 요구가 커지고 방사능과 수산물 안전 문제가 오래 이어졌다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 동일본 대지진 공급망 쇼크",
+        "summary": "후쿠시마 원전 사고로 글로벌 반도체·자동차 부품 공급망 마비, 엔고 반사이익.",
+        "detail": "일본 제조시설 파괴로 한국 반도체·자동차 기업들이 글로벌 대체 수혜를 입었으나 동년 8월 미국 신용등급 강등 충격을 맞았습니다."
+      }
+    },
+    {
+      "id": "2014-04",
+      "year": 2014,
+      "month": 4,
+      "era": "mobile-era",
+      "anchor": "korea",
+      "title": "세월호 참사",
+      "icon": "ship",
+      "korea": {
+        "headline": "304명을 잃은 날",
+        "figures": [
+          "박근혜"
+        ],
+        "body": "인천발 제주행 세월호가 진도 앞바다에서 침몰해 단원고 학생을 포함한 304명이 숨졌다. 국가의 재난 대응이 무너진 사건이었다."
+      },
+      "world": {
+        "headline": "크림반도 병합",
+        "figures": [
+          "블라디미르 푸틴"
+        ],
+        "body": "3월 러시아가 크림반도를 병합하며 우크라이나 위기가 시작됐다. 2022년 전면전의 씨앗이었다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 내수 침체 & 박스피(Boxpi)",
+        "summary": "세월호 참사로 전 국민적 애도 분위기 속 소비 위축, 2,000선 갇힌 박스피 장세.",
+        "detail": "저성장·저물가 고착화와 기업 실적 둔화로 코스피가 1,800~2,050 좁은 밴드에 수년간 갇히는 박스권이 지속되었습니다."
+      }
+    },
+    {
+      "id": "2016-12",
+      "year": 2016,
+      "month": 12,
+      "era": "mobile-era",
+      "anchor": "korea",
+      "title": "박근혜 탄핵소추",
+      "icon": "candle",
+      "korea": {
+        "headline": "촛불이 대통령을 끌어내리다",
+        "figures": [
+          "박근혜",
+          "최순실"
+        ],
+        "body": "국정농단이 드러나며 연인원 1,700만 명이 촛불을 들었고 12월 9일 국회가 탄핵을 가결했다. 이듬해 3월 헌재가 파면을 결정했다."
+      },
+      "world": {
+        "headline": "브렉시트와 트럼프",
+        "figures": [
+          "도널드 트럼프",
+          "보리스 존슨"
+        ],
+        "body": "6월 영국이 EU 탈퇴를 결정하고 11월 트럼프가 당선되며 전후 자유주의 질서가 흔들렸다."
+      },
+      "marketImpact": {
+        "type": "reform",
+        "tag": "🏛️ 국정농단 탄핵 & 반도체 슈퍼사이클",
+        "summary": "대통령 탄핵 정국의 정치적 격변, 반면 글로벌 메모리 반도체 슈퍼사이클 진입.",
+        "detail": "정치적 혼란에도 불구하고 스마트폰·데이터센터 수요 폭증으로 삼성전자와 SK하이닉스가 사상 최대 실적을 경신했습니다."
+      }
+    },
+    {
+      "id": "2017-05",
+      "year": 2017,
+      "month": 5,
+      "era": "mobile-era",
+      "anchor": "korea",
+      "title": "문재인 정부 출범",
+      "icon": "ballot",
+      "korea": {
+        "headline": "탄핵 이후의 조기 대선",
+        "figures": [
+          "문재인",
+          "박근혜"
+        ],
+        "body": "3월 헌재의 파면 결정에 따른 조기 대선에서 문재인이 당선됐다. 촛불이 만든 정권교체였다."
+      },
+      "world": {
+        "headline": "트럼프 미국 대통령 취임",
+        "figures": [
+          "도널드 트럼프"
+        ],
+        "body": "1월 취임한 트럼프가 보호무역과 미국 우선주의를 내걸며 기존 동맹·통상 질서를 재검토하기 시작했다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 코스피 2,500 역사적 돌파",
+        "summary": "새 정부 출범과 반도체 수출 호황으로 코스피가 박스권을 뚫고 2,500선 사상 최고치 경신.",
+        "detail": "외국인 순매수와 주주환원 정책 확대가 맞물려 IT 및 대형 가치주 전반으로 온기가 확산되었습니다."
+      }
+    },
+    {
+      "id": "2018-02",
+      "year": 2018,
+      "month": 2,
+      "era": "mobile-era",
+      "anchor": "korea",
+      "title": "평창 동계올림픽",
+      "icon": "flag",
+      "korea": {
+        "headline": "여자 아이스하키 남북 단일팀",
+        "figures": [
+          "문재인",
+          "김여정"
+        ],
+        "body": "북한 고위급 대표단이 방남하며 해빙 분위기를 띄웠다. 이후 판문점 남북정상회담으로 이어졌다."
+      },
+      "world": {
+        "headline": "싱가포르 미북정상회담으로 가는 길",
+        "figures": [
+          "도널드 트럼프",
+          "김정은"
+        ],
+        "body": "평창을 계기로 급물살을 탄 대화는 6월 사상 최초의 미북정상회담(싱가포르)으로 이어졌다."
+      },
+      "marketImpact": {
+        "type": "volatility",
+        "tag": "📊 평화 무드 vs 미·중 무역전쟁",
+        "summary": "평창 올림픽 남북 화해 무드 vs 트럼프의 대중 관세 폭탄으로 글로벌 증시 둔화.",
+        "detail": "남북 경협주가 단기 급등했으나, 미·중 패권 전쟁 본격화로 수출 의존도가 높은 한국 증시는 2018년 내내 조정받았습니다."
+      }
+    },
+    {
+      "id": "2020-03",
+      "year": 2020,
+      "month": 3,
+      "era": "mobile-era",
+      "anchor": "world",
+      "title": "코로나19 팬데믹",
+      "icon": "virus",
+      "world": {
+        "headline": "세계가 멈추다",
+        "figures": [
+          "테워드로스 아드하놈"
+        ],
+        "body": "WHO가 팬데믹을 선언했다. 국경이 닫히고 도시가 봉쇄됐으며 수백만 명이 목숨을 잃었다."
+      },
+      "korea": {
+        "headline": "방역과 문화의 해",
+        "figures": [
+          "문재인",
+          "봉준호"
+        ],
+        "body": "드라이브스루 검사와 대규모 추적으로 주목받았다. 2월에는 기생충이 아카데미 작품상을 받았다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 팬데믹 폭락 후 동학개미 랠리",
+        "summary": "코로나19 팬데믹으로 글로벌 서킷브레이커, 이후 무제한 유동성으로 코스피 3,300 돌파.",
+        "detail": "1,439p까지 급락했던 코스피는 개인 투자자(동학개미)의 대규모 순매수와 각국의 초저금리 유동성에 힘입어 사상 최대 랠리를 펼쳤습니다."
+      }
+    },
+    {
+      "id": "2022-02",
+      "year": 2022,
+      "month": 2,
+      "era": "ai-era",
+      "anchor": "world",
+      "title": "러시아의 우크라이나 침공",
+      "icon": "war",
+      "world": {
+        "headline": "유럽에 다시 전면전",
+        "figures": [
+          "블라디미르 푸틴",
+          "볼로디미르 젤렌스키"
+        ],
+        "body": "러시아가 우크라이나를 전면 침공했다. 서방의 제재로 에너지와 식량 가격이 치솟고 진영이 재편됐다."
+      },
+      "korea": {
+        "headline": "0.73%p의 정권 교체",
+        "figures": [
+          "윤석열",
+          "이재명"
+        ],
+        "body": "3월 대선에서 윤석열이 역대 최소 표차로 승리했다. 극단적으로 갈린 사회의 단면이었다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 우크라이나 침공 & 금리 빅스텝",
+        "summary": "러시아의 침공으로 에너지·곡물 인플레이션 폭발, 미 연준의 4연속 0.75%p 금리 인상.",
+        "detail": "인플레이션을 잡기 위한 살인적인 긴축으로 2022년 나스닥 -33%, 코스피 -25% 급락하며 기술주 밸류에이션이 붕괴했습니다."
+      }
+    },
+    {
+      "id": "2022-11",
+      "year": 2022,
+      "month": 11,
+      "era": "ai-era",
+      "anchor": "world",
+      "title": "ChatGPT 공개",
+      "icon": "brain",
+      "world": {
+        "headline": "생성형 AI의 대중화",
+        "figures": [
+          "샘 올트먼"
+        ],
+        "body": "OpenAI가 ChatGPT를 공개하자 두 달 만에 사용자 1억 명을 넘었다. AI가 연구실에서 일상으로 내려왔다."
+      },
+      "korea": {
+        "headline": "AI 반도체 수요 급증",
+        "figures": [
+          "이재용",
+          "곽노정"
+        ],
+        "body": "고대역폭 메모리 수요가 치솟으며 한국 반도체가 AI 공급망의 병목이자 중심이 됐다."
+      },
+      "marketImpact": {
+        "type": "rally",
+        "tag": "🚀 생성형 AI & 엔비디아 혁명",
+        "summary": "OpenAI ChatGPT 공개로 생성형 AI 시대 개막, 엔비디아·빅테크 주도 나스닥 사상 최고치.",
+        "detail": "HBM 반도체와 AI 데이터센터 수요가 폭증하며 SK하이닉스와 빅테크가 신고가를 경신하고 증시의 새 패러다임을 형성했습니다."
+      }
+    },
+    {
+      "id": "2024-12",
+      "year": 2024,
+      "month": 12,
+      "era": "ai-era",
+      "anchor": "korea",
+      "title": "비상계엄과 탄핵소추",
+      "icon": "gavel",
+      "korea": {
+        "headline": "여섯 시간의 계엄",
+        "figures": [
+          "윤석열",
+          "우원식"
+        ],
+        "body": "12월 3일 밤 비상계엄이 선포됐으나 국회가 담을 넘어 모여 6시간 만에 해제를 의결했다. 12월 14일 탄핵소추안이 가결됐다."
+      },
+      "world": {
+        "headline": "트럼프의 재집권",
+        "figures": [
+          "도널드 트럼프"
+        ],
+        "body": "11월 미국 대선에서 트럼프가 승리했다. 전면적 관세와 동맹 재조정이 예고됐다."
+      },
+      "marketImpact": {
+        "type": "shock",
+        "tag": "📉 비상계엄 쇼크 & 정치 불안",
+        "summary": "비상계엄 선포로 야간 환율 급등 및 코스피 변동성 폭발, 국회 해제 의결로 급진정.",
+        "detail": "한국의 민주주의 회복력과 시스템 안전판이 확인되었으나, 정치적 불확실성에 따른 코리아 디스카운트 해소 과제를 남겼습니다."
+      }
+    },
+    {
+      "id": "2025-06",
+      "year": 2025,
+      "month": 6,
+      "era": "ai-era",
+      "anchor": "korea",
+      "title": "조기 대선과 새 정부",
+      "icon": "ballot",
+      "korea": {
+        "headline": "파면, 그리고 조기 대선",
+        "figures": [
+          "이재명",
+          "윤석열"
+        ],
+        "body": "4월 헌법재판소가 윤석열 파면을 결정했고, 6월 3일 조기 대선에서 이재명이 당선돼 새 정부가 출범했다."
+      },
+      "world": {
+        "headline": "관세와 AI 인프라 경쟁",
+        "figures": [
+          "도널드 트럼프"
+        ],
+        "body": "미국의 전방위 관세와 각국의 AI 데이터센터 투자 경쟁이 세계 경제의 축으로 떠올랐다."
+      },
+      "marketImpact": {
+        "type": "reform",
+        "tag": "🏛️ 지배구조 개혁 & 밸류업 도약",
+        "summary": "조기 대선으로 정국 안정화, 상법 개정 및 기업 밸류업 프로그램 가속화 기대감.",
+        "detail": "정치적 정상화와 함께 자본시장 선진화 정책이 재가동되며 한국 증시의 구조적 저평가 탈피 노력이 본격화되었습니다."
+      }
+    }
+  ]
+}
+
 </script>
 </body>
 </html>

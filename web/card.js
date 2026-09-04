@@ -414,9 +414,21 @@
     }
 
     card.addEventListener('click', function (e) { e.stopPropagation(); });
-    // 카드 내부의 모든 공식 홈페이지 링크 클릭 시 안전한 새 창 열기 및 이벤트 전파 방지
+    // 카드 위에서의 휠은 카드의 기본 스크롤 동작이 일어나도록 이벤트 전파 중지
+    card.addEventListener('wheel', function (e) { e.stopPropagation(); }, { passive: true });
+
+    // 카드 내부의 모든 외부 링크 클릭 시 안전하고 확실한 새 창 열기 보장
     Array.prototype.forEach.call(card.querySelectorAll('a[target="_blank"]'), function (a) {
-      a.addEventListener('click', function (e) { e.stopPropagation(); });
+      a.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var href = a.getAttribute('href') || a.href;
+        if (href && href !== '#' && !href.startsWith('javascript:')) {
+          try {
+            window.open(href, '_blank', 'noopener,noreferrer');
+            e.preventDefault();
+          } catch (err) {}
+        }
+      });
     });
     cardsEl.appendChild(card);
     if (opts.afterRender) opts.afterRender(card);
@@ -466,23 +478,24 @@
     cx = Math.max(PAD, Math.min(cx, stage.w - CARD_W - PAD));
     if (target !== sc) scroller.scrollTo({ left: target, behavior: App.reduced ? 'auto' : 'smooth' });
 
-    /* ── 3. 세로 배치 & 하단 잘림/가려짐 방지 ── */
+    /* ── 3. 세로 배치 & 화면(뷰포트) 잘림/가려짐 방지 ── */
+    var viewH = (scroller && scroller.clientHeight) || window.innerHeight || 600;
     var cyTop = opts.track === 'world' ? opts.y + VOFF : opts.y - VOFF - H;
     var minTop = 14;
-    var maxBottom = stage.h - 26; // 하단 가로 스크롤바 및 여백 여유
-    var maxAvailH = maxBottom - minTop;
+    var maxBottom = Math.min(stage.h, viewH) - 18; // 뷰포트 하단 바깥으로 넘어가지 않음
+    var maxAvailH = Math.max(180, maxBottom - minTop);
 
     if (H > maxAvailH) H = maxAvailH;
 
     if (cyTop + H > maxBottom) {
-      cyTop = maxBottom - H;
+      cyTop = Math.max(minTop, maxBottom - H);
     }
     if (cyTop < minTop) {
       cyTop = minTop;
     }
 
-    // cyTop 위치로부터 무대 하단까지 남은 높이로 동적 max-height 설정
-    var dynCmh = Math.max(160, maxBottom - cyTop);
+    // 뷰포트 바닥을 넘지 않도록 안전한 동적 max-height 설정
+    var dynCmh = Math.min(maxAvailH, Math.max(180, maxBottom - cyTop));
     card.style.setProperty('--cmh', dynCmh + 'px');
     card.style.setProperty('--cx', cx.toFixed(1) + 'px');
     card.style.setProperty('--cy', cyTop.toFixed(1) + 'px');
@@ -574,6 +587,21 @@
       '</span>'
     ) : '';
 
+    var relatedComps = getEventRelatedCompanies(ev);
+    var quickBarHTML = relatedComps.length > 0 ? (
+      '<div class="ev-quick-companies stagger" style="animation-delay:110ms">' +
+        '<div class="ev-quick-title">🏢 관련 기업 공식 홈페이지</div>' +
+        '<div class="ev-quick-chips">' +
+          relatedComps.map(function (c) {
+            return '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer" class="ev-quick-chip" title="' + esc(c.name) + ' 공식 홈페이지 열기 (새 창)">' +
+              '<span class="ev-quick-name">' + esc(c.name) + '</span>' +
+              '<span class="ev-quick-arrow">↗</span>' +
+            '</a>';
+          }).join('') +
+        '</div>' +
+      '</div>'
+    ) : '';
+
     App._openUnfold({
       id: ev.id, x: pos.x, y: pos.y, track: pos.track, color: era.color,
       ariaLabel: ev.title,
@@ -588,6 +616,7 @@
           (ev.note ? '<p class="card-note stagger" style="animation-delay:110ms">' + esc(ev.note) + '</p>' : '') +
         '</header>' +
         '<div class="card-body">' +
+          quickBarHTML +
           sideHTML('world', ev.world, 150) +
           sideHTML('korea', ev.korea, 210) +
           marketImpactHTML(ev, 260) +

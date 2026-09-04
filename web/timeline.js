@@ -482,9 +482,23 @@
       }, 160);
     });
 
-    /* ── 세로 휠을 가로 스크롤로 — 연표는 가로로만 흐른다 ── */
+    /* ── 세로 휠을 가로 스크롤로 — 연표는 가로로만 흐른다 (카드 내부 휠은 카드 스크롤 허용) ── */
     scroller.addEventListener('wheel', function (e) {
       if (e.ctrlKey) return;                       // 브라우저 확대/축소는 건드리지 않음
+
+      // 카드 위에서 마우스 휠을 굴릴 때는 카드의 세로 스크롤을 가로채지 않는다!
+      var insideCard = e.target.closest && e.target.closest('.card');
+      if (insideCard) {
+        var body = insideCard.querySelector('.card-body');
+        if (body && body.scrollHeight > body.clientHeight) {
+          var canScrollDown = e.deltaY > 0 && body.scrollTop + body.clientHeight < body.scrollHeight - 1;
+          var canScrollUp = e.deltaY < 0 && body.scrollTop > 1;
+          if (canScrollDown || canScrollUp) {
+            return; // 카드 내부 세로 스크롤 허용
+          }
+        }
+      }
+
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;  // 트랙패드 가로 스와이프는 그대로
       if (!e.deltaY) return;
       e.preventDefault();

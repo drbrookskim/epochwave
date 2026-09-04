@@ -431,7 +431,24 @@ var App = {
       });
   }
 
-  tryFetch(0);
+  /* ── 0. HTML 내 인라인 데이터 우선 로드 (오프라인/로컬/CORS 완벽 방지) ── */
+  var inlineDataEl = document.getElementById('timeline-data');
+  if (inlineDataEl && inlineDataEl.textContent.trim()) {
+    try {
+      App.data = JSON.parse(inlineDataEl.textContent);
+      var t = App.data.meta && App.data.meta.range ? App.data.meta.range.to : 2026;
+      if (!presUserModified) {
+        presState.year = t;
+        renderPres();
+      }
+      loaded = true;
+      ready();
+    } catch (e) {
+      tryFetch(0);
+    }
+  } else {
+    tryFetch(0);
+  }
 
   btn.addEventListener('click', function () {
     if (failed || !App.data || charging) return;
