@@ -104,7 +104,7 @@
     '현대': 'https://www.hyundai.com',
     '기아': 'https://www.kia.com',
     '현대건설': 'https://www.hdec.kr',
-    '현대중공업': 'https://www.hd-hyundai.co.kr',
+    '현대중공업': 'https://hd-hhi.com',
     '현대미포조선': 'https://www.hmd.co.kr',
     'POSCO': 'https://www.posco.com',
     '포항제철': 'https://www.posco.com',
@@ -121,19 +121,20 @@
     'SK이노베이션': 'https://www.skinnovation.com',
     'S-Oil': 'https://www.s-oil.com',
     '에코프로': 'https://www.ecopro.co.kr',
-    '에코프로비엠': 'https://www.ecoprobm.co.kr',
+    '에코프로비엠': 'https://www.ecopro.co.kr',
     '엘앤에프': 'http://www.landf.co.kr',
     '포스코DX': 'https://www.poscodx.com',
     '레인보우로보틱스': 'https://www.rainbow-robotics.com',
 
     // 한국 바이오·소비재·금융
     '셀트리온': 'https://www.celltrion.com',
+    '셀트리온제약': 'http://www.celltrionpharm.com',
     '삼성바이오로직스': 'https://samsungbiologics.com',
     '유한양행': 'https://www.yuhan.co.kr',
     '씨젠': 'https://www.seegene.co.kr',
     '신풍제약': 'https://www.shinpoong.co.kr',
     '메디톡스': 'https://www.medytox.com',
-    '휴젤': 'https://www.hugel.co.kr',
+    '휴젤': 'https://www.hugel-inc.com',
     '클래시스': 'https://www.classys.com',
     '삼양식품': 'https://www.samyangfoods.com',
     '삼립식품': 'https://spcsamlip.co.kr',
@@ -142,9 +143,10 @@
     'JYP Ent.': 'https://www.jype.com',
     '기업은행': 'https://www.ibk.co.kr',
     '삼성물산': 'https://www.samsungcnt.com',
-    '새롬기술': 'https://www.solborn.co.kr',
-    '골드뱅크': 'https://ko.wikipedia.org/wiki/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC',
-    '메가스터디': 'https://www.megastudy.net',
+    '새롬기술': 'http://www.solborn.co.kr',
+    '골드뱅크': 'https://namu.wiki/w/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC',
+    '메가스터디': 'http://www.megastudyholdings.com',
+    '수젠텍': 'http://www.sugentech.com',
     '서울반도체': 'http://www.seoulsemicon.com'
   };
   App.COMPANY_URLS = COMPANY_URLS;
@@ -152,10 +154,14 @@
   function getCompanyUrlByName(name) {
     if (!name) return null;
     var clean = String(name).trim();
-    if (COMPANY_URLS[clean]) return COMPANY_URLS[clean];
+    if (COMPANY_URLS[clean]) {
+      var val = COMPANY_URLS[clean];
+      return Array.isArray(val) ? val[0].url : val;
+    }
     for (var k in COMPANY_URLS) {
       if (k.length >= 2 && (clean.indexOf(k) !== -1 || k.indexOf(clean) !== -1)) {
-        return COMPANY_URLS[k];
+        var v = COMPANY_URLS[k];
+        return Array.isArray(v) ? v[0].url : v;
       }
     }
     return null;
@@ -166,7 +172,11 @@
     if (ld.url) return [{ name: ld.name, url: ld.url }];
 
     var name = ld.name;
-    if (COMPANY_URLS[name]) return [{ name: name, url: COMPANY_URLS[name] }];
+    if (COMPANY_URLS[name]) {
+      var val = COMPANY_URLS[name];
+      if (Array.isArray(val)) return val;
+      return [{ name: name, url: val }];
+    }
 
     var parts = name.split(/[&·,/]/).map(function (s) { return s.trim(); }).filter(Boolean);
     var res = [];
@@ -417,17 +427,11 @@
     // 카드 위에서의 휠은 카드의 기본 스크롤 동작이 일어나도록 이벤트 전파 중지
     card.addEventListener('wheel', function (e) { e.stopPropagation(); }, { passive: true });
 
-    // 카드 내부의 모든 외부 링크 클릭 시 안전하고 확실한 새 창 열기 보장
+    // 카드 내부의 모든 외부 링크 클릭 시 상위(카드/무대)로의 이벤트 전파를 차단하고,
+    // 브라우저 네이티브 기본 동작으로 새 탭(새 창)이 100% 안전하게 열리도록 보장 (팝업 차단 완전 방지)
     Array.prototype.forEach.call(card.querySelectorAll('a[target="_blank"]'), function (a) {
       a.addEventListener('click', function (e) {
         e.stopPropagation();
-        var href = a.getAttribute('href') || a.href;
-        if (href && href !== '#' && !href.startsWith('javascript:')) {
-          try {
-            window.open(href, '_blank', 'noopener,noreferrer');
-            e.preventDefault();
-          } catch (err) {}
-        }
       });
     });
     cardsEl.appendChild(card);
@@ -823,7 +827,19 @@
             tp.leaders.map(function (ld) {
               var links = getLeaderLinks(ld);
               var linksHTML = '';
-              if (links && links.length > 0) {
+              var nameHTML = '';
+
+              if (links && links.length === 1) {
+                nameHTML = '<a href="' + esc(links[0].url) + '" target="_blank" rel="noopener noreferrer" class="tp-leader-name-link" title="' + esc(ld.name) + ' 공식 홈페이지 열기 (새 창)">' +
+                  esc(ld.name) +
+                '</a>';
+                linksHTML = '<div class="tp-links-wrap">' +
+                  '<a href="' + esc(links[0].url) + '" target="_blank" rel="noopener noreferrer" class="tp-company-link" title="' + esc(ld.name) + ' 공식 홈페이지 열기 (새 창)">' +
+                    '<span class="tp-link-icon">↗</span>공식 홈페이지' +
+                  '</a>' +
+                '</div>';
+              } else if (links && links.length > 1) {
+                nameHTML = '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>';
                 linksHTML = '<div class="tp-links-wrap">' +
                   links.map(function (lk) {
                     return '<a href="' + esc(lk.url) + '" target="_blank" rel="noopener noreferrer" class="tp-company-link" title="' + esc(lk.name) + ' 공식 홈페이지 열기 (새 창)">' +
@@ -831,13 +847,15 @@
                     '</a>';
                   }).join('') +
                 '</div>';
+              } else {
+                nameHTML = '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>';
               }
 
               return (
                 '<div class="tp-leader-item">' +
                   '<div class="tp-leader-name-wrap">' +
                     '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
-                    '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
+                    nameHTML +
                     linksHTML +
                   '</div>' +
                   (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +

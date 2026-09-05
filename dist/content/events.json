@@ -1462,7 +1462,21 @@
             {
               "name": "금융·무역·건설 트로이카",
               "desc": "대우증권, 대우, 현대종합상사, 현대건설 등 시세 폭발",
-              "url": "https://www.posco.com"
+              "url": "https://www.hdec.kr",
+              "links": [
+                {
+                  "name": "현대건설",
+                  "url": "https://www.hdec.kr"
+                },
+                {
+                  "name": "미래에셋증권(구 대우증권)",
+                  "url": "https://securities.miraeasset.com"
+                },
+                {
+                  "name": "현대코퍼레이션(구 현대상사)",
+                  "url": "https://www.hyundaicorp.com"
+                }
+              ]
             },
             {
               "name": "포항제철",
@@ -1551,7 +1565,7 @@
             {
               "name": "현대중공업",
               "desc": "조선 수주 1위로 주가 55만 원 돌파, 삼성전자에 이어 시총 2위 등극",
-              "url": "https://www.hd-hyundai.co.kr"
+              "url": "https://hd-hhi.com"
             },
             {
               "name": "POSCO",
@@ -1976,7 +1990,7 @@
             {
               "name": "새롬기술",
               "desc": "무료 인터넷 전화 다이얼패드 발표로 주가 150배 폭등",
-              "url": "https://www.solborn.co.kr"
+              "url": "http://www.solborn.co.kr"
             },
             {
               "name": "다음(Daum)",
@@ -1991,7 +2005,7 @@
             {
               "name": "골드뱅크",
               "desc": "광고 보면 돈 주는 모델로 상장 후 수십 배 폭등",
-              "url": "https://ko.wikipedia.org/wiki/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC"
+              "url": "https://namu.wiki/w/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC"
             }
           ]
         },
@@ -2012,7 +2026,7 @@
             {
               "name": "메가스터디",
               "desc": "초고속 인터넷 보급과 사교육 e러닝 독점",
-              "url": "https://www.megastudy.net"
+              "url": "http://www.megastudyholdings.com"
             }
           ]
         },
@@ -2028,7 +2042,7 @@
             {
               "name": "메가스터디",
               "desc": "안정적 수강료 현금 유입으로 방어",
-              "url": "https://www.megastudy.net"
+              "url": "http://www.megastudyholdings.com"
             },
             {
               "name": "서울반도체",
@@ -2080,11 +2094,11 @@
             {
               "name": "수젠텍 & EDGC",
               "desc": "신속항원 및 항체 진단키트 테마 형성",
-              "url": "https://sugentech.com",
+              "url": "http://www.sugentech.com",
               "links": [
                 {
                   "name": "수젠텍",
-                  "url": "https://sugentech.com"
+                  "url": "http://www.sugentech.com"
                 },
                 {
                   "name": "EDGC",
@@ -2111,17 +2125,21 @@
                 {
                   "name": "셀트리온",
                   "url": "https://www.celltrion.com"
+                },
+                {
+                  "name": "셀트리온제약",
+                  "url": "http://www.celltrionpharm.com"
                 }
               ]
             },
             {
               "name": "에코프로비엠 & 엘앤에프",
               "desc": "하이니켈 양극재 미국·유럽 배터리 수주 폭풍",
-              "url": "https://www.ecoprobm.co.kr",
+              "url": "https://www.ecopro.co.kr",
               "links": [
                 {
                   "name": "에코프로비엠",
-                  "url": "https://www.ecoprobm.co.kr"
+                  "url": "https://www.ecopro.co.kr"
                 },
                 {
                   "name": "엘앤에프",
@@ -2166,7 +2184,7 @@
                 },
                 {
                   "name": "휴젤",
-                  "url": "https://www.hugel.co.kr"
+                  "url": "https://www.hugel-inc.com"
                 }
               ]
             },
@@ -2194,7 +2212,7 @@
             {
               "name": "에코프로비엠",
               "desc": "코스닥 시가총액 압도적 1위 등극",
-              "url": "https://www.ecoprobm.co.kr"
+              "url": "https://www.ecopro.co.kr"
             },
             {
               "name": "포스코DX",

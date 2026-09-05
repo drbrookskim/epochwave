@@ -58,14 +58,18 @@ const COMPANY_URLS = {
   '대림산업': 'https://www.dlenc.co.kr',
   '삼립식품': 'https://spcsamlip.co.kr',
   '유한양행': 'https://www.yuhan.co.kr',
-  '금융·무역·건설 트로이카': 'https://www.posco.com',
+  '금융·무역·건설 트로이카': [
+    { name: '현대건설', url: 'https://www.hdec.kr' },
+    { name: '미래에셋증권(구 대우증권)', url: 'https://securities.miraeasset.com' },
+    { name: '현대코퍼레이션(구 현대상사)', url: 'https://www.hyundaicorp.com' }
+  ],
   '포항제철': 'https://www.posco.com',
   '태평양화학(아모레)': 'https://www.apgroup.com',
   '한국이동통신': 'https://www.sktelecom.com',
   '삼성전자': 'https://www.samsung.com/sec/',
   '삼성물산': 'https://www.samsungcnt.com',
   'LG전자': 'https://www.lge.co.kr',
-  '현대중공업': 'https://www.hd-hyundai.co.kr',
+  '현대중공업': 'https://hd-hhi.com',
   'POSCO': 'https://www.posco.com',
   '현대미포조선': 'https://www.hmd.co.kr',
   '두산중공업': 'https://www.doosanenerbility.com',
@@ -100,25 +104,26 @@ const COMPANY_URLS = {
   '한미반도체': 'https://www.hanmisemi.com',
   '삼양식품': 'https://www.samyangfoods.com',
   '기업은행': 'https://www.ibk.co.kr',
-  '새롬기술': 'https://www.solborn.co.kr',
+  '새롬기술': 'http://www.solborn.co.kr',
   '다음(Daum)': 'https://www.daum.net',
   '한글과컴퓨터': 'https://www.hancom.com',
-  '골드뱅크': 'https://ko.wikipedia.org/wiki/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC',
+  '골드뱅크': 'https://namu.wiki/w/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC',
   'NHN (네이버)': 'https://www.navercorp.com',
-  '메가스터디': 'https://www.megastudy.net',
+  '메가스터디': 'http://www.megastudyholdings.com',
   '서울반도체': 'http://www.seoulsemicon.com',
   '셀트리온': 'https://www.celltrion.com',
   '바이로메드(헬릭스미스)': 'https://www.helixmith.com',
   '메디톡스': 'https://www.medytox.com',
   '수젠텍 & EDGC': [
-    { name: '수젠텍', url: 'https://sugentech.com' },
+    { name: '수젠텍', url: 'http://www.sugentech.com' },
     { name: 'EDGC', url: 'https://www.edgc.com' }
   ],
   '셀트리온헬스케어 & 제약': [
-    { name: '셀트리온', url: 'https://www.celltrion.com' }
+    { name: '셀트리온', url: 'https://www.celltrion.com' },
+    { name: '셀트리온제약', url: 'http://www.celltrionpharm.com' }
   ],
   '에코프로비엠 & 엘앤에프': [
-    { name: '에코프로비엠', url: 'https://www.ecoprobm.co.kr' },
+    { name: '에코프로비엠', url: 'https://www.ecopro.co.kr' },
     { name: '엘앤에프', url: 'http://www.landf.co.kr' }
   ],
   '카카오게임즈 & 펄어비스': [
@@ -127,11 +132,11 @@ const COMPANY_URLS = {
   ],
   '클래시스 & 휴젤': [
     { name: '클래시스', url: 'https://www.classys.com' },
-    { name: '휴젤', url: 'https://www.hugel.co.kr' }
+    { name: '휴젤', url: 'https://www.hugel-inc.com' }
   ],
   'JYP Ent.': 'https://www.jype.com',
   '에코프로': 'https://www.ecopro.co.kr',
-  '에코프로비엠': 'https://www.ecoprobm.co.kr',
+  '에코프로비엠': 'https://www.ecopro.co.kr',
   '포스코DX': 'https://www.poscodx.com',
   '레인보우로보틱스': 'https://www.rainbow-robotics.com'
 };

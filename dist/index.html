@@ -1152,32 +1152,49 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   margin-left: auto;
+}
+.tp-leader-name-link {
+  font-size: 12.5px;
+  color: #FFFFFF;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.15s;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+.tp-leader-name-link:hover {
+  color: var(--cyan);
+  text-decoration: underline;
+  text-shadow: 0 0 8px rgba(77, 226, 240, 0.4);
 }
 .tp-company-link {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  font-size: 9.5px;
+  gap: 4px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--cyan);
-  background: rgba(77, 226, 240, 0.08);
-  border: 1px solid rgba(77, 226, 240, 0.3);
+  background: rgba(77, 226, 240, 0.12);
+  border: 1px solid rgba(77, 226, 240, 0.4);
   border-radius: 4px;
-  padding: 1.5px 6px;
+  padding: 2.5px 7px;
   text-decoration: none;
   transition: all 0.15s;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: none;
 }
 .tp-company-link:hover {
-  background: rgba(77, 226, 240, 0.22);
+  background: rgba(77, 226, 240, 0.28);
   border-color: var(--cyan);
   color: #fff;
-  box-shadow: 0 0 8px rgba(77, 226, 240, 0.4);
+  box-shadow: 0 0 10px rgba(77, 226, 240, 0.45);
   transform: translateY(-1px);
 }
 .tp-link-icon {
-  font-size: 8px;
+  font-size: 9px;
   line-height: 1;
 }
 
@@ -3088,7 +3105,7 @@ var App = {
     '현대': 'https://www.hyundai.com',
     '기아': 'https://www.kia.com',
     '현대건설': 'https://www.hdec.kr',
-    '현대중공업': 'https://www.hd-hyundai.co.kr',
+    '현대중공업': 'https://hd-hhi.com',
     '현대미포조선': 'https://www.hmd.co.kr',
     'POSCO': 'https://www.posco.com',
     '포항제철': 'https://www.posco.com',
@@ -3105,19 +3122,20 @@ var App = {
     'SK이노베이션': 'https://www.skinnovation.com',
     'S-Oil': 'https://www.s-oil.com',
     '에코프로': 'https://www.ecopro.co.kr',
-    '에코프로비엠': 'https://www.ecoprobm.co.kr',
+    '에코프로비엠': 'https://www.ecopro.co.kr',
     '엘앤에프': 'http://www.landf.co.kr',
     '포스코DX': 'https://www.poscodx.com',
     '레인보우로보틱스': 'https://www.rainbow-robotics.com',
 
     // 한국 바이오·소비재·금융
     '셀트리온': 'https://www.celltrion.com',
+    '셀트리온제약': 'http://www.celltrionpharm.com',
     '삼성바이오로직스': 'https://samsungbiologics.com',
     '유한양행': 'https://www.yuhan.co.kr',
     '씨젠': 'https://www.seegene.co.kr',
     '신풍제약': 'https://www.shinpoong.co.kr',
     '메디톡스': 'https://www.medytox.com',
-    '휴젤': 'https://www.hugel.co.kr',
+    '휴젤': 'https://www.hugel-inc.com',
     '클래시스': 'https://www.classys.com',
     '삼양식품': 'https://www.samyangfoods.com',
     '삼립식품': 'https://spcsamlip.co.kr',
@@ -3126,9 +3144,10 @@ var App = {
     'JYP Ent.': 'https://www.jype.com',
     '기업은행': 'https://www.ibk.co.kr',
     '삼성물산': 'https://www.samsungcnt.com',
-    '새롬기술': 'https://www.solborn.co.kr',
-    '골드뱅크': 'https://ko.wikipedia.org/wiki/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC',
-    '메가스터디': 'https://www.megastudy.net',
+    '새롬기술': 'http://www.solborn.co.kr',
+    '골드뱅크': 'https://namu.wiki/w/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC',
+    '메가스터디': 'http://www.megastudyholdings.com',
+    '수젠텍': 'http://www.sugentech.com',
     '서울반도체': 'http://www.seoulsemicon.com'
   };
   App.COMPANY_URLS = COMPANY_URLS;
@@ -3136,10 +3155,14 @@ var App = {
   function getCompanyUrlByName(name) {
     if (!name) return null;
     var clean = String(name).trim();
-    if (COMPANY_URLS[clean]) return COMPANY_URLS[clean];
+    if (COMPANY_URLS[clean]) {
+      var val = COMPANY_URLS[clean];
+      return Array.isArray(val) ? val[0].url : val;
+    }
     for (var k in COMPANY_URLS) {
       if (k.length >= 2 && (clean.indexOf(k) !== -1 || k.indexOf(clean) !== -1)) {
-        return COMPANY_URLS[k];
+        var v = COMPANY_URLS[k];
+        return Array.isArray(v) ? v[0].url : v;
       }
     }
     return null;
@@ -3150,7 +3173,11 @@ var App = {
     if (ld.url) return [{ name: ld.name, url: ld.url }];
 
     var name = ld.name;
-    if (COMPANY_URLS[name]) return [{ name: name, url: COMPANY_URLS[name] }];
+    if (COMPANY_URLS[name]) {
+      var val = COMPANY_URLS[name];
+      if (Array.isArray(val)) return val;
+      return [{ name: name, url: val }];
+    }
 
     var parts = name.split(/[&·,/]/).map(function (s) { return s.trim(); }).filter(Boolean);
     var res = [];
@@ -3401,17 +3428,11 @@ var App = {
     // 카드 위에서의 휠은 카드의 기본 스크롤 동작이 일어나도록 이벤트 전파 중지
     card.addEventListener('wheel', function (e) { e.stopPropagation(); }, { passive: true });
 
-    // 카드 내부의 모든 외부 링크 클릭 시 안전하고 확실한 새 창 열기 보장
+    // 카드 내부의 모든 외부 링크 클릭 시 상위(카드/무대)로의 이벤트 전파를 차단하고,
+    // 브라우저 네이티브 기본 동작으로 새 탭(새 창)이 100% 안전하게 열리도록 보장 (팝업 차단 완전 방지)
     Array.prototype.forEach.call(card.querySelectorAll('a[target="_blank"]'), function (a) {
       a.addEventListener('click', function (e) {
         e.stopPropagation();
-        var href = a.getAttribute('href') || a.href;
-        if (href && href !== '#' && !href.startsWith('javascript:')) {
-          try {
-            window.open(href, '_blank', 'noopener,noreferrer');
-            e.preventDefault();
-          } catch (err) {}
-        }
       });
     });
     cardsEl.appendChild(card);
@@ -3807,7 +3828,19 @@ var App = {
             tp.leaders.map(function (ld) {
               var links = getLeaderLinks(ld);
               var linksHTML = '';
-              if (links && links.length > 0) {
+              var nameHTML = '';
+
+              if (links && links.length === 1) {
+                nameHTML = '<a href="' + esc(links[0].url) + '" target="_blank" rel="noopener noreferrer" class="tp-leader-name-link" title="' + esc(ld.name) + ' 공식 홈페이지 열기 (새 창)">' +
+                  esc(ld.name) +
+                '</a>';
+                linksHTML = '<div class="tp-links-wrap">' +
+                  '<a href="' + esc(links[0].url) + '" target="_blank" rel="noopener noreferrer" class="tp-company-link" title="' + esc(ld.name) + ' 공식 홈페이지 열기 (새 창)">' +
+                    '<span class="tp-link-icon">↗</span>공식 홈페이지' +
+                  '</a>' +
+                '</div>';
+              } else if (links && links.length > 1) {
+                nameHTML = '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>';
                 linksHTML = '<div class="tp-links-wrap">' +
                   links.map(function (lk) {
                     return '<a href="' + esc(lk.url) + '" target="_blank" rel="noopener noreferrer" class="tp-company-link" title="' + esc(lk.name) + ' 공식 홈페이지 열기 (새 창)">' +
@@ -3815,13 +3848,15 @@ var App = {
                     '</a>';
                   }).join('') +
                 '</div>';
+              } else {
+                nameHTML = '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>';
               }
 
               return (
                 '<div class="tp-leader-item">' +
                   '<div class="tp-leader-name-wrap">' +
                     '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
-                    '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
+                    nameHTML +
                     linksHTML +
                   '</div>' +
                   (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
@@ -5566,7 +5601,21 @@ var App = {
             {
               "name": "금융·무역·건설 트로이카",
               "desc": "대우증권, 대우, 현대종합상사, 현대건설 등 시세 폭발",
-              "url": "https://www.posco.com"
+              "url": "https://www.hdec.kr",
+              "links": [
+                {
+                  "name": "현대건설",
+                  "url": "https://www.hdec.kr"
+                },
+                {
+                  "name": "미래에셋증권(구 대우증권)",
+                  "url": "https://securities.miraeasset.com"
+                },
+                {
+                  "name": "현대코퍼레이션(구 현대상사)",
+                  "url": "https://www.hyundaicorp.com"
+                }
+              ]
             },
             {
               "name": "포항제철",
@@ -5655,7 +5704,7 @@ var App = {
             {
               "name": "현대중공업",
               "desc": "조선 수주 1위로 주가 55만 원 돌파, 삼성전자에 이어 시총 2위 등극",
-              "url": "https://www.hd-hyundai.co.kr"
+              "url": "https://hd-hhi.com"
             },
             {
               "name": "POSCO",
@@ -6080,7 +6129,7 @@ var App = {
             {
               "name": "새롬기술",
               "desc": "무료 인터넷 전화 다이얼패드 발표로 주가 150배 폭등",
-              "url": "https://www.solborn.co.kr"
+              "url": "http://www.solborn.co.kr"
             },
             {
               "name": "다음(Daum)",
@@ -6095,7 +6144,7 @@ var App = {
             {
               "name": "골드뱅크",
               "desc": "광고 보면 돈 주는 모델로 상장 후 수십 배 폭등",
-              "url": "https://ko.wikipedia.org/wiki/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC"
+              "url": "https://namu.wiki/w/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC"
             }
           ]
         },
@@ -6116,7 +6165,7 @@ var App = {
             {
               "name": "메가스터디",
               "desc": "초고속 인터넷 보급과 사교육 e러닝 독점",
-              "url": "https://www.megastudy.net"
+              "url": "http://www.megastudyholdings.com"
             }
           ]
         },
@@ -6132,7 +6181,7 @@ var App = {
             {
               "name": "메가스터디",
               "desc": "안정적 수강료 현금 유입으로 방어",
-              "url": "https://www.megastudy.net"
+              "url": "http://www.megastudyholdings.com"
             },
             {
               "name": "서울반도체",
@@ -6184,11 +6233,11 @@ var App = {
             {
               "name": "수젠텍 & EDGC",
               "desc": "신속항원 및 항체 진단키트 테마 형성",
-              "url": "https://sugentech.com",
+              "url": "http://www.sugentech.com",
               "links": [
                 {
                   "name": "수젠텍",
-                  "url": "https://sugentech.com"
+                  "url": "http://www.sugentech.com"
                 },
                 {
                   "name": "EDGC",
@@ -6215,17 +6264,21 @@ var App = {
                 {
                   "name": "셀트리온",
                   "url": "https://www.celltrion.com"
+                },
+                {
+                  "name": "셀트리온제약",
+                  "url": "http://www.celltrionpharm.com"
                 }
               ]
             },
             {
               "name": "에코프로비엠 & 엘앤에프",
               "desc": "하이니켈 양극재 미국·유럽 배터리 수주 폭풍",
-              "url": "https://www.ecoprobm.co.kr",
+              "url": "https://www.ecopro.co.kr",
               "links": [
                 {
                   "name": "에코프로비엠",
-                  "url": "https://www.ecoprobm.co.kr"
+                  "url": "https://www.ecopro.co.kr"
                 },
                 {
                   "name": "엘앤에프",
@@ -6270,7 +6323,7 @@ var App = {
                 },
                 {
                   "name": "휴젤",
-                  "url": "https://www.hugel.co.kr"
+                  "url": "https://www.hugel-inc.com"
                 }
               ]
             },
@@ -6298,7 +6351,7 @@ var App = {
             {
               "name": "에코프로비엠",
               "desc": "코스닥 시가총액 압도적 1위 등극",
-              "url": "https://www.ecoprobm.co.kr"
+              "url": "https://www.ecopro.co.kr"
             },
             {
               "name": "포스코DX",
