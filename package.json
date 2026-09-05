@@ -8,6 +8,7 @@
     "build": "node scripts/validate.mjs && node scripts/build.mjs",
     "push": "node scripts/push-kv.mjs",
     "release": "npm run build && npm run push",
-    "deploy": "npm run release && wrangler deploy"
+    "deploy": "npm run release && wrangler deploy",
+    "deploy:pages": "npm run build && wrangler pages deploy dist --project-name=epochwave"
   }
 }
