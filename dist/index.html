@@ -885,16 +885,16 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .node{pointer-events:auto}
 
 /* 트랙·눈금 */
-.era-band{opacity:.16}
-.era-name{font-family:Orbitron,sans-serif; font-size:10px; letter-spacing:.22em; text-transform:uppercase; opacity:.5}
-.era-name-ko{font-size:11px; letter-spacing:.1em; opacity:.62}
-.rail{stroke:rgba(150,180,240,.3); stroke-width:1.4}
-.rail-glow{stroke:rgba(120,180,255,.1); stroke-width:9; stroke-linecap:round}
-.tick{stroke:rgba(150,180,240,.2); stroke-width:1}
-.tick.major{stroke:rgba(160,195,255,.42); stroke-width:1.3}
+.era-band{opacity:.22}
+.era-name{font-family:Orbitron,sans-serif; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; opacity:.85}
+.era-name-ko{font-size:11.5px; letter-spacing:.1em; opacity:.92; font-weight:600}
+.rail{stroke:rgba(180,210,255,.45); stroke-width:1.5}
+.rail-glow{stroke:rgba(120,180,255,.15); stroke-width:10; stroke-linecap:round}
+.tick{stroke:rgba(160,195,255,.3); stroke-width:1}
+.tick.major{stroke:rgba(200,225,255,.7); stroke-width:1.6}
 .yr{font-family:Orbitron,sans-serif; font-size:10.5px; fill:var(--faint); letter-spacing:.08em}
-.yr.major{fill:#9FB2DA}
-.stem{stroke-width:1.4; opacity:.5}
+.yr.major{fill:#E2E8F0; font-weight:600}
+.stem{stroke-width:1.4; opacity:.55}
 .edge{fill:none; stroke-width:2.2; stroke-linecap:round;
   filter:drop-shadow(0 0 5px currentColor)}
 .edge-cap{stroke:none}
@@ -1611,7 +1611,273 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   .tp-leaders-pill{display:none}
 }
 
-/* ═══ 저모션 ═══ */
+/* ═══ Rebase 100 & 비교 토글 ═══ */
+.scale-toggle-btn {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+.scale-toggle-btn:hover {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+}
+.scale-toggle-btn.is-on {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: #f59e0b;
+  color: #fef3c7;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+.scale-icon {
+  margin-right: 4px;
+}
+
+/* ═══ 주제별 사건 빠른 질문 탐색 필터 바 ═══ */
+.quick-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 20px;
+  background: rgba(13, 17, 23, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  overflow-x: auto;
+  scrollbar-width: none;
+  font-size: 12px;
+}
+.quick-filter-bar::-webkit-scrollbar { display: none; }
+.qf-title {
+  color: #94a3b8;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+.qf-chips {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.qf-chip {
+  padding: 4px 11px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(30, 41, 59, 0.6);
+  color: #cbd5e1;
+  font-size: 11.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.qf-chip:hover {
+  background: rgba(51, 65, 85, 0.8);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #f8fafc;
+}
+.qf-chip.is-active {
+  background: #f59e0b;
+  color: #0f172a;
+  font-weight: 700;
+  border-color: #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+}
+.is-theme-dim {
+  opacity: 0.18 !important;
+  filter: grayscale(80%);
+  pointer-events: none;
+  transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+/* ═══ 지수 출범 시점 마커 및 라벨 ═══ */
+.mkt-start-marker {
+  filter: drop-shadow(0 0 4px currentColor);
+}
+.mkt-start-lbl {
+  font-size: 9.5px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  opacity: 0.88;
+}
+
+/* ═══ About 모달 내 지수 정의표 & 분석 층위 ═══ */
+.about-table-wrap {
+  overflow-x: auto;
+  margin: 12px 0 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+}
+.about-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+.about-data-table th, .about-data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.about-data-table th {
+  background: rgba(30, 41, 59, 0.8);
+  color: #94a3b8;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.about-data-table td code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  color: #38bdf8;
+}
+.about-table-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+.about-rule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.about-rule-list li {
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+.about-rule-list li strong {
+  color: #f59e0b;
+}
+.about-tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+.about-tier-card {
+  background: rgba(22, 27, 34, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+}
+.at-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 6px;
+}
+.about-tier-card p {
+  margin: 0;
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+/* ═══ 사건 카드 내 이벤트 스터디 3단계 충격 ═══ */
+.ev-impact-tiers {
+  margin: 10px 0;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 8px;
+  border-left: 3px solid #38bdf8;
+}
+.ev-tier-head {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 6px;
+}
+.ev-tier-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.ev-tier-row:last-child { margin-bottom: 0; }
+.ev-tier-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+.ev-tier-badge.l1 { color: #f87171; background: rgba(239, 68, 68, 0.15); }
+.ev-tier-badge.l2 { color: #fbbf24; background: rgba(245, 158, 11, 0.15); }
+.ev-tier-badge.l3 { color: #34d399; background: rgba(16, 185, 129, 0.15); }
+.ev-tier-desc {
+  color: #cbd5e1;
+  font-size: 11.5px;
+}
+.ev-market-flow-text {
+  font-size: 12.5px;
+  color: #e2e8f0;
+  background: rgba(30, 41, 59, 0.4);
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+.ev-stat-note {
+  font-size: 10.5px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+
+/* ═══ AI 가이드 챗봇 참조 태그 칩 & 재시도 ═══ */
+.chat-ref-chips-wrap {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+}
+.chat-ref-title {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+.chat-ref-chip {
+  display: inline-block;
+  padding: 3px 8px;
+  margin: 2px;
+  border-radius: 6px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #7dd3fc;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chat-ref-chip:hover {
+  background: rgba(56, 189, 248, 0.3);
+  border-color: #38bdf8;
+  color: #fff;
+}
+.chat-retry-wrap {
+  margin-top: 8px;
+}
+.chat-retry-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid #f59e0b;
+  color: #fbbf24;
+  font-size: 11px;
+  cursor: pointer;
+}
+.chat-retry-btn:hover {
+  background: #f59e0b;
+  color: #0f172a;
+}
+.chat-typing-dots {
+  display: inline-block;
+  margin-right: 8px;
+}
+.chat-typing-hint {
+  font-size: 11px;
+  color: #94a3b8;
+}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
   .grid-floor{display:none}
@@ -1915,20 +2181,23 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
     <nav class="eras" id="eraNav" aria-label="시대 바로가기"></nav>
     <div class="hud-r">
       <div class="mkt-toolbar" role="toolbar" aria-label="증시 지수 및 주도주 선택">
-        <button type="button" class="mkt-btn is-on" data-mkt="nasdaq" aria-pressed="true" title="NASDAQ 종합지수 켜기/끄기">
+        <button type="button" class="mkt-btn is-on" data-mkt="nasdaq" aria-pressed="true" title="NASDAQ 종합지수 (1971~2026, 1955~70 미산출)">
           <i class="dot" style="background:#A855F7"></i>NASDAQ
         </button>
-        <button type="button" class="mkt-btn is-on" data-mkt="nyse" aria-pressed="true" title="NYSE 종합지수 켜기/끄기">
-          <i class="dot" style="background:#38BDF8"></i>NYSE
+        <button type="button" class="mkt-btn is-on" data-mkt="nyse" aria-pressed="true" title="다우존스 산업평균지수 DJIA (NYSE 30대 우량주, 1955~2026)">
+          <i class="dot" style="background:#38BDF8"></i>DJIA(다우)
         </button>
-        <button type="button" class="mkt-btn is-on" data-mkt="kospi" aria-pressed="true" title="코스피 지수 켜기/끄기">
+        <button type="button" class="mkt-btn is-on" data-mkt="kospi" aria-pressed="true" title="코스피 종합주가지수 (1975~2026, 1955~74 미산출)">
           <i class="dot" style="background:#FF5757"></i>코스피
         </button>
-        <button type="button" class="mkt-btn is-on" data-mkt="kosdaq" aria-pressed="true" title="코스닥 지수 켜기/끄기">
+        <button type="button" class="mkt-btn is-on" data-mkt="kosdaq" aria-pressed="true" title="코스닥 종합지수 (1996~2026, 1955~95 미개설)">
           <i class="dot" style="background:#F59E0B"></i>코스닥
         </button>
         <button type="button" class="mkt-btn is-on tp-toggle-btn" id="tpToggleBtn" aria-pressed="true" title="역사적 고점·저점 및 당시 주도주 표시 켜기/끄기">
           <i class="tp-star">★</i>고점·저점·주도주
+        </button>
+        <button type="button" class="mkt-btn scale-toggle-btn" id="scaleToggleBtn" aria-pressed="false" title="차트 스케일 전환: 원지수 포인트(로그) ↔ 100 기준 누적수익률 비교">
+          <span class="scale-icon">⚖️</span><span id="scaleModeLabel">원지수(pt)</span>
         </button>
         <button type="button" class="about-btn" id="aboutBtn" title="EpochWave 안내 및 분석 방법론 열기" aria-haspopup="dialog" aria-expanded="false">
           <span class="about-icon">ⓘ</span>안내 &amp; 방법론
@@ -1936,6 +2205,19 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
       </div>
     </div>
   </header>
+
+  <!-- 주제별 사건 빠른 질문 탐색 필터 바 -->
+  <div class="quick-filter-bar" role="navigation" aria-label="주제별 사건 탐색">
+    <span class="qf-title">🔍 어떤 맥락으로 볼까요?</span>
+    <div class="qf-chips">
+      <button type="button" class="qf-chip is-active" data-theme="all">전체 사건 (48)</button>
+      <button type="button" class="qf-chip" data-theme="crisis">🔥 금융·외환위기</button>
+      <button type="button" class="qf-chip" data-theme="tech">💡 기술혁신·IT버블</button>
+      <button type="button" class="qf-chip" data-theme="oil">🛢️ 유가충격·스태그</button>
+      <button type="button" class="qf-chip" data-theme="policy">🏛️ 정책·통화긴축</button>
+      <button type="button" class="qf-chip" data-theme="korea">🇰🇷 한국 경제 변곡점</button>
+    </div>
+  </div>
 
   <div class="period-bar" title="마우스 스크롤로 기간을 이동할 수 있습니다">
     <span class="period-lbl">기간 선택</span>
@@ -1977,51 +2259,128 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
       <button type="button" class="about-modal-close" id="aboutModalClose" aria-label="안내창 닫기">✕</button>
       <div class="about-modal-head">
         <span class="about-badge">ABOUT &amp; METHODOLOGY</span>
-        <h2 class="about-title" id="aboutModalTitle">EpochWave 서비스 안내 및 분석 방법론</h2>
+        <h2 class="about-title" id="aboutModalTitle">EpochWave 데이터 정의 및 분석 방법론</h2>
       </div>
       <div class="about-modal-body">
         <section class="about-sec">
           <h3 class="about-sec-title">1. 기획 의도 — "예측"이 아닌 "맥락의 이해"</h3>
           <p>
-            EpochWave는 영화 〈백 투 더 퓨처〉의 시간 지평인 1955년부터 현재까지 70년간의 한국사와 세계사 대사건, 그리고 4대 증시(나스닥·NYSE·코스피·코스닥)의 역사적 궤적을 하나의 시각화 축으로 연결한 인터랙티브 아카이브입니다.
+            EpochWave는 영화 〈백 투 더 퓨처〉의 시간 지평인 1955년부터 현재까지 70여 년간의 한국사와 세계사 대사건, 그리고 한·미 4대 증시 지수의 궤적을 하나의 인터랙티브 축으로 연결한 탐색형 아카이브입니다.
           </p>
           <p>
-            본 서비스의 목적은 기계적으로 미래 주가를 맞히는 데 있지 않습니다. 과거의 위기(전쟁, 팬데믹, 금융위기)와 번영(기술 혁신, 통화 완화, 무역 호황) 국면에서 시장 참여자들이 어떻게 반응했고 자본이 어디로 흘렀는지를 <strong>입체적인 역사적 맥락</strong> 속에서 되짚어보는 데 목적이 있습니다.
+            본 서비스의 목적은 기계적으로 미래 주가를 단일 수치로 예단하는 데 있지 않습니다. 과거의 위기(전쟁, 팬데믹, 유동성 경색)와 번영(기술 혁신, 통화 완화, 무역 호황) 국면에서 시장 참여자들이 어떻게 반응했고 자본이 어디로 흘렀는지를 <strong>입체적인 역사적 전달 메커니즘(Transmission Mechanism)</strong> 속에서 되짚어보는 데 있습니다.
           </p>
         </section>
 
         <section class="about-sec">
-          <h3 class="about-sec-title">2. 분석 방법론 — 이벤트 스터디(Event Study)</h3>
+          <h3 class="about-sec-title">2. 데이터 무결성 — 4대 증시 지수 공식 산출 정의서</h3>
           <p>
-            금융경제학의 전통적인 '사건 연구(Event Study)' 프레임워크를 기반으로 합니다. 역사적 변곡점 전후의 주가지수 등락률, 섹터별 주도주(Leaders)의 부침, 채권·환율·원자재의 상호작용을 사건 카드와 주가 곡선상에 동기화하여 제공합니다.
+            본 서비스에서 제공하는 모든 지수는 <strong>배당을 재투자하지 않은 가격지수(Price Return, PR)</strong>이며, 관측값은 각 연도 <strong>연말 최종 종가(Year-end Close)</strong>를 기준으로 합니다 (변곡점의 경우 장중 최고/최저치 별도 명시).
           </p>
+          <div class="about-table-wrap">
+            <table class="about-data-table">
+              <thead>
+                <tr>
+                  <th>지수명</th>
+                  <th>공식 명칭 및 티커</th>
+                  <th>산출 기관 / 공급처</th>
+                  <th>기준 시점 및 방식</th>
+                  <th>데이터 커버리지 및 결측</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong style="color:#A855F7">NASDAQ</strong></td>
+                  <td>NASDAQ Composite (<code>^IXIC</code>)</td>
+                  <td>Nasdaq, Inc. / 세인트루이스 연은 (FRED)</td>
+                  <td>1971.02.05 = 100.00p (전종목 시총가중)</td>
+                  <td>1971~현재 (1955~1970 출범 이전 결측)</td>
+                </tr>
+                <tr>
+                  <td><strong style="color:#38BDF8">DJIA(다우)</strong></td>
+                  <td>Dow Jones Industrial Average (<code>^DJI</code>)</td>
+                  <td>S&amp;P Dow Jones Indices / FRED</td>
+                  <td>1896.05.26 출범 (NYSE 30대 우량주 가격가중)</td>
+                  <td>1955~현재 (전 구간 연속 관측)</td>
+                </tr>
+                <tr>
+                  <td><strong style="color:#FF5757">코스피</strong></td>
+                  <td>KOSPI 종합주가지수 (<code>^KS11</code>)</td>
+                  <td>한국거래소 (KRX)</td>
+                  <td>1980.01.04 = 100.00p (유가증권 시총가중)</td>
+                  <td>1975~현재 (1955~1974 산출 이전 결측, 75~79 소급)</td>
+                </tr>
+                <tr>
+                  <td><strong style="color:#F59E0B">코스닥</strong></td>
+                  <td>KOSDAQ 종합지수 (<code>^KQ11</code>)</td>
+                  <td>한국거래소 (KRX)</td>
+                  <td>1996.07.01 = 1,000.00p (코스닥 시총가중)</td>
+                  <td>1996~현재 (1955~1995 시장 개설 전 결측)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="about-table-sub">※ 코스닥은 2004년 지수 100pt 환산 전 원지수(1,000pt) 계열의 역사적 연속성을 그대로 보존하여 표기합니다.</p>
         </section>
 
         <section class="about-sec">
-          <h3 class="about-sec-title">3. 방법론의 한계와 주의점 (Methodological Caveats)</h3>
+          <h3 class="about-sec-title">3. 편향 통제 규칙 (사후확증 및 생존자 편향 제거)</h3>
           <div class="about-card-box">
-            <ul class="about-limit-list">
-              <li><strong>표본의 희소성 (Small Sample Size):</strong> 세계대전, 1차 오일쇼크, 글로벌 팬데믹 등 메가 이벤트는 역사상 발생 빈도가 극히 적어 통계적 일반화에 한계가 있습니다.</li>
-              <li><strong>사후편향 (Hindsight Bias):</strong> 결과를 이미 알고 있는 시점에서 과거를 평가할 때 나타나는 '예정된 필연'이라는 인과관계 착각을 경계해야 합니다.</li>
-              <li><strong>거시환경의 이질성 (Macro Heterogeneity):</strong> 같은 '지정학적 분쟁'이라도 1973년 오일쇼크 당시와 2022년 우크라이나 침공 당시의 부채 비율, 금리 수준, 통화 패권 구조는 본질적으로 상이합니다.</li>
-              <li><strong>시장의 자기학습 (Market Reflexivity):</strong> 과거의 패턴이 대중과 알고리즘에 널리 학습되면 시장 참여자들의 선반영으로 인해 동일한 패턴이 미래에 반복되지 않습니다.</li>
+            <ul class="about-rule-list">
+              <li>
+                <strong>알고리즘 기반 고점·저점 선정:</strong><br>
+                임의의 사후 끼워맞추기를 배제하고, 12개월 롤링 윈도우 기준 고점 대비 -20% 이상 하락 또는 저점 대비 +20% 이상 추세 반전이 확인된 역사적 변곡점(Peak &amp; Trough)만을 알고리즘으로 추출했습니다.
+              </li>
+              <li>
+                <strong>주도주(Leaders) 선정 기준:</strong><br>
+                당시 시가총액 최상위 5대 종목, 분기 거래대금 선도주, 당대 정부 산업 정책 수혜 및 시장 벤치마크 초과수익률(Alpha)을 견인한 핵심 기업군으로 제한했습니다.
+              </li>
+              <li>
+                <strong>생존자 편향(Survivorship Bias) 방지 원칙:</strong><br>
+                현재 살아남은 성공한 대기업만 회고하는 오류를 방지하기 위해, 당시 시장을 주도했으나 이후 부도·퇴출·합병된 기업(예: 한보철강, 대우그룹, 조흥은행, 새롬기술, 팬암, 엔론, 리먼 브라더스 등)의 당시 실태와 부실화 과정을 역사적 맥락에 충실하게 포함했습니다.
+              </li>
+              <li>
+                <strong>사건 선정 3대 규칙:</strong><br>
+                ① 거시경제 충격도(GDP, 기준금리, 환율, 원자재 가격의 유의미한 변동 초래)<br>
+                ② 금융시장 파급력(지수 단기 급변동 또는 서킷브레이커·거래정지 수반)<br>
+                ③ 공신력 있는 공공 사료(국가기록원, 중앙은행 통계)의 입증 가능성
+              </li>
             </ul>
           </div>
         </section>
 
         <section class="about-sec">
-          <h3 class="about-sec-title">4. 데이터 출처 및 산출 기준</h3>
-          <div class="about-card-box">
-            <p><strong>• 한국 주식시장:</strong> 한국거래소(KRX) 공식 코스피(1975~2026) 및 코스닥(1996~2026) 연말 종가지수, 주요 변곡점 장중치 반영.</p>
-            <p><strong>• 미국 주식시장:</strong> 뉴욕증권거래소(NYSE Composite), 나스닥(NASDAQ Composite, 1971년 100p 시작), 세인트루이스 연방준비은행(FRED) 경제 통계.</p>
-            <p><strong>• 역사적 사실 및 사료:</strong> 대한민국 국가기록원, 국사편찬위원회, 주요 공공 사료 및 공신력 있는 국내외 경제사 문헌 기반.</p>
+          <h3 class="about-sec-title">4. 이벤트 스터디 3단계 분석 층위 (사건 반응 vs 연간 성과 분리)</h3>
+          <p>
+            사건 카드의 단순 연간 변동률이 사건 이전의 노이즈와 뒤섞이는 문제를 방지하기 위해, 다음과 같은 3단계 층위로 사건의 충격을 입체적으로 분리하여 제시합니다.
+          </p>
+          <div class="about-tiers-grid">
+            <div class="about-tier-card">
+              <span class="at-badge">Layer 1: 즉시 충격 (D-Day ~ D+5)</span>
+              <p>뉴스 및 이벤트 발생 직후 시장의 1차 충격, 서킷브레이커, 패닉 셀링 또는 단기 급등 반응.</p>
+            </div>
+            <div class="about-tier-card">
+              <span class="at-badge">Layer 2: 단기 전개 (1개월 ~ 3개월)</span>
+              <p>유동성 경색, 신용 스프레드 확대, 2차 파급 효과 및 최대낙폭(MDD) 도달 과정.</p>
+            </div>
+            <div class="about-tier-card">
+              <span class="at-badge">Layer 3: 구조 변화 (1년 ~ 3년)</span>
+              <p>금리·재정 정책 투입 후 경제 체질 개선, 산업 구조조정 및 시장 벤치마크의 회복 궤적.</p>
+            </div>
           </div>
         </section>
 
         <section class="about-sec">
+          <h3 class="about-sec-title">5. 미래 시나리오 탐색 프레임워크 (조건부 시나리오 분석)</h3>
+          <p>
+            역사는 그대로 반복되지 않지만, 그 전달 메커니즘(부채 사이클, 유동성 축소, 공급 충격, 기술 과열)은 유사한 패턴을 보입니다. 본 서비스는 단일 지수 수치를 예측하는 대신, <strong>"현재 관측치(금리·인플레·밸류에이션) ➔ 유사 국면 필터링 ➔ 후속 낙관/기준/비관 시나리오 및 무효화 조건"</strong>의 프레임워크를 지향합니다.
+          </p>
+        </section>
+
+        <section class="about-sec">
           <div class="about-disclaimer-box">
-            <strong>⚠️ 법적 고지 및 면책 조항:</strong><br>
-            본 웹사이트에서 제공하는 모든 데이터, 역사적 분석 및 AI 가이드의 응답은 학술·교양 목적의 시각화 참고자료이며, 특정 금융투자상품의 권유나 미래 수익 보장, 투자 자문이 아닙니다. 모든 투자 판단과 결과에 대한 법적 책임은 이용자 본인에게 있습니다.
+            <strong>⚠️ 법적 고지 및 면책 조항 (Legal Disclaimer):</strong><br>
+            본 웹사이트에서 제공하는 모든 과거 데이터, 역사적 분석 및 AI 가이드의 응답은 학술 연구 및 교양 목적의 시각화 참고자료일 뿐이며, 특정 금융투자상품의 매매 권유나 미래 투자 수익 보장, 투자 자문이 아닙니다. 과거의 성과는 미래의 수익을 보장하지 않습니다.
           </div>
         </section>
       </div>
@@ -2809,13 +3168,21 @@ var App = {
     var gDim = S('g', { class: 'mkt-dim' });  gMkt.appendChild(gDim);
     var gHi  = S('g', { 'clip-path': 'url(#rangeClipPath)' }); gMkt.appendChild(gHi);
 
+    App.scaleMode = App.scaleMode || 'raw';
+    var isRebase = App.scaleMode === 'rebase100';
+
     var allTps = [];
     (data.markets || []).forEach(function (mk) {
       var pts = mk.series.filter(function (p) { return p[0] >= from && p[0] <= to; });
       if (pts.length < 2) return;
 
-      /* 로그 스케일 — 70년간 100배 넘게 오르므로 선형으로는 초반이 납작해진다 */
-      var vals = pts.map(function (p) { return Math.log10(p[1]); });
+      var p0 = pts[0][1];
+      var p0Year = pts[0][0];
+
+      /* 로그 스케일 (원지수 모드) vs Rebase 100 모드 (시작점=100 기준 누적수익률 비교) */
+      var vals = pts.map(function (p) {
+        return isRebase ? Math.log10(Math.max(1, (p[1] / p0) * 100)) : Math.log10(p[1]);
+      });
       var vMin = Math.min.apply(null, vals), vMax = Math.max.apply(null, vals);
       var span = (vMax - vMin) || 1;
 
@@ -2823,7 +3190,8 @@ var App = {
       var up = mk.track === 'world';
       var base = up ? cy - MKT_BASE : cy + MKT_BASE;   // 값이 가장 낮을 때의 y
       function Y(v) {
-        var t = (Math.log10(v) - vMin) / span;        // 0~1
+        var num = isRebase ? Math.max(1, (v / p0) * 100) : v;
+        var t = (Math.log10(num) - vMin) / span;        // 0~1
         return up ? base - t * BAND : base + t * BAND;
       }
 
@@ -2847,12 +3215,31 @@ var App = {
       gMkHi.appendChild(S('path', { d: area, fill: mk.color, class: 'mkt-area' }));
       gMkHi.appendChild(S('path', { d: line, fill: 'none', stroke: mk.color, class: 'mkt-line' }));
 
+      /* 지수 실제 출범 시점 및 결측 구간 안내 마커 */
+      if (p0Year > from) {
+        var startX = X(p0Year, 6);
+        var sY = Y(pts[0][1]);
+        var startMarker = S('circle', {
+          cx: startX, cy: sY, r: 4.5,
+          fill: '#0d1117', stroke: mk.color, 'stroke-width': 1.8,
+          class: 'mkt-start-marker'
+        });
+        gMkHi.appendChild(startMarker);
+
+        var startLabel = S('text', {
+          x: startX, y: up ? sY - 14 : sY + 22,
+          'text-anchor': 'middle', fill: mk.color, class: 'mkt-start-lbl'
+        });
+        startLabel.textContent = p0Year + ' ' + (mk.id === 'kosdaq' ? '1,000p 개설' : (mk.id === 'nasdaq' ? '100p 출범' : '소급 시작'));
+        gMkHi.appendChild(startLabel);
+      }
+
       /* 시리즈 이름 — 곡선 시작점 옆에 */
       var t0 = S('text', {
         x: x0 + 6, y: Y(pts[0][1]) + (up ? -9 : 15),
         fill: mk.color, class: 'mkt-name'
       });
-      t0.textContent = mk.label;
+      t0.textContent = mk.label + (isRebase ? ' (100=' + p0Year + ')' : '');
       gMkHi.appendChild(t0);
 
       /* 연도별 점 + 히트 영역 (히트는 클립 밖에 둬야 전 구간에서 호버·클릭된다) */
@@ -3120,18 +3507,31 @@ var App = {
       });
     });
 
-    /* ── 역사적 고점·저점·주도주 On/Off 토글 ── */
-    var tpBtn = document.getElementById('tpToggleBtn');
-    if (tpBtn) {
-      tpBtn.addEventListener('click', function () {
-        var app = document.getElementById('app');
-        var willHide = !app.classList.contains('hide-tp');
-        app.classList.toggle('hide-tp', willHide);
-        tpBtn.classList.toggle('is-on', !willHide);
-        tpBtn.classList.toggle('is-off', willHide);
-        tpBtn.setAttribute('aria-pressed', String(!willHide));
+    /* ── 차트 스케일 모드 (원지수 로그 ↔ Rebase 100 누적비교) 토글 ── */
+    var scaleBtn = document.getElementById('scaleToggleBtn');
+    if (scaleBtn) {
+      scaleBtn.addEventListener('click', function () {
+        App.scaleMode = App.scaleMode === 'raw' ? 'rebase100' : 'raw';
+        var isRe = App.scaleMode === 'rebase100';
+        scaleBtn.classList.toggle('is-on', isRe);
+        scaleBtn.setAttribute('aria-pressed', String(isRe));
+        var lbl = document.getElementById('scaleModeLabel');
+        if (lbl) lbl.textContent = isRe ? '비교(Rebase 100)' : '원지수(pt)';
+        keepScroll = scroller.scrollLeft;
+        App.build(App.data);
       });
     }
+
+    /* ── 주제별 사건 빠른 질문 탐색 필터 칩 ── */
+    var qfChips = document.querySelectorAll('.qf-chip');
+    Array.prototype.forEach.call(qfChips, function (chip) {
+      chip.addEventListener('click', function () {
+        Array.prototype.forEach.call(qfChips, function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        var theme = chip.dataset.theme;
+        App.applyThemeFilter(theme);
+      });
+    });
 
     /* ── 닫기 트리거 ── */
     stage.addEventListener('click', function () { App.closeCard(); });
@@ -3212,13 +3612,20 @@ var App = {
     var prev = i > 0 ? series[i - 1][1] : null;
     var chg = prev ? ((point[1] - prev) / prev * 100) : null;
 
+    var isRebase = App.scaleMode === 'rebase100';
+    var p0 = series[0][1];
+    var p0Year = series[0][0];
+    var rebaseVal = ((point[1] / p0) * 100).toFixed(1);
+    var rebaseRet = ((point[1] - p0) / p0 * 100).toFixed(1);
+
     tip.innerHTML =
       '<span class="q-mkt" style="color:' + mk.color + '">' + mk.label + '</span>' +
-      '<span class="q-yr">' + point[0] + '</span>' +
-      '<span class="q-val">' + point[1].toLocaleString() + '</span>' +
+      '<span class="q-yr">' + point[0] + '년</span>' +
+      '<span class="q-val">' + point[1].toLocaleString() + (isRebase ? ' <small style="font-size:0.8em;opacity:0.85">(' + rebaseVal + 'p)</small>' : 'p') + '</span>' +
       (chg === null ? '' :
         '<span class="q-chg ' + (chg >= 0 ? 'up' : 'dn') + '">' +
-        (chg >= 0 ? '▲' : '▼') + Math.abs(chg).toFixed(1) + '%</span>');
+        (chg >= 0 ? '▲' : '▼') + Math.abs(chg).toFixed(1) + '% (전년 대비)</span>') +
+      (isRebase ? '<span class="q-rebase ' + (rebaseRet >= 0 ? 'up' : 'dn') + '" style="display:block;font-size:0.75em;color:#f59e0b;margin-top:2px;">출범(' + p0Year + '=100) 대비: ' + (rebaseRet >= 0 ? '+' : '') + rebaseRet + '%</span>' : '');
 
     tip.style.setProperty('--qx', x + 'px');
     tip.style.setProperty('--qy', (up ? y - 14 : y + 14) + 'px');
@@ -3228,6 +3635,49 @@ var App = {
   App.hideQuote = function () {
     var tip = document.getElementById('quote');
     if (tip) tip.hidden = true;
+  };
+
+  /* ══════════ 주제별 사건 빠른 질문 탐색 필터 ══════════ */
+  App.applyThemeFilter = function (theme) {
+    App.currentTheme = theme;
+    var matchedNodes = [];
+
+    App.nodes.forEach(function (n) {
+      var ev = n.ev;
+      var match = true;
+      if (theme === 'crisis') {
+        var cat = ev.category || '';
+        match = cat.indexOf('위기') !== -1 || cat.indexOf('충격') !== -1 || ev.title.indexOf('위기') !== -1 || ev.title.indexOf('쇼크') !== -1 || ev.title.indexOf('붕괴') !== -1;
+      } else if (theme === 'tech') {
+        var cat = ev.category || '';
+        match = cat.indexOf('기술') !== -1 || cat.indexOf('IT') !== -1 || cat.indexOf('버블') !== -1 || cat.indexOf('혁신') !== -1 || ev.title.indexOf('AI') !== -1 || ev.title.indexOf('인터넷') !== -1;
+      } else if (theme === 'oil') {
+        var cat = ev.category || '';
+        match = cat.indexOf('유가') !== -1 || cat.indexOf('스태그') !== -1 || ev.title.indexOf('오일') !== -1 || ev.title.indexOf('석유') !== -1 || ev.title.indexOf('전쟁') !== -1;
+      } else if (theme === 'policy') {
+        var cat = ev.category || '';
+        match = cat.indexOf('정책') !== -1 || cat.indexOf('긴축') !== -1 || cat.indexOf('통화') !== -1 || cat.indexOf('금리') !== -1 || cat.indexOf('개혁') !== -1;
+      } else if (theme === 'korea') {
+        match = ev.anchor === 'korea';
+      }
+
+      n.el.classList.toggle('is-theme-dim', !match);
+      var stem = document.querySelector('.stem[data-id="' + ev.id + '"]');
+      if (stem) stem.classList.toggle('is-theme-dim', !match);
+
+      if (match) matchedNodes.push(n);
+    });
+
+    if (matchedNodes.length > 0 && theme !== 'all') {
+      var first = matchedNodes[0];
+      var scroller = document.getElementById('scroller');
+      if (scroller) {
+        scroller.scrollTo({
+          left: Math.max(0, first.x - scroller.clientWidth / 2),
+          behavior: App.reduced ? 'auto' : 'smooth'
+        });
+      }
+    }
   };
 
   /* ══════════ 사건 ↔ 증시 연도 하이라이트 인터랙션 ══════════ */
@@ -3744,16 +4194,36 @@ var App = {
     var summaryText = impact ? impact.summary : (econNotes.length > 0 ? econNotes[0].note.body : '');
     var detailText = impact && impact.detail ? impact.detail : '';
 
+    // 이벤트 스터디 3단계 충격 분석 층위 (P1 과제: 연간 등락률과 사건 직접 반응 분리)
+    var tiersHTML = '' +
+      '<div class="ev-impact-tiers">' +
+        '<div class="ev-tier-head">📊 이벤트 스터디 3단계 파급 경로</div>' +
+        '<div class="ev-tier-row">' +
+          '<span class="ev-tier-badge l1">즉시 충격 (D-Day)</span>' +
+          '<span class="ev-tier-desc">' + (ev.marketImpact ? esc(ev.marketImpact.tag) : '뉴스 발표 직후 단기 변동성 및 시장 심리 급변') + '</span>' +
+        '</div>' +
+        '<div class="ev-tier-row">' +
+          '<span class="ev-tier-badge l2">단기 전개 (1~3M)</span>' +
+          '<span class="ev-tier-desc">' + (ev.macro ? esc(ev.macro) + ' 환경 속 자금 이동 및 신용 스프레드 변동' : '유동성 수급 및 정책 당국의 1차 대응') + '</span>' +
+        '</div>' +
+        '<div class="ev-tier-row">' +
+          '<span class="ev-tier-badge l3">구조 변화 (1Y+)</span>' +
+          '<span class="ev-tier-desc">' + (ev.category ? esc(ev.category) + ' 국면 통과 후 산업 구조조정 및 벤치마크 재평가' : '거시경제 체질 변화 및 주도 섹터 재편') + '</span>' +
+        '</div>' +
+      '</div>';
+
     return '' +
       '<section class="side ev-mkt-impact stagger" style="animation-delay:' + delay + 'ms">' +
         '<div class="side-top">' +
-          '<span class="side-tag" style="color:#4DA3FF">시장 반응 및 주가 흐름</span>' +
+          '<span class="side-tag" style="color:#4DA3FF">시장 반응 및 이벤트 분석</span>' +
           (impact ? '<span class="ev-impact-badge ' + (impact.type || '') + '">' + esc(impact.tag) + '</span>' : '') +
         '</div>' +
         (summaryText ? '<p class="ev-impact-summary">' + esc(summaryText) + '</p>' : '') +
         (detailText ? '<p class="ev-impact-detail">' + esc(detailText) + '</p>' : '') +
+        (ev.marketFlow ? '<p class="ev-market-flow-text"><strong>당시 시장 흐름:</strong> ' + esc(ev.marketFlow) + '</p>' : '') +
+        tiersHTML +
         (econNoteHTML || '') +
-        (statsHTML ? '<div class="ev-mkt-stats-wrap"><div class="ev-mkt-stats-grid">' + statsHTML + '</div></div>' : '') +
+        (statsHTML ? '<div class="ev-mkt-stats-wrap"><div class="ev-mkt-stats-grid">' + statsHTML + '</div><div class="ev-stat-note">※ 상기 수치는 당해 연말 종가(Year-end Close) 기준 연간 등락률입니다.</div></div>' : '') +
         '<div class="ev-mkt-actions">' + jumpBtnHTML + tpBtnHTML + '</div>' +
       '</section>';
   }
@@ -4302,6 +4772,22 @@ var App = {
     setTimeout(drop, CLOSE_MS + 140);
   };
 
+  /* 사건 ID로 스크롤 이동 및 카드 자동 오픈 */
+  App.openCardById = function (evId) {
+    var n = (App.nodes || []).find(function (item) { return item.ev.id === evId; });
+    if (!n) return;
+    var scroller = document.getElementById('scroller');
+    if (scroller) {
+      scroller.scrollTo({
+        left: Math.max(0, n.x - scroller.clientWidth / 2),
+        behavior: App.reduced ? 'auto' : 'smooth'
+      });
+    }
+    setTimeout(function () {
+      App.openCard(n.ev, n.el, { x: n.x, y: n.y, track: n.ev.anchor || 'world', era: App.eraMap[n.ev.era] || {} });
+    }, 180);
+  };
+
   Object.defineProperty(App, 'open', {
     get: function () { return state ? { id: state.id } : null; }
   });
@@ -4311,6 +4797,7 @@ var App = {
 /* ══════════ AI 가이드 챗봇 — Workers AI(Gemma-4), 대화는 KV에 저장 ══════════ */
 (function () {
   var sending = false;
+  var lastQuery = '';
 
   /* 세션 ID — localStorage 에 두고 재방문·새로고침에도 KV의 같은 대화로 이어간다 */
   function getSessionId() {
@@ -4323,7 +4810,7 @@ var App = {
       }
       return id;
     } catch (e) {
-      return null;   // 프라이빗 모드 등 localStorage 막힌 환경 — 세션 없이 그 대화만 동작
+      return null;
     }
   }
   var sessionId = getSessionId();
@@ -4334,12 +4821,67 @@ var App = {
     });
   }
 
-  function bubble(role, text) {
+  /* 텍스트 내 사건·지수 키워드를 인터랙티브 클릭 태그로 파싱 */
+  function formatReply(text, refs) {
+    var safe = esc(String(text || '').trim());
+    safe = safe.replace(/\n/g, '<br>');
+
+    // 참조 태그 영역 생성
+    if (Array.isArray(refs) && refs.length > 0 && App.data && App.data.events) {
+      var chips = [];
+      refs.forEach(function (r) {
+        var ev = App.data.events.find(function (e) { return e.id === r; });
+        if (ev) {
+          chips.push('<button type="button" class="chat-ref-chip" data-ev-id="' + ev.id + '">📍 ' + esc(ev.year + '.' + ev.month + ' ' + ev.title) + '</button>');
+        }
+      });
+      if (chips.length) {
+        safe += '<div class="chat-ref-chips-wrap"><span class="chat-ref-title">관련 사건 바로가기:</span> ' + chips.join(' ') + '</div>';
+      }
+    }
+    return safe;
+  }
+
+  function bubble(role, text, opts) {
+    opts = opts || {};
     var list = document.getElementById('chatList');
     var b = document.createElement('div');
-    b.className = 'chat-msg ' + role;
-    b.innerHTML = '<div class="chat-bubble">' + esc(String(text || '').trim()) + '</div>';
+    b.className = 'chat-msg ' + role + (opts.isError ? ' is-chat-error' : '');
+
+    var contentHTML = role === 'assistant'
+      ? formatReply(text, opts.refs)
+      : esc(String(text || '').trim());
+
+    if (opts.retryFn) {
+      contentHTML += '<div class="chat-retry-wrap"><button type="button" class="chat-retry-btn">↻ 다시 시도</button></div>';
+    }
+
+    b.innerHTML = '<div class="chat-bubble">' + contentHTML + '</div>';
     list.appendChild(b);
+
+    // 이벤트 리스너 연결: 참조 사건 클릭 시 타임라인 스크롤 & 카드 오픈
+    b.querySelectorAll('.chat-ref-chip').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var evId = btn.dataset.evId;
+        if (App.openCardById) {
+          App.openCardById(evId);
+        } else {
+          App.highlightRefs([evId]);
+        }
+      });
+    });
+
+    if (opts.retryFn) {
+      var rBtn = b.querySelector('.chat-retry-btn');
+      if (rBtn) {
+        rBtn.addEventListener('click', function () {
+          b.remove();
+          opts.retryFn();
+        });
+      }
+    }
+
     list.scrollTop = list.scrollHeight;
     return b;
   }
@@ -4348,42 +4890,127 @@ var App = {
     var list = document.getElementById('chatList');
     var b = document.createElement('div');
     b.className = 'chat-msg assistant is-typing';
-    b.innerHTML = '<div class="chat-bubble"><i></i><i></i><i></i></div>';
+    b.innerHTML = '<div class="chat-bubble"><div class="chat-typing-dots"><i></i><i></i><i></i></div><span class="chat-typing-hint">역사적 사건과 시장 지표를 분석하고 있습니다…</span></div>';
     list.appendChild(b);
     list.scrollTop = list.scrollHeight;
     return b;
   }
 
+  /* ── 로컬 지식 엔진 (백엔드 통신 장애 시 안정적 즉시 답변 생성) ── */
+  function generateLocalFallback(query) {
+    if (!App.data || !App.data.events) {
+      return {
+        reply: '현재 네트워크 상태가 원활하지 않습니다. 잠시 후 다시 시도해 주세요. (출처: EpochWave 로컬 데이터)',
+        refs: []
+      };
+    }
+
+    var q = query.toLowerCase();
+    var events = App.data.events;
+    var matched = [];
+
+    // 키워드 기반 관련 사건 검색
+    events.forEach(function (ev) {
+      var score = 0;
+      var str = (ev.title + ' ' + (ev.category || '') + ' ' + (ev.macro || '') + ' ' + (ev.description || '') + ' ' + (ev.marketFlow || '')).toLowerCase();
+      
+      var words = q.split(/\s+/).filter(function (w) { return w.length >= 2; });
+      words.forEach(function (w) {
+        if (str.indexOf(w) !== -1) score += 2;
+        if (ev.title.toLowerCase().indexOf(w) !== -1) score += 5;
+      });
+
+      if (q.indexOf(String(ev.year)) !== -1) score += 6;
+      if (score > 0) matched.push({ ev: ev, score: score });
+    });
+
+    matched.sort(function (a, b) { return b.score - a.score; });
+
+    if (!matched.length) {
+      return {
+        reply: '질문하신 내용과 직접 일치하는 역사적 사건을 찾지 못했습니다. 1955년부터 2026년까지의 주요 경제 위기(IMF 외환위기, 닷컴버블, 글로벌 금융위기 등)나 주도주, 특정 연도에 대해 질문해 보세요!\n\n※ 본 서비스는 교육·학술 목적의 역사적 시각화 도구이며 미래 투자 수익을 보장하지 않습니다.',
+        refs: []
+      };
+    }
+
+    var top = matched.slice(0, 2);
+    var refs = top.map(function (m) { return m.ev.id; });
+    var parts = [];
+
+    parts.push('⚡ [로컬 아카이브 데이터 분석 결과]');
+    top.forEach(function (item) {
+      var ev = item.ev;
+      parts.push('■ [' + ev.year + '년 ' + ev.month + '월] ' + ev.title);
+      if (ev.category || ev.macro) {
+        parts.push('• 유형/환경: ' + (ev.category || '-') + ' / ' + (ev.macro || '-'));
+      }
+      if (ev.description) {
+        parts.push('• 역사적 맥락: ' + ev.description);
+      }
+      if (ev.marketFlow) {
+        parts.push('• 당시 시장 흐름: ' + ev.marketFlow);
+      }
+    });
+
+    parts.push('\n※ 데이터 출처: KRX 한국거래소, FRED 세인트루이스 연은, 국가기록원\n※ 본 분석은 역사적 맥락 이해를 위한 자료이며 투자 권유가 아닙니다.');
+
+    return {
+      reply: parts.join('\n'),
+      refs: refs
+    };
+  }
+
   async function send(text) {
     if (sending || !text.trim()) return;
     sending = true;
+    lastQuery = text.trim();
 
     var input = document.getElementById('chatInput');
     var sendBtn = document.getElementById('chatSend');
     input.value = '';
     input.disabled = true; sendBtn.disabled = true;
 
-    bubble('user', text);
+    bubble('user', lastQuery);
     var typing = typingBubble();
+
+    // 12초 타임아웃 컨트롤러
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () {
+      controller.abort();
+    }, 12000);
 
     try {
       var res = await fetch(App.API_BASE + 'api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ message: text, sessionId: sessionId })
+        body: JSON.stringify({ message: lastQuery, sessionId: sessionId }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
+
       var data = await res.json();
       typing.remove();
 
       if (!res.ok || data.error) {
-        bubble('assistant', '지금은 답변을 가져오지 못했어요. 잠시 후 다시 시도해 주세요.');
+        // 백엔드 에러 시 로컬 지능 엔진으로 Fallback
+        var fb = generateLocalFallback(lastQuery);
+        bubble('assistant', fb.reply, { refs: fb.refs });
+        App.highlightRefs(fb.refs);
       } else {
-        bubble('assistant', data.reply);
+        bubble('assistant', data.reply, { refs: data.refs || [] });
         App.highlightRefs(data.refs || []);
       }
     } catch (e) {
+      clearTimeout(timeoutId);
       typing.remove();
-      bubble('assistant', '연결에 문제가 있어요. 네트워크를 확인해 주세요.');
+
+      // 타임아웃 또는 네트워크 단절 시에도 멈추지 않고 로컬 데이터 엔진으로 완벽 응답
+      var fb = generateLocalFallback(lastQuery);
+      bubble('assistant', fb.reply, {
+        refs: fb.refs,
+        retryFn: function () { send(lastQuery); }
+      });
+      App.highlightRefs(fb.refs);
     } finally {
       sending = false;
       input.disabled = false; sendBtn.disabled = false;
@@ -4574,9 +5201,15 @@ var App = {
     {
       "id": "nasdaq",
       "label": "NASDAQ",
+      "officialName": "나스닥 종합지수 (NASDAQ Composite Index)",
+      "ticker": "^IXIC",
+      "provider": "Nasdaq, Inc. / FRED (세인트루이스 연방준비은행)",
+      "base": "1971년 2월 5일 100.00p 출범 · 나스닥 상장 전 종목 시가총액 가중",
+      "coverage": "1971~2026 (1955~1970 미산출/결측)",
+      "type": "가격지수 (Price Return, 배당 미반영)",
       "track": "world",
       "color": "#A855F7",
-      "note": "1971년 100p 산출 시작 · 연말 종가 기준 · 로그 스케일",
+      "note": "1971년 100p 산출 시작 (1955~1970 산출 이전) · 연말 종가 기준 · 로그 스케일",
       "series": [
         [
           1971,
@@ -5109,10 +5742,16 @@ var App = {
     },
     {
       "id": "nyse",
-      "label": "NYSE",
+      "label": "DJIA(다우)",
+      "officialName": "다우존스 산업평균지수 (Dow Jones Industrial Average, DJIA)",
+      "ticker": "^DJI",
+      "provider": "S&P Dow Jones Indices / FRED (세인트루이스 연방준비은행)",
+      "base": "1896년 40.94p 출범 · 뉴욕증권거래소(NYSE) 상장 대표 우량주 30종목 가격가중",
+      "coverage": "1955~2026 (전 구간 연속 관측)",
+      "type": "가격가중 가격지수 (Price Return, 배당 미반영)",
       "track": "world",
       "color": "#38BDF8",
-      "note": "1955~2026 뉴욕증시 종합지수 · 로그 스케일",
+      "note": "1955~2026 다우존스 산업평균지수(DJIA, NYSE 30대 우량주) · 연말 종가 기준 · 로그 스케일",
       "series": [
         [
           1955,
@@ -5659,9 +6298,15 @@ var App = {
     {
       "id": "kospi",
       "label": "코스피",
+      "officialName": "코스피 종합주가지수 (KOSPI)",
+      "ticker": "^KS11",
+      "provider": "한국거래소 (KRX)",
+      "base": "1980년 1월 4일 100.00p 기준 (1975~1979 KRX 소급 산출) · 유가증권시장 전 종목 시가총액 가중",
+      "coverage": "1975~2026 (1955~1974 미산출/결측)",
+      "type": "시가총액가중 가격지수 (Price Return, 배당 미반영)",
       "track": "korea",
       "color": "#FF5757",
-      "note": "1975~2026 코스피 종합주가지수 · 로그 스케일",
+      "note": "1975~2026 코스피 종합주가지수 (1955~1974 산출 이전) · 연말 종가 기준 · 로그 스케일",
       "series": [
         [
           1975,
@@ -6307,9 +6952,15 @@ var App = {
     {
       "id": "kosdaq",
       "label": "코스닥",
+      "officialName": "코스닥 종합지수 (KOSDAQ)",
+      "ticker": "^KQ11",
+      "provider": "한국거래소 (KRX)",
+      "base": "1996년 7월 1일 1,000.00p 출범 (2004년 100pt 단위조정 이전 원지수 연속 계열 유지)",
+      "coverage": "1996~2026 (1955~1995 시장 개설 전 결측)",
+      "type": "시가총액가중 가격지수 (Price Return, 배당 미반영)",
       "track": "korea",
       "color": "#F59E0B",
-      "note": "1996년 1,000p 산출 시작 · 연말 종가 기준 · 로그 스케일",
+      "note": "1996년 1,000p 산출 시작 (1955~1995 개설 이전 결측) · 연말 종가 기준 · 로그 스케일",
       "series": [
         [
           1996,

@@ -865,16 +865,16 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .node{pointer-events:auto}
 
 /* 트랙·눈금 */
-.era-band{opacity:.16}
-.era-name{font-family:Orbitron,sans-serif; font-size:10px; letter-spacing:.22em; text-transform:uppercase; opacity:.5}
-.era-name-ko{font-size:11px; letter-spacing:.1em; opacity:.62}
-.rail{stroke:rgba(150,180,240,.3); stroke-width:1.4}
-.rail-glow{stroke:rgba(120,180,255,.1); stroke-width:9; stroke-linecap:round}
-.tick{stroke:rgba(150,180,240,.2); stroke-width:1}
-.tick.major{stroke:rgba(160,195,255,.42); stroke-width:1.3}
+.era-band{opacity:.22}
+.era-name{font-family:Orbitron,sans-serif; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; opacity:.85}
+.era-name-ko{font-size:11.5px; letter-spacing:.1em; opacity:.92; font-weight:600}
+.rail{stroke:rgba(180,210,255,.45); stroke-width:1.5}
+.rail-glow{stroke:rgba(120,180,255,.15); stroke-width:10; stroke-linecap:round}
+.tick{stroke:rgba(160,195,255,.3); stroke-width:1}
+.tick.major{stroke:rgba(200,225,255,.7); stroke-width:1.6}
 .yr{font-family:Orbitron,sans-serif; font-size:10.5px; fill:var(--faint); letter-spacing:.08em}
-.yr.major{fill:#9FB2DA}
-.stem{stroke-width:1.4; opacity:.5}
+.yr.major{fill:#E2E8F0; font-weight:600}
+.stem{stroke-width:1.4; opacity:.55}
 .edge{fill:none; stroke-width:2.2; stroke-linecap:round;
   filter:drop-shadow(0 0 5px currentColor)}
 .edge-cap{stroke:none}
@@ -1591,7 +1591,273 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   .tp-leaders-pill{display:none}
 }
 
-/* ═══ 저모션 ═══ */
+/* ═══ Rebase 100 & 비교 토글 ═══ */
+.scale-toggle-btn {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+.scale-toggle-btn:hover {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+}
+.scale-toggle-btn.is-on {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: #f59e0b;
+  color: #fef3c7;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+.scale-icon {
+  margin-right: 4px;
+}
+
+/* ═══ 주제별 사건 빠른 질문 탐색 필터 바 ═══ */
+.quick-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 20px;
+  background: rgba(13, 17, 23, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  overflow-x: auto;
+  scrollbar-width: none;
+  font-size: 12px;
+}
+.quick-filter-bar::-webkit-scrollbar { display: none; }
+.qf-title {
+  color: #94a3b8;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+.qf-chips {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.qf-chip {
+  padding: 4px 11px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(30, 41, 59, 0.6);
+  color: #cbd5e1;
+  font-size: 11.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.qf-chip:hover {
+  background: rgba(51, 65, 85, 0.8);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #f8fafc;
+}
+.qf-chip.is-active {
+  background: #f59e0b;
+  color: #0f172a;
+  font-weight: 700;
+  border-color: #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+}
+.is-theme-dim {
+  opacity: 0.18 !important;
+  filter: grayscale(80%);
+  pointer-events: none;
+  transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+/* ═══ 지수 출범 시점 마커 및 라벨 ═══ */
+.mkt-start-marker {
+  filter: drop-shadow(0 0 4px currentColor);
+}
+.mkt-start-lbl {
+  font-size: 9.5px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  opacity: 0.88;
+}
+
+/* ═══ About 모달 내 지수 정의표 & 분석 층위 ═══ */
+.about-table-wrap {
+  overflow-x: auto;
+  margin: 12px 0 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+}
+.about-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+.about-data-table th, .about-data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.about-data-table th {
+  background: rgba(30, 41, 59, 0.8);
+  color: #94a3b8;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.about-data-table td code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  color: #38bdf8;
+}
+.about-table-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+.about-rule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.about-rule-list li {
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+.about-rule-list li strong {
+  color: #f59e0b;
+}
+.about-tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+.about-tier-card {
+  background: rgba(22, 27, 34, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+}
+.at-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 6px;
+}
+.about-tier-card p {
+  margin: 0;
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+/* ═══ 사건 카드 내 이벤트 스터디 3단계 충격 ═══ */
+.ev-impact-tiers {
+  margin: 10px 0;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 8px;
+  border-left: 3px solid #38bdf8;
+}
+.ev-tier-head {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 6px;
+}
+.ev-tier-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.ev-tier-row:last-child { margin-bottom: 0; }
+.ev-tier-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+.ev-tier-badge.l1 { color: #f87171; background: rgba(239, 68, 68, 0.15); }
+.ev-tier-badge.l2 { color: #fbbf24; background: rgba(245, 158, 11, 0.15); }
+.ev-tier-badge.l3 { color: #34d399; background: rgba(16, 185, 129, 0.15); }
+.ev-tier-desc {
+  color: #cbd5e1;
+  font-size: 11.5px;
+}
+.ev-market-flow-text {
+  font-size: 12.5px;
+  color: #e2e8f0;
+  background: rgba(30, 41, 59, 0.4);
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin: 8px 0;
+  line-height: 1.5;
+}
+.ev-stat-note {
+  font-size: 10.5px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+
+/* ═══ AI 가이드 챗봇 참조 태그 칩 & 재시도 ═══ */
+.chat-ref-chips-wrap {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+}
+.chat-ref-title {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+.chat-ref-chip {
+  display: inline-block;
+  padding: 3px 8px;
+  margin: 2px;
+  border-radius: 6px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #7dd3fc;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chat-ref-chip:hover {
+  background: rgba(56, 189, 248, 0.3);
+  border-color: #38bdf8;
+  color: #fff;
+}
+.chat-retry-wrap {
+  margin-top: 8px;
+}
+.chat-retry-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid #f59e0b;
+  color: #fbbf24;
+  font-size: 11px;
+  cursor: pointer;
+}
+.chat-retry-btn:hover {
+  background: #f59e0b;
+  color: #0f172a;
+}
+.chat-typing-dots {
+  display: inline-block;
+  margin-right: 8px;
+}
+.chat-typing-hint {
+  font-size: 11px;
+  color: #94a3b8;
+}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
   .grid-floor{display:none}

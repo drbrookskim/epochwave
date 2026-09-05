@@ -290,20 +290,23 @@
     <nav class="eras" id="eraNav" aria-label="시대 바로가기"></nav>
     <div class="hud-r">
       <div class="mkt-toolbar" role="toolbar" aria-label="증시 지수 및 주도주 선택">
-        <button type="button" class="mkt-btn is-on" data-mkt="nasdaq" aria-pressed="true" title="NASDAQ 종합지수 켜기/끄기">
+        <button type="button" class="mkt-btn is-on" data-mkt="nasdaq" aria-pressed="true" title="NASDAQ 종합지수 (1971~2026, 1955~70 미산출)">
           <i class="dot" style="background:#A855F7"></i>NASDAQ
         </button>
-        <button type="button" class="mkt-btn is-on" data-mkt="nyse" aria-pressed="true" title="NYSE 종합지수 켜기/끄기">
-          <i class="dot" style="background:#38BDF8"></i>NYSE
+        <button type="button" class="mkt-btn is-on" data-mkt="nyse" aria-pressed="true" title="다우존스 산업평균지수 DJIA (NYSE 30대 우량주, 1955~2026)">
+          <i class="dot" style="background:#38BDF8"></i>DJIA(다우)
         </button>
-        <button type="button" class="mkt-btn is-on" data-mkt="kospi" aria-pressed="true" title="코스피 지수 켜기/끄기">
+        <button type="button" class="mkt-btn is-on" data-mkt="kospi" aria-pressed="true" title="코스피 종합주가지수 (1975~2026, 1955~74 미산출)">
           <i class="dot" style="background:#FF5757"></i>코스피
         </button>
-        <button type="button" class="mkt-btn is-on" data-mkt="kosdaq" aria-pressed="true" title="코스닥 지수 켜기/끄기">
+        <button type="button" class="mkt-btn is-on" data-mkt="kosdaq" aria-pressed="true" title="코스닥 종합지수 (1996~2026, 1955~95 미개설)">
           <i class="dot" style="background:#F59E0B"></i>코스닥
         </button>
         <button type="button" class="mkt-btn is-on tp-toggle-btn" id="tpToggleBtn" aria-pressed="true" title="역사적 고점·저점 및 당시 주도주 표시 켜기/끄기">
           <i class="tp-star">★</i>고점·저점·주도주
+        </button>
+        <button type="button" class="mkt-btn scale-toggle-btn" id="scaleToggleBtn" aria-pressed="false" title="차트 스케일 전환: 원지수 포인트(로그) ↔ 100 기준 누적수익률 비교">
+          <span class="scale-icon">⚖️</span><span id="scaleModeLabel">원지수(pt)</span>
         </button>
         <button type="button" class="about-btn" id="aboutBtn" title="EpochWave 안내 및 분석 방법론 열기" aria-haspopup="dialog" aria-expanded="false">
           <span class="about-icon">ⓘ</span>안내 &amp; 방법론
@@ -311,6 +314,19 @@
       </div>
     </div>
   </header>
+
+  <!-- 주제별 사건 빠른 질문 탐색 필터 바 -->
+  <div class="quick-filter-bar" role="navigation" aria-label="주제별 사건 탐색">
+    <span class="qf-title">🔍 어떤 맥락으로 볼까요?</span>
+    <div class="qf-chips">
+      <button type="button" class="qf-chip is-active" data-theme="all">전체 사건 (48)</button>
+      <button type="button" class="qf-chip" data-theme="crisis">🔥 금융·외환위기</button>
+      <button type="button" class="qf-chip" data-theme="tech">💡 기술혁신·IT버블</button>
+      <button type="button" class="qf-chip" data-theme="oil">🛢️ 유가충격·스태그</button>
+      <button type="button" class="qf-chip" data-theme="policy">🏛️ 정책·통화긴축</button>
+      <button type="button" class="qf-chip" data-theme="korea">🇰🇷 한국 경제 변곡점</button>
+    </div>
+  </div>
 
   <div class="period-bar" title="마우스 스크롤로 기간을 이동할 수 있습니다">
     <span class="period-lbl">기간 선택</span>
@@ -352,51 +368,128 @@
       <button type="button" class="about-modal-close" id="aboutModalClose" aria-label="안내창 닫기">✕</button>
       <div class="about-modal-head">
         <span class="about-badge">ABOUT &amp; METHODOLOGY</span>
-        <h2 class="about-title" id="aboutModalTitle">EpochWave 서비스 안내 및 분석 방법론</h2>
+        <h2 class="about-title" id="aboutModalTitle">EpochWave 데이터 정의 및 분석 방법론</h2>
       </div>
       <div class="about-modal-body">
         <section class="about-sec">
           <h3 class="about-sec-title">1. 기획 의도 — "예측"이 아닌 "맥락의 이해"</h3>
           <p>
-            EpochWave는 영화 〈백 투 더 퓨처〉의 시간 지평인 1955년부터 현재까지 70년간의 한국사와 세계사 대사건, 그리고 4대 증시(나스닥·NYSE·코스피·코스닥)의 역사적 궤적을 하나의 시각화 축으로 연결한 인터랙티브 아카이브입니다.
+            EpochWave는 영화 〈백 투 더 퓨처〉의 시간 지평인 1955년부터 현재까지 70여 년간의 한국사와 세계사 대사건, 그리고 한·미 4대 증시 지수의 궤적을 하나의 인터랙티브 축으로 연결한 탐색형 아카이브입니다.
           </p>
           <p>
-            본 서비스의 목적은 기계적으로 미래 주가를 맞히는 데 있지 않습니다. 과거의 위기(전쟁, 팬데믹, 금융위기)와 번영(기술 혁신, 통화 완화, 무역 호황) 국면에서 시장 참여자들이 어떻게 반응했고 자본이 어디로 흘렀는지를 <strong>입체적인 역사적 맥락</strong> 속에서 되짚어보는 데 목적이 있습니다.
+            본 서비스의 목적은 기계적으로 미래 주가를 단일 수치로 예단하는 데 있지 않습니다. 과거의 위기(전쟁, 팬데믹, 유동성 경색)와 번영(기술 혁신, 통화 완화, 무역 호황) 국면에서 시장 참여자들이 어떻게 반응했고 자본이 어디로 흘렀는지를 <strong>입체적인 역사적 전달 메커니즘(Transmission Mechanism)</strong> 속에서 되짚어보는 데 있습니다.
           </p>
         </section>
 
         <section class="about-sec">
-          <h3 class="about-sec-title">2. 분석 방법론 — 이벤트 스터디(Event Study)</h3>
+          <h3 class="about-sec-title">2. 데이터 무결성 — 4대 증시 지수 공식 산출 정의서</h3>
           <p>
-            금융경제학의 전통적인 '사건 연구(Event Study)' 프레임워크를 기반으로 합니다. 역사적 변곡점 전후의 주가지수 등락률, 섹터별 주도주(Leaders)의 부침, 채권·환율·원자재의 상호작용을 사건 카드와 주가 곡선상에 동기화하여 제공합니다.
+            본 서비스에서 제공하는 모든 지수는 <strong>배당을 재투자하지 않은 가격지수(Price Return, PR)</strong>이며, 관측값은 각 연도 <strong>연말 최종 종가(Year-end Close)</strong>를 기준으로 합니다 (변곡점의 경우 장중 최고/최저치 별도 명시).
           </p>
+          <div class="about-table-wrap">
+            <table class="about-data-table">
+              <thead>
+                <tr>
+                  <th>지수명</th>
+                  <th>공식 명칭 및 티커</th>
+                  <th>산출 기관 / 공급처</th>
+                  <th>기준 시점 및 방식</th>
+                  <th>데이터 커버리지 및 결측</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong style="color:#A855F7">NASDAQ</strong></td>
+                  <td>NASDAQ Composite (<code>^IXIC</code>)</td>
+                  <td>Nasdaq, Inc. / 세인트루이스 연은 (FRED)</td>
+                  <td>1971.02.05 = 100.00p (전종목 시총가중)</td>
+                  <td>1971~현재 (1955~1970 출범 이전 결측)</td>
+                </tr>
+                <tr>
+                  <td><strong style="color:#38BDF8">DJIA(다우)</strong></td>
+                  <td>Dow Jones Industrial Average (<code>^DJI</code>)</td>
+                  <td>S&amp;P Dow Jones Indices / FRED</td>
+                  <td>1896.05.26 출범 (NYSE 30대 우량주 가격가중)</td>
+                  <td>1955~현재 (전 구간 연속 관측)</td>
+                </tr>
+                <tr>
+                  <td><strong style="color:#FF5757">코스피</strong></td>
+                  <td>KOSPI 종합주가지수 (<code>^KS11</code>)</td>
+                  <td>한국거래소 (KRX)</td>
+                  <td>1980.01.04 = 100.00p (유가증권 시총가중)</td>
+                  <td>1975~현재 (1955~1974 산출 이전 결측, 75~79 소급)</td>
+                </tr>
+                <tr>
+                  <td><strong style="color:#F59E0B">코스닥</strong></td>
+                  <td>KOSDAQ 종합지수 (<code>^KQ11</code>)</td>
+                  <td>한국거래소 (KRX)</td>
+                  <td>1996.07.01 = 1,000.00p (코스닥 시총가중)</td>
+                  <td>1996~현재 (1955~1995 시장 개설 전 결측)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="about-table-sub">※ 코스닥은 2004년 지수 100pt 환산 전 원지수(1,000pt) 계열의 역사적 연속성을 그대로 보존하여 표기합니다.</p>
         </section>
 
         <section class="about-sec">
-          <h3 class="about-sec-title">3. 방법론의 한계와 주의점 (Methodological Caveats)</h3>
+          <h3 class="about-sec-title">3. 편향 통제 규칙 (사후확증 및 생존자 편향 제거)</h3>
           <div class="about-card-box">
-            <ul class="about-limit-list">
-              <li><strong>표본의 희소성 (Small Sample Size):</strong> 세계대전, 1차 오일쇼크, 글로벌 팬데믹 등 메가 이벤트는 역사상 발생 빈도가 극히 적어 통계적 일반화에 한계가 있습니다.</li>
-              <li><strong>사후편향 (Hindsight Bias):</strong> 결과를 이미 알고 있는 시점에서 과거를 평가할 때 나타나는 '예정된 필연'이라는 인과관계 착각을 경계해야 합니다.</li>
-              <li><strong>거시환경의 이질성 (Macro Heterogeneity):</strong> 같은 '지정학적 분쟁'이라도 1973년 오일쇼크 당시와 2022년 우크라이나 침공 당시의 부채 비율, 금리 수준, 통화 패권 구조는 본질적으로 상이합니다.</li>
-              <li><strong>시장의 자기학습 (Market Reflexivity):</strong> 과거의 패턴이 대중과 알고리즘에 널리 학습되면 시장 참여자들의 선반영으로 인해 동일한 패턴이 미래에 반복되지 않습니다.</li>
+            <ul class="about-rule-list">
+              <li>
+                <strong>알고리즘 기반 고점·저점 선정:</strong><br>
+                임의의 사후 끼워맞추기를 배제하고, 12개월 롤링 윈도우 기준 고점 대비 -20% 이상 하락 또는 저점 대비 +20% 이상 추세 반전이 확인된 역사적 변곡점(Peak &amp; Trough)만을 알고리즘으로 추출했습니다.
+              </li>
+              <li>
+                <strong>주도주(Leaders) 선정 기준:</strong><br>
+                당시 시가총액 최상위 5대 종목, 분기 거래대금 선도주, 당대 정부 산업 정책 수혜 및 시장 벤치마크 초과수익률(Alpha)을 견인한 핵심 기업군으로 제한했습니다.
+              </li>
+              <li>
+                <strong>생존자 편향(Survivorship Bias) 방지 원칙:</strong><br>
+                현재 살아남은 성공한 대기업만 회고하는 오류를 방지하기 위해, 당시 시장을 주도했으나 이후 부도·퇴출·합병된 기업(예: 한보철강, 대우그룹, 조흥은행, 새롬기술, 팬암, 엔론, 리먼 브라더스 등)의 당시 실태와 부실화 과정을 역사적 맥락에 충실하게 포함했습니다.
+              </li>
+              <li>
+                <strong>사건 선정 3대 규칙:</strong><br>
+                ① 거시경제 충격도(GDP, 기준금리, 환율, 원자재 가격의 유의미한 변동 초래)<br>
+                ② 금융시장 파급력(지수 단기 급변동 또는 서킷브레이커·거래정지 수반)<br>
+                ③ 공신력 있는 공공 사료(국가기록원, 중앙은행 통계)의 입증 가능성
+              </li>
             </ul>
           </div>
         </section>
 
         <section class="about-sec">
-          <h3 class="about-sec-title">4. 데이터 출처 및 산출 기준</h3>
-          <div class="about-card-box">
-            <p><strong>• 한국 주식시장:</strong> 한국거래소(KRX) 공식 코스피(1975~2026) 및 코스닥(1996~2026) 연말 종가지수, 주요 변곡점 장중치 반영.</p>
-            <p><strong>• 미국 주식시장:</strong> 뉴욕증권거래소(NYSE Composite), 나스닥(NASDAQ Composite, 1971년 100p 시작), 세인트루이스 연방준비은행(FRED) 경제 통계.</p>
-            <p><strong>• 역사적 사실 및 사료:</strong> 대한민국 국가기록원, 국사편찬위원회, 주요 공공 사료 및 공신력 있는 국내외 경제사 문헌 기반.</p>
+          <h3 class="about-sec-title">4. 이벤트 스터디 3단계 분석 층위 (사건 반응 vs 연간 성과 분리)</h3>
+          <p>
+            사건 카드의 단순 연간 변동률이 사건 이전의 노이즈와 뒤섞이는 문제를 방지하기 위해, 다음과 같은 3단계 층위로 사건의 충격을 입체적으로 분리하여 제시합니다.
+          </p>
+          <div class="about-tiers-grid">
+            <div class="about-tier-card">
+              <span class="at-badge">Layer 1: 즉시 충격 (D-Day ~ D+5)</span>
+              <p>뉴스 및 이벤트 발생 직후 시장의 1차 충격, 서킷브레이커, 패닉 셀링 또는 단기 급등 반응.</p>
+            </div>
+            <div class="about-tier-card">
+              <span class="at-badge">Layer 2: 단기 전개 (1개월 ~ 3개월)</span>
+              <p>유동성 경색, 신용 스프레드 확대, 2차 파급 효과 및 최대낙폭(MDD) 도달 과정.</p>
+            </div>
+            <div class="about-tier-card">
+              <span class="at-badge">Layer 3: 구조 변화 (1년 ~ 3년)</span>
+              <p>금리·재정 정책 투입 후 경제 체질 개선, 산업 구조조정 및 시장 벤치마크의 회복 궤적.</p>
+            </div>
           </div>
         </section>
 
         <section class="about-sec">
+          <h3 class="about-sec-title">5. 미래 시나리오 탐색 프레임워크 (조건부 시나리오 분석)</h3>
+          <p>
+            역사는 그대로 반복되지 않지만, 그 전달 메커니즘(부채 사이클, 유동성 축소, 공급 충격, 기술 과열)은 유사한 패턴을 보입니다. 본 서비스는 단일 지수 수치를 예측하는 대신, <strong>"현재 관측치(금리·인플레·밸류에이션) ➔ 유사 국면 필터링 ➔ 후속 낙관/기준/비관 시나리오 및 무효화 조건"</strong>의 프레임워크를 지향합니다.
+          </p>
+        </section>
+
+        <section class="about-sec">
           <div class="about-disclaimer-box">
-            <strong>⚠️ 법적 고지 및 면책 조항:</strong><br>
-            본 웹사이트에서 제공하는 모든 데이터, 역사적 분석 및 AI 가이드의 응답은 학술·교양 목적의 시각화 참고자료이며, 특정 금융투자상품의 권유나 미래 수익 보장, 투자 자문이 아닙니다. 모든 투자 판단과 결과에 대한 법적 책임은 이용자 본인에게 있습니다.
+            <strong>⚠️ 법적 고지 및 면책 조항 (Legal Disclaimer):</strong><br>
+            본 웹사이트에서 제공하는 모든 과거 데이터, 역사적 분석 및 AI 가이드의 응답은 학술 연구 및 교양 목적의 시각화 참고자료일 뿐이며, 특정 금융투자상품의 매매 권유나 미래 투자 수익 보장, 투자 자문이 아닙니다. 과거의 성과는 미래의 수익을 보장하지 않습니다.
           </div>
         </section>
       </div>

@@ -140,13 +140,21 @@
     var gDim = S('g', { class: 'mkt-dim' });  gMkt.appendChild(gDim);
     var gHi  = S('g', { 'clip-path': 'url(#rangeClipPath)' }); gMkt.appendChild(gHi);
 
+    App.scaleMode = App.scaleMode || 'raw';
+    var isRebase = App.scaleMode === 'rebase100';
+
     var allTps = [];
     (data.markets || []).forEach(function (mk) {
       var pts = mk.series.filter(function (p) { return p[0] >= from && p[0] <= to; });
       if (pts.length < 2) return;
 
-      /* 로그 스케일 — 70년간 100배 넘게 오르므로 선형으로는 초반이 납작해진다 */
-      var vals = pts.map(function (p) { return Math.log10(p[1]); });
+      var p0 = pts[0][1];
+      var p0Year = pts[0][0];
+
+      /* 로그 스케일 (원지수 모드) vs Rebase 100 모드 (시작점=100 기준 누적수익률 비교) */
+      var vals = pts.map(function (p) {
+        return isRebase ? Math.log10(Math.max(1, (p[1] / p0) * 100)) : Math.log10(p[1]);
+      });
       var vMin = Math.min.apply(null, vals), vMax = Math.max.apply(null, vals);
       var span = (vMax - vMin) || 1;
 
@@ -154,7 +162,8 @@
       var up = mk.track === 'world';
       var base = up ? cy - MKT_BASE : cy + MKT_BASE;   // 값이 가장 낮을 때의 y
       function Y(v) {
-        var t = (Math.log10(v) - vMin) / span;        // 0~1
+        var num = isRebase ? Math.max(1, (v / p0) * 100) : v;
+        var t = (Math.log10(num) - vMin) / span;        // 0~1
         return up ? base - t * BAND : base + t * BAND;
       }
 
@@ -178,12 +187,31 @@
       gMkHi.appendChild(S('path', { d: area, fill: mk.color, class: 'mkt-area' }));
       gMkHi.appendChild(S('path', { d: line, fill: 'none', stroke: mk.color, class: 'mkt-line' }));
 
+      /* 지수 실제 출범 시점 및 결측 구간 안내 마커 */
+      if (p0Year > from) {
+        var startX = X(p0Year, 6);
+        var sY = Y(pts[0][1]);
+        var startMarker = S('circle', {
+          cx: startX, cy: sY, r: 4.5,
+          fill: '#0d1117', stroke: mk.color, 'stroke-width': 1.8,
+          class: 'mkt-start-marker'
+        });
+        gMkHi.appendChild(startMarker);
+
+        var startLabel = S('text', {
+          x: startX, y: up ? sY - 14 : sY + 22,
+          'text-anchor': 'middle', fill: mk.color, class: 'mkt-start-lbl'
+        });
+        startLabel.textContent = p0Year + ' ' + (mk.id === 'kosdaq' ? '1,000p 개설' : (mk.id === 'nasdaq' ? '100p 출범' : '소급 시작'));
+        gMkHi.appendChild(startLabel);
+      }
+
       /* 시리즈 이름 — 곡선 시작점 옆에 */
       var t0 = S('text', {
         x: x0 + 6, y: Y(pts[0][1]) + (up ? -9 : 15),
         fill: mk.color, class: 'mkt-name'
       });
-      t0.textContent = mk.label;
+      t0.textContent = mk.label + (isRebase ? ' (100=' + p0Year + ')' : '');
       gMkHi.appendChild(t0);
 
       /* 연도별 점 + 히트 영역 (히트는 클립 밖에 둬야 전 구간에서 호버·클릭된다) */
@@ -451,18 +479,31 @@
       });
     });
 
-    /* ── 역사적 고점·저점·주도주 On/Off 토글 ── */
-    var tpBtn = document.getElementById('tpToggleBtn');
-    if (tpBtn) {
-      tpBtn.addEventListener('click', function () {
-        var app = document.getElementById('app');
-        var willHide = !app.classList.contains('hide-tp');
-        app.classList.toggle('hide-tp', willHide);
-        tpBtn.classList.toggle('is-on', !willHide);
-        tpBtn.classList.toggle('is-off', willHide);
-        tpBtn.setAttribute('aria-pressed', String(!willHide));
+    /* ── 차트 스케일 모드 (원지수 로그 ↔ Rebase 100 누적비교) 토글 ── */
+    var scaleBtn = document.getElementById('scaleToggleBtn');
+    if (scaleBtn) {
+      scaleBtn.addEventListener('click', function () {
+        App.scaleMode = App.scaleMode === 'raw' ? 'rebase100' : 'raw';
+        var isRe = App.scaleMode === 'rebase100';
+        scaleBtn.classList.toggle('is-on', isRe);
+        scaleBtn.setAttribute('aria-pressed', String(isRe));
+        var lbl = document.getElementById('scaleModeLabel');
+        if (lbl) lbl.textContent = isRe ? '비교(Rebase 100)' : '원지수(pt)';
+        keepScroll = scroller.scrollLeft;
+        App.build(App.data);
       });
     }
+
+    /* ── 주제별 사건 빠른 질문 탐색 필터 칩 ── */
+    var qfChips = document.querySelectorAll('.qf-chip');
+    Array.prototype.forEach.call(qfChips, function (chip) {
+      chip.addEventListener('click', function () {
+        Array.prototype.forEach.call(qfChips, function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        var theme = chip.dataset.theme;
+        App.applyThemeFilter(theme);
+      });
+    });
 
     /* ── 닫기 트리거 ── */
     stage.addEventListener('click', function () { App.closeCard(); });
@@ -543,13 +584,20 @@
     var prev = i > 0 ? series[i - 1][1] : null;
     var chg = prev ? ((point[1] - prev) / prev * 100) : null;
 
+    var isRebase = App.scaleMode === 'rebase100';
+    var p0 = series[0][1];
+    var p0Year = series[0][0];
+    var rebaseVal = ((point[1] / p0) * 100).toFixed(1);
+    var rebaseRet = ((point[1] - p0) / p0 * 100).toFixed(1);
+
     tip.innerHTML =
       '<span class="q-mkt" style="color:' + mk.color + '">' + mk.label + '</span>' +
-      '<span class="q-yr">' + point[0] + '</span>' +
-      '<span class="q-val">' + point[1].toLocaleString() + '</span>' +
+      '<span class="q-yr">' + point[0] + '년</span>' +
+      '<span class="q-val">' + point[1].toLocaleString() + (isRebase ? ' <small style="font-size:0.8em;opacity:0.85">(' + rebaseVal + 'p)</small>' : 'p') + '</span>' +
       (chg === null ? '' :
         '<span class="q-chg ' + (chg >= 0 ? 'up' : 'dn') + '">' +
-        (chg >= 0 ? '▲' : '▼') + Math.abs(chg).toFixed(1) + '%</span>');
+        (chg >= 0 ? '▲' : '▼') + Math.abs(chg).toFixed(1) + '% (전년 대비)</span>') +
+      (isRebase ? '<span class="q-rebase ' + (rebaseRet >= 0 ? 'up' : 'dn') + '" style="display:block;font-size:0.75em;color:#f59e0b;margin-top:2px;">출범(' + p0Year + '=100) 대비: ' + (rebaseRet >= 0 ? '+' : '') + rebaseRet + '%</span>' : '');
 
     tip.style.setProperty('--qx', x + 'px');
     tip.style.setProperty('--qy', (up ? y - 14 : y + 14) + 'px');
@@ -559,6 +607,49 @@
   App.hideQuote = function () {
     var tip = document.getElementById('quote');
     if (tip) tip.hidden = true;
+  };
+
+  /* ══════════ 주제별 사건 빠른 질문 탐색 필터 ══════════ */
+  App.applyThemeFilter = function (theme) {
+    App.currentTheme = theme;
+    var matchedNodes = [];
+
+    App.nodes.forEach(function (n) {
+      var ev = n.ev;
+      var match = true;
+      if (theme === 'crisis') {
+        var cat = ev.category || '';
+        match = cat.indexOf('위기') !== -1 || cat.indexOf('충격') !== -1 || ev.title.indexOf('위기') !== -1 || ev.title.indexOf('쇼크') !== -1 || ev.title.indexOf('붕괴') !== -1;
+      } else if (theme === 'tech') {
+        var cat = ev.category || '';
+        match = cat.indexOf('기술') !== -1 || cat.indexOf('IT') !== -1 || cat.indexOf('버블') !== -1 || cat.indexOf('혁신') !== -1 || ev.title.indexOf('AI') !== -1 || ev.title.indexOf('인터넷') !== -1;
+      } else if (theme === 'oil') {
+        var cat = ev.category || '';
+        match = cat.indexOf('유가') !== -1 || cat.indexOf('스태그') !== -1 || ev.title.indexOf('오일') !== -1 || ev.title.indexOf('석유') !== -1 || ev.title.indexOf('전쟁') !== -1;
+      } else if (theme === 'policy') {
+        var cat = ev.category || '';
+        match = cat.indexOf('정책') !== -1 || cat.indexOf('긴축') !== -1 || cat.indexOf('통화') !== -1 || cat.indexOf('금리') !== -1 || cat.indexOf('개혁') !== -1;
+      } else if (theme === 'korea') {
+        match = ev.anchor === 'korea';
+      }
+
+      n.el.classList.toggle('is-theme-dim', !match);
+      var stem = document.querySelector('.stem[data-id="' + ev.id + '"]');
+      if (stem) stem.classList.toggle('is-theme-dim', !match);
+
+      if (match) matchedNodes.push(n);
+    });
+
+    if (matchedNodes.length > 0 && theme !== 'all') {
+      var first = matchedNodes[0];
+      var scroller = document.getElementById('scroller');
+      if (scroller) {
+        scroller.scrollTo({
+          left: Math.max(0, first.x - scroller.clientWidth / 2),
+          behavior: App.reduced ? 'auto' : 'smooth'
+        });
+      }
+    }
   };
 
   /* ══════════ 사건 ↔ 증시 연도 하이라이트 인터랙션 ══════════ */

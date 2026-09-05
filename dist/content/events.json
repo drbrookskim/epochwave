@@ -62,9 +62,15 @@
     {
       "id": "nasdaq",
       "label": "NASDAQ",
+      "officialName": "나스닥 종합지수 (NASDAQ Composite Index)",
+      "ticker": "^IXIC",
+      "provider": "Nasdaq, Inc. / FRED (세인트루이스 연방준비은행)",
+      "base": "1971년 2월 5일 100.00p 출범 · 나스닥 상장 전 종목 시가총액 가중",
+      "coverage": "1971~2026 (1955~1970 미산출/결측)",
+      "type": "가격지수 (Price Return, 배당 미반영)",
       "track": "world",
       "color": "#A855F7",
-      "note": "1971년 100p 산출 시작 · 연말 종가 기준 · 로그 스케일",
+      "note": "1971년 100p 산출 시작 (1955~1970 산출 이전) · 연말 종가 기준 · 로그 스케일",
       "series": [
         [
           1971,
@@ -597,10 +603,16 @@
     },
     {
       "id": "nyse",
-      "label": "NYSE",
+      "label": "DJIA(다우)",
+      "officialName": "다우존스 산업평균지수 (Dow Jones Industrial Average, DJIA)",
+      "ticker": "^DJI",
+      "provider": "S&P Dow Jones Indices / FRED (세인트루이스 연방준비은행)",
+      "base": "1896년 40.94p 출범 · 뉴욕증권거래소(NYSE) 상장 대표 우량주 30종목 가격가중",
+      "coverage": "1955~2026 (전 구간 연속 관측)",
+      "type": "가격가중 가격지수 (Price Return, 배당 미반영)",
       "track": "world",
       "color": "#38BDF8",
-      "note": "1955~2026 뉴욕증시 종합지수 · 로그 스케일",
+      "note": "1955~2026 다우존스 산업평균지수(DJIA, NYSE 30대 우량주) · 연말 종가 기준 · 로그 스케일",
       "series": [
         [
           1955,
@@ -1147,9 +1159,15 @@
     {
       "id": "kospi",
       "label": "코스피",
+      "officialName": "코스피 종합주가지수 (KOSPI)",
+      "ticker": "^KS11",
+      "provider": "한국거래소 (KRX)",
+      "base": "1980년 1월 4일 100.00p 기준 (1975~1979 KRX 소급 산출) · 유가증권시장 전 종목 시가총액 가중",
+      "coverage": "1975~2026 (1955~1974 미산출/결측)",
+      "type": "시가총액가중 가격지수 (Price Return, 배당 미반영)",
       "track": "korea",
       "color": "#FF5757",
-      "note": "1975~2026 코스피 종합주가지수 · 로그 스케일",
+      "note": "1975~2026 코스피 종합주가지수 (1955~1974 산출 이전) · 연말 종가 기준 · 로그 스케일",
       "series": [
         [
           1975,
@@ -1795,9 +1813,15 @@
     {
       "id": "kosdaq",
       "label": "코스닥",
+      "officialName": "코스닥 종합지수 (KOSDAQ)",
+      "ticker": "^KQ11",
+      "provider": "한국거래소 (KRX)",
+      "base": "1996년 7월 1일 1,000.00p 출범 (2004년 100pt 단위조정 이전 원지수 연속 계열 유지)",
+      "coverage": "1996~2026 (1955~1995 시장 개설 전 결측)",
+      "type": "시가총액가중 가격지수 (Price Return, 배당 미반영)",
       "track": "korea",
       "color": "#F59E0B",
-      "note": "1996년 1,000p 산출 시작 · 연말 종가 기준 · 로그 스케일",
+      "note": "1996년 1,000p 산출 시작 (1955~1995 개설 이전 결측) · 연말 종가 기준 · 로그 스케일",
       "series": [
         [
           1996,

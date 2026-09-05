@@ -349,16 +349,36 @@
     var summaryText = impact ? impact.summary : (econNotes.length > 0 ? econNotes[0].note.body : '');
     var detailText = impact && impact.detail ? impact.detail : '';
 
+    // 이벤트 스터디 3단계 충격 분석 층위 (P1 과제: 연간 등락률과 사건 직접 반응 분리)
+    var tiersHTML = '' +
+      '<div class="ev-impact-tiers">' +
+        '<div class="ev-tier-head">📊 이벤트 스터디 3단계 파급 경로</div>' +
+        '<div class="ev-tier-row">' +
+          '<span class="ev-tier-badge l1">즉시 충격 (D-Day)</span>' +
+          '<span class="ev-tier-desc">' + (ev.marketImpact ? esc(ev.marketImpact.tag) : '뉴스 발표 직후 단기 변동성 및 시장 심리 급변') + '</span>' +
+        '</div>' +
+        '<div class="ev-tier-row">' +
+          '<span class="ev-tier-badge l2">단기 전개 (1~3M)</span>' +
+          '<span class="ev-tier-desc">' + (ev.macro ? esc(ev.macro) + ' 환경 속 자금 이동 및 신용 스프레드 변동' : '유동성 수급 및 정책 당국의 1차 대응') + '</span>' +
+        '</div>' +
+        '<div class="ev-tier-row">' +
+          '<span class="ev-tier-badge l3">구조 변화 (1Y+)</span>' +
+          '<span class="ev-tier-desc">' + (ev.category ? esc(ev.category) + ' 국면 통과 후 산업 구조조정 및 벤치마크 재평가' : '거시경제 체질 변화 및 주도 섹터 재편') + '</span>' +
+        '</div>' +
+      '</div>';
+
     return '' +
       '<section class="side ev-mkt-impact stagger" style="animation-delay:' + delay + 'ms">' +
         '<div class="side-top">' +
-          '<span class="side-tag" style="color:#4DA3FF">시장 반응 및 주가 흐름</span>' +
+          '<span class="side-tag" style="color:#4DA3FF">시장 반응 및 이벤트 분석</span>' +
           (impact ? '<span class="ev-impact-badge ' + (impact.type || '') + '">' + esc(impact.tag) + '</span>' : '') +
         '</div>' +
         (summaryText ? '<p class="ev-impact-summary">' + esc(summaryText) + '</p>' : '') +
         (detailText ? '<p class="ev-impact-detail">' + esc(detailText) + '</p>' : '') +
+        (ev.marketFlow ? '<p class="ev-market-flow-text"><strong>당시 시장 흐름:</strong> ' + esc(ev.marketFlow) + '</p>' : '') +
+        tiersHTML +
         (econNoteHTML || '') +
-        (statsHTML ? '<div class="ev-mkt-stats-wrap"><div class="ev-mkt-stats-grid">' + statsHTML + '</div></div>' : '') +
+        (statsHTML ? '<div class="ev-mkt-stats-wrap"><div class="ev-mkt-stats-grid">' + statsHTML + '</div><div class="ev-stat-note">※ 상기 수치는 당해 연말 종가(Year-end Close) 기준 연간 등락률입니다.</div></div>' : '') +
         '<div class="ev-mkt-actions">' + jumpBtnHTML + tpBtnHTML + '</div>' +
       '</section>';
   }
@@ -905,6 +925,22 @@
       { duration: 160, delay: CLOSE_MS - 40, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
 
     setTimeout(drop, CLOSE_MS + 140);
+  };
+
+  /* 사건 ID로 스크롤 이동 및 카드 자동 오픈 */
+  App.openCardById = function (evId) {
+    var n = (App.nodes || []).find(function (item) { return item.ev.id === evId; });
+    if (!n) return;
+    var scroller = document.getElementById('scroller');
+    if (scroller) {
+      scroller.scrollTo({
+        left: Math.max(0, n.x - scroller.clientWidth / 2),
+        behavior: App.reduced ? 'auto' : 'smooth'
+      });
+    }
+    setTimeout(function () {
+      App.openCard(n.ev, n.el, { x: n.x, y: n.y, track: n.ev.anchor || 'world', era: App.eraMap[n.ev.era] || {} });
+    }, 180);
   };
 
   Object.defineProperty(App, 'open', {

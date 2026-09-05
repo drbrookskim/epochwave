@@ -1,6 +1,7 @@
 /* ══════════ AI 가이드 챗봇 — Workers AI(Gemma-4), 대화는 KV에 저장 ══════════ */
 (function () {
   var sending = false;
+  var lastQuery = '';
 
   /* 세션 ID — localStorage 에 두고 재방문·새로고침에도 KV의 같은 대화로 이어간다 */
   function getSessionId() {
@@ -13,7 +14,7 @@
       }
       return id;
     } catch (e) {
-      return null;   // 프라이빗 모드 등 localStorage 막힌 환경 — 세션 없이 그 대화만 동작
+      return null;
     }
   }
   var sessionId = getSessionId();
@@ -24,12 +25,67 @@
     });
   }
 
-  function bubble(role, text) {
+  /* 텍스트 내 사건·지수 키워드를 인터랙티브 클릭 태그로 파싱 */
+  function formatReply(text, refs) {
+    var safe = esc(String(text || '').trim());
+    safe = safe.replace(/\n/g, '<br>');
+
+    // 참조 태그 영역 생성
+    if (Array.isArray(refs) && refs.length > 0 && App.data && App.data.events) {
+      var chips = [];
+      refs.forEach(function (r) {
+        var ev = App.data.events.find(function (e) { return e.id === r; });
+        if (ev) {
+          chips.push('<button type="button" class="chat-ref-chip" data-ev-id="' + ev.id + '">📍 ' + esc(ev.year + '.' + ev.month + ' ' + ev.title) + '</button>');
+        }
+      });
+      if (chips.length) {
+        safe += '<div class="chat-ref-chips-wrap"><span class="chat-ref-title">관련 사건 바로가기:</span> ' + chips.join(' ') + '</div>';
+      }
+    }
+    return safe;
+  }
+
+  function bubble(role, text, opts) {
+    opts = opts || {};
     var list = document.getElementById('chatList');
     var b = document.createElement('div');
-    b.className = 'chat-msg ' + role;
-    b.innerHTML = '<div class="chat-bubble">' + esc(String(text || '').trim()) + '</div>';
+    b.className = 'chat-msg ' + role + (opts.isError ? ' is-chat-error' : '');
+
+    var contentHTML = role === 'assistant'
+      ? formatReply(text, opts.refs)
+      : esc(String(text || '').trim());
+
+    if (opts.retryFn) {
+      contentHTML += '<div class="chat-retry-wrap"><button type="button" class="chat-retry-btn">↻ 다시 시도</button></div>';
+    }
+
+    b.innerHTML = '<div class="chat-bubble">' + contentHTML + '</div>';
     list.appendChild(b);
+
+    // 이벤트 리스너 연결: 참조 사건 클릭 시 타임라인 스크롤 & 카드 오픈
+    b.querySelectorAll('.chat-ref-chip').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var evId = btn.dataset.evId;
+        if (App.openCardById) {
+          App.openCardById(evId);
+        } else {
+          App.highlightRefs([evId]);
+        }
+      });
+    });
+
+    if (opts.retryFn) {
+      var rBtn = b.querySelector('.chat-retry-btn');
+      if (rBtn) {
+        rBtn.addEventListener('click', function () {
+          b.remove();
+          opts.retryFn();
+        });
+      }
+    }
+
     list.scrollTop = list.scrollHeight;
     return b;
   }
@@ -38,42 +94,127 @@
     var list = document.getElementById('chatList');
     var b = document.createElement('div');
     b.className = 'chat-msg assistant is-typing';
-    b.innerHTML = '<div class="chat-bubble"><i></i><i></i><i></i></div>';
+    b.innerHTML = '<div class="chat-bubble"><div class="chat-typing-dots"><i></i><i></i><i></i></div><span class="chat-typing-hint">역사적 사건과 시장 지표를 분석하고 있습니다…</span></div>';
     list.appendChild(b);
     list.scrollTop = list.scrollHeight;
     return b;
   }
 
+  /* ── 로컬 지식 엔진 (백엔드 통신 장애 시 안정적 즉시 답변 생성) ── */
+  function generateLocalFallback(query) {
+    if (!App.data || !App.data.events) {
+      return {
+        reply: '현재 네트워크 상태가 원활하지 않습니다. 잠시 후 다시 시도해 주세요. (출처: EpochWave 로컬 데이터)',
+        refs: []
+      };
+    }
+
+    var q = query.toLowerCase();
+    var events = App.data.events;
+    var matched = [];
+
+    // 키워드 기반 관련 사건 검색
+    events.forEach(function (ev) {
+      var score = 0;
+      var str = (ev.title + ' ' + (ev.category || '') + ' ' + (ev.macro || '') + ' ' + (ev.description || '') + ' ' + (ev.marketFlow || '')).toLowerCase();
+      
+      var words = q.split(/\s+/).filter(function (w) { return w.length >= 2; });
+      words.forEach(function (w) {
+        if (str.indexOf(w) !== -1) score += 2;
+        if (ev.title.toLowerCase().indexOf(w) !== -1) score += 5;
+      });
+
+      if (q.indexOf(String(ev.year)) !== -1) score += 6;
+      if (score > 0) matched.push({ ev: ev, score: score });
+    });
+
+    matched.sort(function (a, b) { return b.score - a.score; });
+
+    if (!matched.length) {
+      return {
+        reply: '질문하신 내용과 직접 일치하는 역사적 사건을 찾지 못했습니다. 1955년부터 2026년까지의 주요 경제 위기(IMF 외환위기, 닷컴버블, 글로벌 금융위기 등)나 주도주, 특정 연도에 대해 질문해 보세요!\n\n※ 본 서비스는 교육·학술 목적의 역사적 시각화 도구이며 미래 투자 수익을 보장하지 않습니다.',
+        refs: []
+      };
+    }
+
+    var top = matched.slice(0, 2);
+    var refs = top.map(function (m) { return m.ev.id; });
+    var parts = [];
+
+    parts.push('⚡ [로컬 아카이브 데이터 분석 결과]');
+    top.forEach(function (item) {
+      var ev = item.ev;
+      parts.push('■ [' + ev.year + '년 ' + ev.month + '월] ' + ev.title);
+      if (ev.category || ev.macro) {
+        parts.push('• 유형/환경: ' + (ev.category || '-') + ' / ' + (ev.macro || '-'));
+      }
+      if (ev.description) {
+        parts.push('• 역사적 맥락: ' + ev.description);
+      }
+      if (ev.marketFlow) {
+        parts.push('• 당시 시장 흐름: ' + ev.marketFlow);
+      }
+    });
+
+    parts.push('\n※ 데이터 출처: KRX 한국거래소, FRED 세인트루이스 연은, 국가기록원\n※ 본 분석은 역사적 맥락 이해를 위한 자료이며 투자 권유가 아닙니다.');
+
+    return {
+      reply: parts.join('\n'),
+      refs: refs
+    };
+  }
+
   async function send(text) {
     if (sending || !text.trim()) return;
     sending = true;
+    lastQuery = text.trim();
 
     var input = document.getElementById('chatInput');
     var sendBtn = document.getElementById('chatSend');
     input.value = '';
     input.disabled = true; sendBtn.disabled = true;
 
-    bubble('user', text);
+    bubble('user', lastQuery);
     var typing = typingBubble();
+
+    // 12초 타임아웃 컨트롤러
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () {
+      controller.abort();
+    }, 12000);
 
     try {
       var res = await fetch(App.API_BASE + 'api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ message: text, sessionId: sessionId })
+        body: JSON.stringify({ message: lastQuery, sessionId: sessionId }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
+
       var data = await res.json();
       typing.remove();
 
       if (!res.ok || data.error) {
-        bubble('assistant', '지금은 답변을 가져오지 못했어요. 잠시 후 다시 시도해 주세요.');
+        // 백엔드 에러 시 로컬 지능 엔진으로 Fallback
+        var fb = generateLocalFallback(lastQuery);
+        bubble('assistant', fb.reply, { refs: fb.refs });
+        App.highlightRefs(fb.refs);
       } else {
-        bubble('assistant', data.reply);
+        bubble('assistant', data.reply, { refs: data.refs || [] });
         App.highlightRefs(data.refs || []);
       }
     } catch (e) {
+      clearTimeout(timeoutId);
       typing.remove();
-      bubble('assistant', '연결에 문제가 있어요. 네트워크를 확인해 주세요.');
+
+      // 타임아웃 또는 네트워크 단절 시에도 멈추지 않고 로컬 데이터 엔진으로 완벽 응답
+      var fb = generateLocalFallback(lastQuery);
+      bubble('assistant', fb.reply, {
+        refs: fb.refs,
+        retryFn: function () { send(lastQuery); }
+      });
+      App.highlightRefs(fb.refs);
     } finally {
       sending = false;
       input.disabled = false; sendBtn.disabled = false;
