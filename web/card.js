@@ -147,7 +147,78 @@
     '골드뱅크': 'https://namu.wiki/w/%EA%B3%A8%EB%93%9C%EB%B1%85%ED%81%AC',
     '메가스터디': 'http://www.megastudyholdings.com',
     '수젠텍': 'http://www.sugentech.com',
-    '서울반도체': 'http://www.seoulsemicon.com'
+    '서울반도체': 'http://www.seoulsemicon.com',
+    '바이로메드(헬릭스미스)': 'https://www.helixmith.com',
+    '바이로메드': 'https://www.helixmith.com',
+    '헬릭스미스': 'https://www.helixmith.com',
+    '한미약품': 'https://www.hanmi.co.kr',
+    'KT&G': 'https://www.ktng.com',
+    'NHN (네이버)': 'https://www.navercorp.com',
+    '카카오게임즈': 'https://www.kakaogamescorp.com',
+    '펄어비스': 'https://www.pearlabyss.com',
+    'EDGC': 'https://www.edgc.com',
+    '미래에셋증권(구 대우증권)': 'https://securities.miraeasset.com',
+    '현대코퍼레이션(구 현대상사)': 'https://www.hyundaicorp.com',
+    'Mobil': 'https://corporate.exxonmobil.com',
+
+    // 복합 주도주 묶음
+    'Exxon & Mobil': [
+      { name: 'ExxonMobil', url: 'https://corporate.exxonmobil.com' },
+      { name: 'Mobil', url: 'https://corporate.exxonmobil.com' }
+    ],
+    'Occidental & Chevron': [
+      { name: 'Occidental', url: 'https://www.oxy.com' },
+      { name: 'Chevron', url: 'https://www.chevron.com' }
+    ],
+    'Citigroup & Bank of America': [
+      { name: 'Citigroup', url: 'https://www.citigroup.com' },
+      { name: 'Bank of America', url: 'https://www.bankofamerica.com' }
+    ],
+    '금융·무역·건설 트로이카': [
+      { name: '현대건설', url: 'https://www.hdec.kr' },
+      { name: '미래에셋증권(구 대우증권)', url: 'https://securities.miraeasset.com' },
+      { name: '현대코퍼레이션(구 현대상사)', url: 'https://www.hyundaicorp.com' }
+    ],
+    '현대차 & 기아': [
+      { name: '현대차', url: 'https://www.hyundai.com' },
+      { name: '기아', url: 'https://www.kia.com' }
+    ],
+    'SK이노베이션 & S-Oil': [
+      { name: 'SK이노베이션', url: 'https://www.skinnovation.com' },
+      { name: 'S-Oil', url: 'https://www.s-oil.com' }
+    ],
+    '카카오 & NAVER': [
+      { name: '카카오', url: 'https://www.kakaocorp.com' },
+      { name: 'NAVER', url: 'https://www.navercorp.com' }
+    ],
+    'LG에너지솔루션·삼성SDI': [
+      { name: 'LG에너지솔루션', url: 'https://www.lgensol.com' },
+      { name: '삼성SDI', url: 'https://www.samsungsdi.co.kr' }
+    ],
+    '삼성바이오로직스·셀트리온': [
+      { name: '삼성바이오로직스', url: 'https://samsungbiologics.com' },
+      { name: '셀트리온', url: 'https://www.celltrion.com' }
+    ],
+    '수젠텍 & EDGC': [
+      { name: '수젠텍', url: 'http://www.sugentech.com' },
+      { name: 'EDGC', url: 'https://www.edgc.com' }
+    ],
+    '셀트리온헬스케어 & 제약': [
+      { name: '셀트리온', url: 'https://www.celltrion.com' },
+      { name: '셀트리온제약', url: 'http://www.celltrionpharm.com' }
+    ],
+    '에코프로비엠 & 엘앤에프': [
+      { name: '에코프로비엠', url: 'https://www.ecopro.co.kr' },
+      { name: '엘앤에프', url: 'http://www.landf.co.kr' }
+    ],
+    '카카오게임즈 & 펄어비스': [
+      { name: '카카오게임즈', url: 'https://www.kakaogamescorp.com' },
+      { name: '펄어비스', url: 'https://www.pearlabyss.com' }
+    ],
+    '클래시스 & 휴젤': [
+      { name: '클래시스', url: 'https://www.classys.com' },
+      { name: '휴젤', url: 'https://www.hugel-inc.com' }
+    ]
   };
   App.COMPANY_URLS = COMPANY_URLS;
 
@@ -826,41 +897,57 @@
           '<div class="tp-leaders-list">' +
             tp.leaders.map(function (ld) {
               var links = getLeaderLinks(ld);
-              var linksHTML = '';
-              var nameHTML = '';
 
               if (links && links.length === 1) {
-                nameHTML = '<a href="' + esc(links[0].url) + '" target="_blank" rel="noopener noreferrer" class="tp-leader-name-link" title="' + esc(ld.name) + ' 공식 홈페이지 열기 (새 창)">' +
-                  esc(ld.name) +
-                '</a>';
-                linksHTML = '<div class="tp-links-wrap">' +
-                  '<a href="' + esc(links[0].url) + '" target="_blank" rel="noopener noreferrer" class="tp-company-link" title="' + esc(ld.name) + ' 공식 홈페이지 열기 (새 창)">' +
-                    '<span class="tp-link-icon">↗</span>공식 홈페이지' +
-                  '</a>' +
-                '</div>';
+                var singleUrl = links[0].url;
+                return (
+                  '<a href="' + esc(singleUrl) + '" target="_blank" rel="noopener noreferrer" class="tp-leader-item is-link" title="' + esc(ld.name) + ' 공식 홈페이지 열기 (새 창)">' +
+                    '<div class="tp-leader-name-wrap">' +
+                      '<div class="tp-leader-title-group">' +
+                        '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
+                        '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
+                      '</div>' +
+                      '<span class="tp-company-link">' +
+                        '<span class="tp-link-icon">↗</span>공식 홈페이지' +
+                      '</span>' +
+                    '</div>' +
+                    (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
+                  '</a>'
+                );
               } else if (links && links.length > 1) {
-                nameHTML = '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>';
-                linksHTML = '<div class="tp-links-wrap">' +
+                var linksHTML = '<div class="tp-links-wrap">' +
                   links.map(function (lk) {
                     return '<a href="' + esc(lk.url) + '" target="_blank" rel="noopener noreferrer" class="tp-company-link" title="' + esc(lk.name) + ' 공식 홈페이지 열기 (새 창)">' +
                       '<span class="tp-link-icon">↗</span>' + esc(lk.name) + ' 공식 홈' +
                     '</a>';
                   }).join('') +
                 '</div>';
-              } else {
-                nameHTML = '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>';
-              }
 
-              return (
-                '<div class="tp-leader-item">' +
-                  '<div class="tp-leader-name-wrap">' +
-                    '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
-                    nameHTML +
-                    linksHTML +
-                  '</div>' +
-                  (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
-                '</div>'
-              );
+                return (
+                  '<div class="tp-leader-item has-multi-links">' +
+                    '<div class="tp-leader-name-wrap">' +
+                      '<div class="tp-leader-title-group">' +
+                        '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
+                        '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
+                      '</div>' +
+                      linksHTML +
+                    '</div>' +
+                    (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
+                  '</div>'
+                );
+              } else {
+                return (
+                  '<div class="tp-leader-item">' +
+                    '<div class="tp-leader-name-wrap">' +
+                      '<div class="tp-leader-title-group">' +
+                        '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
+                        '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
+                      '</div>' +
+                    '</div>' +
+                    (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
+                  '</div>'
+                );
+              }
             }).join('') +
           '</div>' +
         '</section>';

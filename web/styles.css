@@ -756,15 +756,42 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   margin-top: 8px;
 }
 .tp-leader-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  padding: 6px 10px;
-  transition: border-color 0.15s, background 0.15s;
+  display: block;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  padding: 8px 11px;
+  transition: all 0.18s ease;
+  color: inherit;
 }
-.tp-leader-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 176, 58, 0.4);
+.tp-leader-item.is-link {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+.tp-leader-item.is-link:hover {
+  background: rgba(77, 226, 240, 0.08);
+  border-color: rgba(77, 226, 240, 0.5);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3), 0 0 10px rgba(77, 226, 240, 0.2);
+  transform: translateY(-1.5px);
+}
+.tp-leader-item.is-link:hover .tp-leader-name {
+  color: var(--cyan);
+  text-shadow: 0 0 8px rgba(77, 226, 240, 0.35);
+}
+.tp-leader-item.is-link:hover .tp-company-link {
+  background: rgba(77, 226, 240, 0.3);
+  border-color: var(--cyan);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(77, 226, 240, 0.45);
+}
+.tp-leader-item.is-link:hover .tp-leader-desc {
+  color: #E2E8F0;
+}
+.tp-leader-title-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .tp-leader-name-wrap {
   display: flex;
@@ -779,17 +806,20 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   border-radius: 3px;
   border: 1px solid;
   font-weight: 600;
+  line-height: 1.3;
 }
 .tp-leader-name {
-  font-size: 12px;
-  color: var(--ink);
+  font-size: 12.5px;
+  color: #FFFFFF;
   font-weight: 700;
+  transition: color 0.15s;
 }
 .tp-leader-desc {
   font-size: 11px;
   color: var(--dim);
-  margin-top: 3px;
+  margin-top: 5px;
   line-height: 1.45;
+  transition: color 0.15s;
 }
 
 /* ═══ 기간 선택 바 ═══ */
