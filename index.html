@@ -767,36 +767,16 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 }
 .tp-leader-item {
   display: block;
-  text-decoration: none;
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 7px;
   padding: 8px 11px;
-  transition: all 0.18s ease;
+  transition: border-color 0.18s ease, background 0.18s ease;
   color: inherit;
 }
-.tp-leader-item.is-link {
-  cursor: pointer !important;
-  pointer-events: auto !important;
-}
-.tp-leader-item.is-link:hover {
-  background: rgba(77, 226, 240, 0.08);
-  border-color: rgba(77, 226, 240, 0.5);
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3), 0 0 10px rgba(77, 226, 240, 0.2);
-  transform: translateY(-1.5px);
-}
-.tp-leader-item.is-link:hover .tp-leader-name {
-  color: var(--cyan);
-  text-shadow: 0 0 8px rgba(77, 226, 240, 0.35);
-}
-.tp-leader-item.is-link:hover .tp-company-link {
-  background: rgba(77, 226, 240, 0.3);
-  border-color: var(--cyan);
-  color: #fff;
-  box-shadow: 0 0 8px rgba(77, 226, 240, 0.45);
-}
-.tp-leader-item.is-link:hover .tp-leader-desc {
-  color: #E2E8F0;
+.tp-leader-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 .tp-leader-title-group {
   display: inline-flex;
@@ -1178,26 +1158,51 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 }
 
 /* ═══ 주도주 기업 공식 홈페이지 링크 스타일 ═══ */
-.tp-links-wrap {
-  display: flex;
+.tp-leader-names-group {
+  display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 5px;
-  margin-left: auto;
+}
+.tp-leader-sep {
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 600;
+  user-select: none;
+  padding: 0 2px;
 }
 .tp-leader-name-link {
-  font-size: 12.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   color: #FFFFFF;
-  font-weight: 700;
   text-decoration: none;
-  transition: all 0.15s;
+  border-bottom: 1.5px solid rgba(77, 226, 240, 0.4);
+  padding-bottom: 1px;
+  transition: all 0.18s ease;
   cursor: pointer !important;
   pointer-events: auto !important;
+  line-height: 1.2;
 }
 .tp-leader-name-link:hover {
   color: var(--cyan);
-  text-decoration: underline;
-  text-shadow: 0 0 8px rgba(77, 226, 240, 0.4);
+  border-bottom-color: var(--cyan);
+  text-shadow: 0 0 10px rgba(77, 226, 240, 0.5);
+}
+.tp-leader-name-link:hover .tp-leader-name {
+  color: var(--cyan);
+}
+.tp-leader-name-link .tp-link-icon {
+  font-size: 11px;
+  color: var(--cyan);
+  opacity: 0.8;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+  font-weight: 700;
+  line-height: 1;
+}
+.tp-leader-name-link:hover .tp-link-icon {
+  opacity: 1;
+  transform: translate(1px, -1px);
 }
 .tp-company-link {
   display: inline-flex;
@@ -1222,10 +1227,6 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   color: #fff;
   box-shadow: 0 0 10px rgba(77, 226, 240, 0.45);
   transform: translateY(-1px);
-}
-.tp-link-icon {
-  font-size: 9px;
-  line-height: 1;
 }
 
 /* ═══ 사건 카드 및 주가 팝업 내 기업 공식 홈페이지 링크 ═══ */
@@ -3449,7 +3450,7 @@ var App = {
         '</div>' +
         '<div class="ev-comp-grid">' +
           relatedComps.map(function (c) {
-            return '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer" class="ev-company-link" title="' + esc(c.name) + ' 공식 홈페이지 열기 (새 창)">' +
+            return '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer" class="ev-company-link" title="' + esc(c.name) + ' 홈페이지로 가기" aria-label="' + esc(c.name) + ' 홈페이지로 가기">' +
               '<span class="ev-comp-name">' + esc(c.name) + '</span>' +
               '<span class="ev-comp-btn">공식 홈 ↗</span>' +
             '</a>';
@@ -3928,57 +3929,51 @@ var App = {
           '<div class="tp-leaders-list">' +
             tp.leaders.map(function (ld) {
               var links = getLeaderLinks(ld);
+              var namesHTML = '';
 
               if (links && links.length === 1) {
-                var singleUrl = links[0].url;
-                return (
-                  '<a href="' + esc(singleUrl) + '" target="_blank" rel="noopener noreferrer" class="tp-leader-item is-link" title="' + esc(ld.name) + ' 공식 홈페이지 열기 (새 창)">' +
-                    '<div class="tp-leader-name-wrap">' +
-                      '<div class="tp-leader-title-group">' +
-                        '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
-                        '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
-                      '</div>' +
-                      '<span class="tp-company-link">' +
-                        '<span class="tp-link-icon">↗</span>공식 홈페이지' +
-                      '</span>' +
-                    '</div>' +
-                    (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
+                var lk = links[0];
+                var companyTitle = esc(lk.name) + ' 홈페이지로 가기';
+                namesHTML = (
+                  '<a href="' + esc(lk.url) + '" target="_blank" rel="noopener noreferrer" ' +
+                     'class="tp-leader-name-link" ' +
+                     'title="' + companyTitle + '" ' +
+                     'aria-label="' + companyTitle + '">' +
+                    '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
+                    '<span class="tp-link-icon" aria-hidden="true">↗</span>' +
                   '</a>'
                 );
               } else if (links && links.length > 1) {
-                var linksHTML = '<div class="tp-links-wrap">' +
-                  links.map(function (lk) {
-                    return '<a href="' + esc(lk.url) + '" target="_blank" rel="noopener noreferrer" class="tp-company-link" title="' + esc(lk.name) + ' 공식 홈페이지 열기 (새 창)">' +
-                      '<span class="tp-link-icon">↗</span>' + esc(lk.name) + ' 공식 홈' +
-                    '</a>';
+                namesHTML = '<span class="tp-leader-names-group">' +
+                  links.map(function (lk, idx) {
+                    var companyTitle = esc(lk.name) + ' 홈페이지로 가기';
+                    var linkHtml = (
+                      '<a href="' + esc(lk.url) + '" target="_blank" rel="noopener noreferrer" ' +
+                         'class="tp-leader-name-link" ' +
+                         'title="' + companyTitle + '" ' +
+                         'aria-label="' + companyTitle + '">' +
+                        '<strong class="tp-leader-name">' + esc(lk.name) + '</strong>' +
+                        '<span class="tp-link-icon" aria-hidden="true">↗</span>' +
+                      '</a>'
+                    );
+                    return idx === 0 ? linkHtml : ('<span class="tp-leader-sep">&</span>' + linkHtml);
                   }).join('') +
-                '</div>';
-
-                return (
-                  '<div class="tp-leader-item has-multi-links">' +
-                    '<div class="tp-leader-name-wrap">' +
-                      '<div class="tp-leader-title-group">' +
-                        '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
-                        '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
-                      '</div>' +
-                      linksHTML +
-                    '</div>' +
-                    (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
-                  '</div>'
-                );
+                '</span>';
               } else {
-                return (
-                  '<div class="tp-leader-item">' +
-                    '<div class="tp-leader-name-wrap">' +
-                      '<div class="tp-leader-title-group">' +
-                        '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
-                        '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>' +
-                      '</div>' +
-                    '</div>' +
-                    (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
-                  '</div>'
-                );
+                namesHTML = '<strong class="tp-leader-name">' + esc(ld.name) + '</strong>';
               }
+
+              return (
+                '<div class="tp-leader-item">' +
+                  '<div class="tp-leader-name-wrap">' +
+                    '<div class="tp-leader-title-group">' +
+                      '<span class="tp-leader-badge" style="color:' + mk.color + '; border-color:' + mk.color + '55">주도주</span>' +
+                      namesHTML +
+                    '</div>' +
+                  '</div>' +
+                  (ld.desc ? '<p class="tp-leader-desc">' + esc(ld.desc) + '</p>' : '') +
+                '</div>'
+              );
             }).join('') +
           '</div>' +
         '</section>';
