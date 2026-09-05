@@ -919,6 +919,7 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   position:absolute; left:var(--cx); top:var(--cy); width:var(--cw);
   max-height:var(--cmh); display:flex; flex-direction:column;
   pointer-events:auto; overflow:hidden; z-index:31;
+  word-break:keep-all; overflow-wrap:break-word;
   background:linear-gradient(168deg, color-mix(in srgb, var(--c) 14%, var(--panel)), var(--panel) 46%);
   border:1px solid color-mix(in srgb, var(--c) 44%, transparent); border-radius:16px;
   box-shadow:0 24px 64px rgba(0,0,0,.78), 0 0 0 1px rgba(255,255,255,.05) inset,

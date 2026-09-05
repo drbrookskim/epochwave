@@ -413,8 +413,7 @@
     var compsHTML = relatedComps.length > 0 ? (
       '<div class="ev-mkt-companies">' +
         '<div class="ev-comp-header">' +
-          '<span class="ev-comp-icon">🏢</span>' +
-          '<span class="ev-comp-title">당시 시장 주도 기업 공식 홈페이지</span>' +
+          '<span class="ev-comp-title">당시 주요 기업 공식 홈페이지</span>' +
         '</div>' +
         '<div class="ev-comp-grid">' +
           relatedComps.map(function (c) {
@@ -433,7 +432,7 @@
     return '' +
       '<section class="side ev-mkt-impact stagger" style="animation-delay:' + delay + 'ms">' +
         '<div class="side-top">' +
-          '<span class="side-tag" style="color:#4DA3FF">MARKET IMPACT · 주가 & 시장 반응</span>' +
+          '<span class="side-tag" style="color:#4DA3FF">시장 반응 및 주가 흐름</span>' +
           (impact ? '<span class="ev-impact-badge ' + (impact.type || '') + '">' + esc(impact.tag) + '</span>' : '') +
         '</div>' +
         (summaryText ? '<p class="ev-impact-summary">' + esc(summaryText) + '</p>' : '') +
@@ -892,7 +891,7 @@
       leadersHTML =
         '<section class="side tp-leaders-sec stagger" style="animation-delay:180ms">' +
           '<div class="side-top">' +
-            '<span class="side-head">🏆 그 당시의 핵심 주도주</span>' +
+            '<span class="side-head">당시 핵심 주도주</span>' +
           '</div>' +
           '<div class="tp-leaders-list">' +
             tp.leaders.map(function (ld) {

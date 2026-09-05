@@ -9,6 +9,6 @@
     "push": "node scripts/push-kv.mjs",
     "release": "npm run build && npm run push",
     "deploy": "npm run release && wrangler deploy",
-    "deploy:pages": "npm run build && wrangler pages deploy dist --project-name=epochwave"
+    "deploy:pages": "npm run build && npx wrangler pages deploy dist --project-name=epochwave"
   }
 }
