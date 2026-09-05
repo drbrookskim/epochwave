@@ -3,8 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Back to the Future — 1955 → 2026</title>
-<meta name="description" content="영화 백 투 더 퓨처의 1955년을 출발점으로 2026년까지 70년의 한국사와 세계사를 한 눈에 보는 연표.">
+<title>EpochWave (에포크웨이브) — 1955 → 2026 역사와 시장의 파동</title>
+<meta name="description" content="1955년부터 2026년까지 70년간의 한국사·세계사 48개 대사건과 4대 증시(코스피·코스닥·나스닥·NYSE)의 역사적 흐름을 연결한 인터랙티브 시각화 아카이브. 과거의 맥락을 통해 시장의 흐름을 조망합니다.">
+<link rel="canonical" href="https://epochwave.pages.dev/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="EpochWave">
+<meta property="og:title" content="EpochWave (에포크웨이브) — 1955 → 2026 역사와 시장의 파동">
+<meta property="og:description" content="영화 백 투 더 퓨처 콘셉트로 탐구하는 70년간의 역사적 대사건과 4대 증시 흐름. 과거의 맥락을 통해 시장의 파동을 이해합니다.">
+<meta property="og:url" content="https://epochwave.pages.dev/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="EpochWave — 1955 → 2026 역사와 시장의 파동">
+<meta name="twitter:description" content="1955~2026년 한국사·세계사 주요 대사건과 주가 흐름의 인터랙티브 시각화 아카이브">
+<meta name="theme-color" content="#080B14">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -53,7 +63,7 @@
     </h1>
     <p class="subtitle">
       <span class="sub-quote">"Roads we're going we don't need roads."</span>
-      <span class="sub-desc">1955년부터 현재까지의 역사적 사건에 따른 주가의 흐름을 알아보자.</span>
+      <span class="sub-desc">1955년부터 현재까지의 역사 속 사건과 시장의 흐름을 연결하여, 과거의 맥락을 통해 오늘의 흐름을 조망합니다.</span>
     </p>
 
     <!-- ══ 드로리안 시간 회로 계기판 (DeLorean Time Circuits) ══ -->
@@ -71,40 +81,40 @@
         <div class="tc-panel">
           <!-- MONTH -->
           <div class="tc-col tc-month">
-            <button type="button" class="tc-arrow up" data-unit="month" data-delta="1" title="월 증가" aria-label="월 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="month" data-delta="1" title="월 증가" aria-label="목적지 월 증가">▲</button>
             <span class="tc-lbl">MONTH</span>
-            <div class="tc-screen tc-click-edit" data-unit="month" title="클릭하거나 마우스 휠로 월 변경">
+            <div class="tc-screen tc-click-edit" data-unit="month" role="spinbutton" aria-label="목적지 월" aria-valuenow="11" aria-valuemin="1" aria-valuemax="12" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 월 변경">
               <span class="tc-ghost" aria-hidden="true">888</span>
               <span class="tc-val led" id="destMonth">NOV</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="month" data-delta="-1" title="월 감소" aria-label="월 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="month" data-delta="-1" title="월 감소" aria-label="목적지 월 감소">▼</button>
           </div>
 
           <!-- DAY -->
           <div class="tc-col tc-day">
-            <button type="button" class="tc-arrow up" data-unit="day" data-delta="1" title="일 증가" aria-label="일 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="day" data-delta="1" title="일 증가" aria-label="목적지 일 증가">▲</button>
             <span class="tc-lbl">DAY</span>
-            <div class="tc-screen tc-click-edit" data-unit="day" title="클릭하거나 마우스 휠로 일 변경">
+            <div class="tc-screen tc-click-edit" data-unit="day" role="spinbutton" aria-label="목적지 일" aria-valuenow="5" aria-valuemin="1" aria-valuemax="31" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 일 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="destDay">05</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="day" data-delta="-1" title="일 감소" aria-label="일 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="day" data-delta="-1" title="일 감소" aria-label="목적지 일 감소">▼</button>
           </div>
 
           <!-- YEAR (MIN 1955) -->
           <div class="tc-col tc-year">
-            <button type="button" class="tc-arrow up" data-unit="year" data-delta="1" title="연도 증가" aria-label="연도 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="year" data-delta="1" title="연도 증가" aria-label="목적지 연도 증가">▲</button>
             <span class="tc-lbl">YEAR</span>
-            <div class="tc-screen tc-click-edit" data-unit="year" title="클릭하여 직접 입력하거나 휠로 연도 변경 (최소 1955년)">
+            <div class="tc-screen tc-click-edit" data-unit="year" role="spinbutton" aria-label="목적지 연도" aria-valuenow="1955" aria-valuemin="1955" aria-valuemax="2026" tabindex="0" title="클릭하여 직접 입력하거나 휠, 방향키로 연도 변경 (최소 1955년)">
               <span class="tc-ghost" aria-hidden="true">8888</span>
               <span class="tc-val led" id="ledDest">1955</span>
             </div>
-            <button type="button" class="tc-arrow down is-disabled" id="destYearDown" data-unit="year" data-delta="-1" title="연도 감소 (1955년 최소)" aria-label="연도 감소">▼</button>
+            <button type="button" class="tc-arrow down is-disabled" id="destYearDown" data-unit="year" data-delta="-1" title="연도 감소 (1955년 최소)" aria-label="목적지 연도 감소">▼</button>
           </div>
 
           <!-- AM/PM -->
           <div class="tc-col tc-ampm">
-            <button type="button" class="tc-ampm-btn" id="destAmpmBtn" title="클릭하여 AM/PM 전환" aria-label="AM/PM 전환">
+            <button type="button" class="tc-ampm-btn" id="destAmpmBtn" title="클릭하여 AM/PM 전환" aria-label="목적지 AM/PM 전환">
               <div class="tc-ampm-item is-on" id="destAm"><i class="tc-led-dot"></i><span>AM</span></div>
               <div class="tc-ampm-item" id="destPm"><i class="tc-led-dot"></i><span>PM</span></div>
             </button>
@@ -112,26 +122,26 @@
 
           <!-- HOUR -->
           <div class="tc-col tc-hour">
-            <button type="button" class="tc-arrow up" data-unit="hour" data-delta="1" title="시간 증가" aria-label="시간 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="hour" data-delta="1" title="시간 증가" aria-label="목적지 시간 증가">▲</button>
             <span class="tc-lbl">HOUR</span>
-            <div class="tc-screen tc-click-edit" data-unit="hour" title="클릭하거나 마우스 휠로 시간 변경">
+            <div class="tc-screen tc-click-edit" data-unit="hour" role="spinbutton" aria-label="목적지 시" aria-valuenow="6" aria-valuemin="1" aria-valuemax="12" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 시간 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="destHour">06</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="hour" data-delta="-1" title="시간 감소" aria-label="시간 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="hour" data-delta="-1" title="시간 감소" aria-label="목적지 시간 감소">▼</button>
           </div>
 
           <span class="tc-colon led">:</span>
 
           <!-- MIN -->
           <div class="tc-col tc-min">
-            <button type="button" class="tc-arrow up" data-unit="min" data-delta="1" title="분 증가" aria-label="분 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="min" data-delta="1" title="분 증가" aria-label="목적지 분 증가">▲</button>
             <span class="tc-lbl">MIN</span>
-            <div class="tc-screen tc-click-edit" data-unit="min" title="클릭하거나 마우스 휠로 분 변경">
+            <div class="tc-screen tc-click-edit" data-unit="min" role="spinbutton" aria-label="목적지 분" aria-valuenow="0" aria-valuemin="0" aria-valuemax="59" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 분 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="destMin">00</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="min" data-delta="-1" title="분 감소" aria-label="분 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="min" data-delta="-1" title="분 감소" aria-label="목적지 분 감소">▼</button>
           </div>
         </div>
 
@@ -154,40 +164,40 @@
         <div class="tc-panel">
           <!-- MONTH -->
           <div class="tc-col tc-month">
-            <button type="button" class="tc-arrow up" data-unit="month" data-delta="1" title="월 증가" aria-label="월 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="month" data-delta="1" title="월 증가" aria-label="현재 월 증가">▲</button>
             <span class="tc-lbl">MONTH</span>
-            <div class="tc-screen tc-click-edit" data-unit="month" title="클릭하거나 마우스 휠로 월 변경">
+            <div class="tc-screen tc-click-edit" data-unit="month" role="spinbutton" aria-label="현재 월" aria-valuenow="10" aria-valuemin="1" aria-valuemax="12" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 월 변경">
               <span class="tc-ghost" aria-hidden="true">888</span>
               <span class="tc-val led" id="presMonth">OCT</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="month" data-delta="-1" title="월 감소" aria-label="월 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="month" data-delta="-1" title="월 감소" aria-label="현재 월 감소">▼</button>
           </div>
 
           <!-- DAY -->
           <div class="tc-col tc-day">
-            <button type="button" class="tc-arrow up" data-unit="day" data-delta="1" title="일 증가" aria-label="일 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="day" data-delta="1" title="일 증가" aria-label="현재 일 증가">▲</button>
             <span class="tc-lbl">DAY</span>
-            <div class="tc-screen tc-click-edit" data-unit="day" title="클릭하거나 마우스 휠로 일 변경">
+            <div class="tc-screen tc-click-edit" data-unit="day" role="spinbutton" aria-label="현재 일" aria-valuenow="26" aria-valuemin="1" aria-valuemax="31" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 일 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="presDay">26</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="day" data-delta="-1" title="일 감소" aria-label="일 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="day" data-delta="-1" title="일 감소" aria-label="현재 일 감소">▼</button>
           </div>
 
           <!-- YEAR -->
           <div class="tc-col tc-year">
-            <button type="button" class="tc-arrow up" data-unit="year" data-delta="1" title="연도 증가" aria-label="연도 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="year" data-delta="1" title="연도 증가" aria-label="현재 연도 증가">▲</button>
             <span class="tc-lbl">YEAR</span>
-            <div class="tc-screen tc-click-edit" data-unit="year" title="클릭하여 직접 입력하거나 휠로 연도 변경 (최소 1955년)">
+            <div class="tc-screen tc-click-edit" data-unit="year" role="spinbutton" aria-label="현재 연도" aria-valuenow="2026" aria-valuemin="1955" aria-valuemax="2026" tabindex="0" title="클릭하여 직접 입력하거나 휠, 방향키로 연도 변경 (최소 1955년)">
               <span class="tc-ghost" aria-hidden="true">8888</span>
               <span class="tc-val led" id="ledPres">2026</span>
             </div>
-            <button type="button" class="tc-arrow down" id="presYearDown" data-unit="year" data-delta="-1" title="연도 감소 (1955년 최소)" aria-label="연도 감소">▼</button>
+            <button type="button" class="tc-arrow down" id="presYearDown" data-unit="year" data-delta="-1" title="연도 감소 (1955년 최소)" aria-label="현재 연도 감소">▼</button>
           </div>
 
           <!-- AM/PM -->
           <div class="tc-col tc-ampm">
-            <button type="button" class="tc-ampm-btn" id="presAmpmBtn" title="클릭하여 AM/PM 전환" aria-label="AM/PM 전환">
+            <button type="button" class="tc-ampm-btn" id="presAmpmBtn" title="클릭하여 AM/PM 전환" aria-label="현재 AM/PM 전환">
               <div class="tc-ampm-item" id="presAm"><i class="tc-led-dot"></i><span>AM</span></div>
               <div class="tc-ampm-item is-on" id="presPm"><i class="tc-led-dot"></i><span>PM</span></div>
             </button>
@@ -195,26 +205,26 @@
 
           <!-- HOUR -->
           <div class="tc-col tc-hour">
-            <button type="button" class="tc-arrow up" data-unit="hour" data-delta="1" title="시간 증가" aria-label="시간 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="hour" data-delta="1" title="시간 증가" aria-label="현재 시간 증가">▲</button>
             <span class="tc-lbl">HOUR</span>
-            <div class="tc-screen tc-click-edit" data-unit="hour" title="클릭하거나 마우스 휠로 시간 변경">
+            <div class="tc-screen tc-click-edit" data-unit="hour" role="spinbutton" aria-label="현재 시" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 시간 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="presHour">01</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="hour" data-delta="-1" title="시간 감소" aria-label="시간 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="hour" data-delta="-1" title="시간 감소" aria-label="현재 시간 감소">▼</button>
           </div>
 
           <span class="tc-colon led">:</span>
 
           <!-- MIN -->
           <div class="tc-col tc-min">
-            <button type="button" class="tc-arrow up" data-unit="min" data-delta="1" title="분 증가" aria-label="분 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="min" data-delta="1" title="분 증가" aria-label="현재 분 증가">▲</button>
             <span class="tc-lbl">MIN</span>
-            <div class="tc-screen tc-click-edit" data-unit="min" title="클릭하거나 마우스 휠로 분 변경">
+            <div class="tc-screen tc-click-edit" data-unit="min" role="spinbutton" aria-label="현재 분" aria-valuenow="21" aria-valuemin="0" aria-valuemax="59" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 분 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="presMin">21</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="min" data-delta="-1" title="분 감소" aria-label="분 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="min" data-delta="-1" title="분 감소" aria-label="현재 분 감소">▼</button>
           </div>
         </div>
       </div>
@@ -266,7 +276,7 @@
     <button id="enterBtn" class="enter" disabled>
       <span class="cta">Start On</span>
     </button>
-    <p class="hint" id="splashHint">연결 중…</p>
+    <p class="hint" id="splashHint">타임서킷 데이터 동기화 중…</p>
   </div>
 </div>
 
@@ -294,6 +304,9 @@
         </button>
         <button type="button" class="mkt-btn is-on tp-toggle-btn" id="tpToggleBtn" aria-pressed="true" title="역사적 고점·저점 및 당시 주도주 표시 켜기/끄기">
           <i class="tp-star">★</i>고점·저점·주도주
+        </button>
+        <button type="button" class="about-btn" id="aboutBtn" title="EpochWave 안내 및 분석 방법론 열기" aria-haspopup="dialog" aria-expanded="false">
+          <span class="about-icon">ⓘ</span>안내 &amp; 방법론
         </button>
       </div>
     </div>
@@ -323,9 +336,72 @@
   </div>
 
   <footer class="foot">
-    <span class="foot-hint">노드를 클릭하면 사건이 펼쳐집니다 · 빈 곳을 클릭하거나 <kbd>Esc</kbd>로 닫기</span>
-    <span class="foot-scroll">← 가로로 스크롤 →</span>
+    <div class="foot-disclaimer">
+      ※ 과거의 시장 흐름은 미래의 결과를 보장하지 않으며, 본 서비스는 투자 권유나 예측이 아닌 역사적 맥락 탐구용 시각화 자료입니다.
+    </div>
+    <div class="foot-bar">
+      <span class="foot-hint">노드를 클릭하면 사건이 펼쳐집니다 · 빈 곳을 클릭하거나 <kbd>Esc</kbd>로 닫기</span>
+      <button type="button" class="foot-about-link" id="footAboutLink">안내 &amp; 방법론</button>
+      <span class="foot-scroll">← 가로로 스크롤 →</span>
+    </div>
   </footer>
+
+  <!-- ══ 안내 & 방법론 모달 (About & Methodology) ══ -->
+  <div id="aboutModal" class="about-modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="aboutModalTitle">
+    <div class="about-modal-dialog">
+      <button type="button" class="about-modal-close" id="aboutModalClose" aria-label="안내창 닫기">✕</button>
+      <div class="about-modal-head">
+        <span class="about-badge">ABOUT &amp; METHODOLOGY</span>
+        <h2 class="about-title" id="aboutModalTitle">EpochWave 서비스 안내 및 분석 방법론</h2>
+      </div>
+      <div class="about-modal-body">
+        <section class="about-sec">
+          <h3 class="about-sec-title">1. 기획 의도 — "예측"이 아닌 "맥락의 이해"</h3>
+          <p>
+            EpochWave는 영화 〈백 투 더 퓨처〉의 시간 지평인 1955년부터 현재까지 70년간의 한국사와 세계사 대사건, 그리고 4대 증시(나스닥·NYSE·코스피·코스닥)의 역사적 궤적을 하나의 시각화 축으로 연결한 인터랙티브 아카이브입니다.
+          </p>
+          <p>
+            본 서비스의 목적은 기계적으로 미래 주가를 맞히는 데 있지 않습니다. 과거의 위기(전쟁, 팬데믹, 금융위기)와 번영(기술 혁신, 통화 완화, 무역 호황) 국면에서 시장 참여자들이 어떻게 반응했고 자본이 어디로 흘렀는지를 <strong>입체적인 역사적 맥락</strong> 속에서 되짚어보는 데 목적이 있습니다.
+          </p>
+        </section>
+
+        <section class="about-sec">
+          <h3 class="about-sec-title">2. 분석 방법론 — 이벤트 스터디(Event Study)</h3>
+          <p>
+            금융경제학의 전통적인 '사건 연구(Event Study)' 프레임워크를 기반으로 합니다. 역사적 변곡점 전후의 주가지수 등락률, 섹터별 주도주(Leaders)의 부침, 채권·환율·원자재의 상호작용을 사건 카드와 주가 곡선상에 동기화하여 제공합니다.
+          </p>
+        </section>
+
+        <section class="about-sec">
+          <h3 class="about-sec-title">3. 방법론의 한계와 주의점 (Methodological Caveats)</h3>
+          <div class="about-card-box">
+            <ul class="about-limit-list">
+              <li><strong>표본의 희소성 (Small Sample Size):</strong> 세계대전, 1차 오일쇼크, 글로벌 팬데믹 등 메가 이벤트는 역사상 발생 빈도가 극히 적어 통계적 일반화에 한계가 있습니다.</li>
+              <li><strong>사후편향 (Hindsight Bias):</strong> 결과를 이미 알고 있는 시점에서 과거를 평가할 때 나타나는 '예정된 필연'이라는 인과관계 착각을 경계해야 합니다.</li>
+              <li><strong>거시환경의 이질성 (Macro Heterogeneity):</strong> 같은 '지정학적 분쟁'이라도 1973년 오일쇼크 당시와 2022년 우크라이나 침공 당시의 부채 비율, 금리 수준, 통화 패권 구조는 본질적으로 상이합니다.</li>
+              <li><strong>시장의 자기학습 (Market Reflexivity):</strong> 과거의 패턴이 대중과 알고리즘에 널리 학습되면 시장 참여자들의 선반영으로 인해 동일한 패턴이 미래에 반복되지 않습니다.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="about-sec">
+          <h3 class="about-sec-title">4. 데이터 출처 및 산출 기준</h3>
+          <div class="about-card-box">
+            <p><strong>• 한국 주식시장:</strong> 한국거래소(KRX) 공식 코스피(1975~2026) 및 코스닥(1996~2026) 연말 종가지수, 주요 변곡점 장중치 반영.</p>
+            <p><strong>• 미국 주식시장:</strong> 뉴욕증권거래소(NYSE Composite), 나스닥(NASDAQ Composite, 1971년 100p 시작), 세인트루이스 연방준비은행(FRED) 경제 통계.</p>
+            <p><strong>• 역사적 사실 및 사료:</strong> 대한민국 국가기록원, 국사편찬위원회, 주요 공공 사료 및 공신력 있는 국내외 경제사 문헌 기반.</p>
+          </div>
+        </section>
+
+        <section class="about-sec">
+          <div class="about-disclaimer-box">
+            <strong>⚠️ 법적 고지 및 면책 조항:</strong><br>
+            본 웹사이트에서 제공하는 모든 데이터, 역사적 분석 및 AI 가이드의 응답은 학술·교양 목적의 시각화 참고자료이며, 특정 금융투자상품의 권유나 미래 수익 보장, 투자 자문이 아닙니다. 모든 투자 판단과 결과에 대한 법적 책임은 이용자 본인에게 있습니다.
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
 
   <!-- ══ AI 가이드 챗봇 ══ -->
   <button type="button" id="chatToggle" class="chat-toggle" aria-expanded="false" aria-controls="chatPanel">
@@ -345,8 +421,8 @@
     <div id="chatList" class="chat-list">
       <div class="chat-msg assistant">
         <div class="chat-bubble">안녕하세요! 1955~2026년 시간여행 AI 가이드입니다. ⚡
-역사적 사건과 4대 증시(나스닥·NYSE·코스피·코스닥)의 고점·저점, 그 당시 시장을 이끈 주도주의 흐름을 안내해 드립니다.
-궁금한 점을 물어보시면 답변과 함께 연표의 사건과 주가 지점을 바로 짚어드려요!</div>
+역사적 사건과 4대 증시(나스닥·NYSE·코스피·코스닥)의 역사적 변곡점, 거시경제 맥락과 당시 시장을 이끈 주도주의 흐름을 안내해 드립니다.
+과거 유사 국면의 시장 반응이나 사건의 전후 맥락에 대해 자유롭게 물어보세요! (※ 본 가이드는 역사적 맥락 탐구용 시각화 자료이며 투자 자문이나 예측을 제공하지 않습니다.)</div>
       </div>
       <div class="chat-suggests">
         <button type="button" class="chat-suggest">2000년 닷컴버블 나스닥 고점과 당시 주도주는?</button>

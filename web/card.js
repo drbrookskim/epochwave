@@ -580,6 +580,14 @@
       '</span>'
     ) : '';
 
+    var tagsHTML = '';
+    if (ev.category || ev.macro) {
+      tagsHTML = '<div class="ev-tags-wrap stagger" style="animation-delay:85ms">' +
+        (ev.category ? '<span class="ev-tag cat" title="사건 유형 (클릭 시 AI 가이드 비교 질문)">🏷️ ' + esc(ev.category) + '</span>' : '') +
+        (ev.macro ? '<span class="ev-tag macro" title="당시 거시경제 환경">🌐 ' + esc(ev.macro) + '</span>' : '') +
+      '</div>';
+    }
+
     App._openUnfold({
       id: ev.id, x: pos.x, y: pos.y, track: pos.track, color: era.color,
       ariaLabel: ev.title,
@@ -591,6 +599,7 @@
             impactBadge +
           '</div>' +
           '<h2 class="card-title stagger" style="animation-delay:60ms">' + esc(ev.title) + '</h2>' +
+          tagsHTML +
           (ev.note ? '<p class="card-note stagger" style="animation-delay:110ms">' + esc(ev.note) + '</p>' : '') +
         '</header>' +
         '<div class="card-body">' +
@@ -599,6 +608,17 @@
           marketImpactHTML(ev, 260) +
         '</div>',
       afterRender: function (card) {
+        // 사건 유형 태그 클릭 시 관련 유사 사건 비교 질문을 챗봇으로 전송
+        var catTag = card.querySelector('.ev-tag.cat');
+        if (catTag && ev.category) {
+          catTag.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (window.App && typeof App.askChat === 'function') {
+              App.askChat(ev.category + ' 유형의 다른 역사적 사건들과 당시 시장 반응은 어땠나요?');
+            }
+          });
+        }
+
         // 당시 주가 곡선 바로가기 버튼
         var jumpMktBtn = card.querySelector('.ev-jump-mkt-btn');
         if (jumpMktBtn) {

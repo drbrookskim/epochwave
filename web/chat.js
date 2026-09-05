@@ -81,6 +81,17 @@
     }
   }
 
+  /* 외부(사건 카드 태그 등)에서 챗봇에 질문을 보내며 열기 위한 API */
+  App.askChat = function (text) {
+    var panel = document.getElementById('chatPanel');
+    var toggle = document.getElementById('chatToggle');
+    if (panel) {
+      panel.hidden = false;
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+    }
+    send(text);
+  };
+
   function init() {
     var toggle = document.getElementById('chatToggle');
     var panel  = document.getElementById('chatPanel');

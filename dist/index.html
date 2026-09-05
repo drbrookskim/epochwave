@@ -3,8 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Back to the Future — 1955 → 2026</title>
-<meta name="description" content="영화 백 투 더 퓨처의 1955년을 출발점으로 2026년까지 70년의 한국사와 세계사를 한 눈에 보는 연표.">
+<title>EpochWave (에포크웨이브) — 1955 → 2026 역사와 시장의 파동</title>
+<meta name="description" content="1955년부터 2026년까지 70년간의 한국사·세계사 48개 대사건과 4대 증시(코스피·코스닥·나스닥·NYSE)의 역사적 흐름을 연결한 인터랙티브 시각화 아카이브. 과거의 맥락을 통해 시장의 흐름을 조망합니다.">
+<link rel="canonical" href="https://epochwave.pages.dev/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="EpochWave">
+<meta property="og:title" content="EpochWave (에포크웨이브) — 1955 → 2026 역사와 시장의 파동">
+<meta property="og:description" content="영화 백 투 더 퓨처 콘셉트로 탐구하는 70년간의 역사적 대사건과 4대 증시 흐름. 과거의 맥락을 통해 시장의 파동을 이해합니다.">
+<meta property="og:url" content="https://epochwave.pages.dev/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="EpochWave — 1955 → 2026 역사와 시장의 파동">
+<meta name="twitter:description" content="1955~2026년 한국사·세계사 주요 대사건과 주가 흐름의 인터랙티브 시각화 아카이브">
+<meta name="theme-color" content="#080B14">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -960,6 +970,39 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .card-note.mkt-chg-note.up{color:#48D18A}
 .card-note.mkt-chg-note.dn{color:#FF6B6B}
 
+/* ═══ 사건 태그 (유형 + 거시환경) ═══ */
+.ev-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+.ev-tag {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2.5px 8px;
+  border-radius: 4px;
+  letter-spacing: .02em;
+  transition: all 0.15s;
+}
+.ev-tag.cat {
+  background: rgba(77, 163, 255, 0.12);
+  color: #79B8FF;
+  border: 1px solid rgba(77, 163, 255, 0.3);
+}
+.ev-tag.cat:hover {
+  background: rgba(77, 163, 255, 0.22);
+  border-color: #4DA3FF;
+  box-shadow: 0 0 8px rgba(77, 163, 255, 0.3);
+  transform: translateY(-1px);
+}
+.ev-tag.macro {
+  background: rgba(255, 176, 58, 0.12);
+  color: #FFC06A;
+  border: 1px solid rgba(255, 176, 58, 0.3);
+}
+
 .card-body{flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 18px 16px;
   scrollbar-width:thin; scrollbar-color:rgba(140,165,220,.3) transparent}
 .card-body::-webkit-scrollbar{width:6px}
@@ -1237,11 +1280,215 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 .card.revealing .stagger{animation:rise .42s var(--fx) forwards}
 @keyframes rise{to{opacity:1; transform:none}}
 
+/* ═══ 안내 & 방법론 (About & Methodology) 버튼 및 모달 ═══ */
+.about-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cyan);
+  background: rgba(77, 226, 240, 0.08);
+  border: 1px solid rgba(77, 226, 240, 0.35);
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.about-btn:hover {
+  background: rgba(77, 226, 240, 0.18);
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px rgba(77, 226, 240, 0.3);
+  transform: translateY(-1px);
+}
+.about-icon {
+  font-family: serif;
+  font-style: italic;
+  font-weight: bold;
+}
+
+.about-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(4, 7, 14, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}
+.about-modal-backdrop[hidden] {
+  display: none;
+  opacity: 0;
+}
+.about-modal-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  max-height: 85vh;
+  background: #0D1322;
+  border: 1px solid rgba(77, 226, 240, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(77, 226, 240, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: aboutModalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes aboutModalPop {
+  from { transform: scale(0.94); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.about-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--dim);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  z-index: 2;
+}
+.about-modal-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.about-modal-head {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(77, 226, 240, 0.08) 0%, transparent 100%);
+}
+.about-badge {
+  font-family: Orbitron, sans-serif;
+  font-size: 10px;
+  letter-spacing: .15em;
+  color: var(--cyan);
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.about-title {
+  margin: 0;
+  font-size: 18.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.about-modal-body {
+  padding: 20px 24px 24px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.72;
+  color: #B8C7E0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140,165,220,.3) transparent;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.about-sec {
+  margin-bottom: 22px;
+}
+.about-sec:last-child {
+  margin-bottom: 0;
+}
+.about-sec-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cyan);
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.about-sec p {
+  margin: 0 0 8px;
+}
+.about-sec p:last-child {
+  margin-bottom: 0;
+}
+.about-card-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 8px;
+}
+.about-limit-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+.about-limit-list li {
+  margin-bottom: 6px;
+}
+.about-limit-list li strong {
+  color: var(--ink);
+}
+.about-disclaimer-box {
+  background: rgba(255, 176, 58, 0.08);
+  border: 1px solid rgba(255, 176, 58, 0.35);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #FFE0A3;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 /* ═══ 푸터 ═══ */
-.foot{flex:0 0 auto; display:flex; justify-content:space-between; align-items:center;
-  padding:8px 18px; border-top:1px solid var(--line); font-size:11px; color:var(--faint);
-  background:rgba(8,11,20,.6)}
-.foot-scroll{font-family:Orbitron,sans-serif; letter-spacing:.14em; font-size:10px}
+.foot {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 18px 10px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--faint);
+  background: rgba(8, 11, 20, 0.75);
+}
+.foot-disclaimer {
+  font-size: 10.5px;
+  color: rgba(255, 176, 58, 0.8);
+  text-align: center;
+  letter-spacing: -.01em;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+  word-break: keep-all;
+}
+.foot-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.foot-about-link {
+  background: transparent;
+  border: none;
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0 6px;
+  transition: color 0.15s;
+}
+.foot-about-link:hover {
+  color: #fff;
+}
+.foot-scroll {
+  font-family: Orbitron, sans-serif;
+  letter-spacing: .14em;
+  font-size: 10px;
+}
 
 /* ═══ 반응형 ═══ */
 /* ═══ 챗봇이 짚어주는 하이라이트 ═══ */
@@ -1372,6 +1619,33 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 </style>
 </head>
 <body>
+<noscript>
+<div class="noscript-content" style="padding:24px;max-width:920px;margin:0 auto;color:#e2e8f0;background:#0d0f14;font-family:sans-serif;line-height:1.65;">
+<h1>EpochWave - 대한민국 현대 경제사 & 금융 시장 타임라인</h1>
+<p>1955년부터 현재까지 7대 시대와 48개 주요 역사적 사건, 그리고 코스피·외환·금리 등 금융 시장의 흐름을 조망하는 아카이브입니다. 자바스크립트를 활성화하시면 레트로 퓨처리즘 타임서킷과 대화형 인터랙티브 차트를 이용하실 수 있습니다.</p>
+<section style="margin-top:36px;border-top:1px solid #334155;padding-top:16px;">
+<h2>냉전 고착 (undefined ~ undefined)</h2>
+</section>
+<section style="margin-top:36px;border-top:1px solid #334155;padding-top:16px;">
+<h2>데탕트와 유신 (undefined ~ undefined)</h2>
+</section>
+<section style="margin-top:36px;border-top:1px solid #334155;padding-top:16px;">
+<h2>신냉전과 민주화 (undefined ~ undefined)</h2>
+</section>
+<section style="margin-top:36px;border-top:1px solid #334155;padding-top:16px;">
+<h2>탈냉전과 세계화 (undefined ~ undefined)</h2>
+</section>
+<section style="margin-top:36px;border-top:1px solid #334155;padding-top:16px;">
+<h2>테러와 금융위기 (undefined ~ undefined)</h2>
+</section>
+<section style="margin-top:36px;border-top:1px solid #334155;padding-top:16px;">
+<h2>모바일과 팬데믹 (undefined ~ undefined)</h2>
+</section>
+<section style="margin-top:36px;border-top:1px solid #334155;padding-top:16px;">
+<h2>AI와 진영 재편 (undefined ~ undefined)</h2>
+</section>
+</div>
+</noscript>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -1414,7 +1688,7 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
     </h1>
     <p class="subtitle">
       <span class="sub-quote">"Roads we're going we don't need roads."</span>
-      <span class="sub-desc">1955년부터 현재까지의 역사적 사건에 따른 주가의 흐름을 알아보자.</span>
+      <span class="sub-desc">1955년부터 현재까지의 역사 속 사건과 시장의 흐름을 연결하여, 과거의 맥락을 통해 오늘의 흐름을 조망합니다.</span>
     </p>
 
     <!-- ══ 드로리안 시간 회로 계기판 (DeLorean Time Circuits) ══ -->
@@ -1432,40 +1706,40 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
         <div class="tc-panel">
           <!-- MONTH -->
           <div class="tc-col tc-month">
-            <button type="button" class="tc-arrow up" data-unit="month" data-delta="1" title="월 증가" aria-label="월 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="month" data-delta="1" title="월 증가" aria-label="목적지 월 증가">▲</button>
             <span class="tc-lbl">MONTH</span>
-            <div class="tc-screen tc-click-edit" data-unit="month" title="클릭하거나 마우스 휠로 월 변경">
+            <div class="tc-screen tc-click-edit" data-unit="month" role="spinbutton" aria-label="목적지 월" aria-valuenow="11" aria-valuemin="1" aria-valuemax="12" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 월 변경">
               <span class="tc-ghost" aria-hidden="true">888</span>
               <span class="tc-val led" id="destMonth">NOV</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="month" data-delta="-1" title="월 감소" aria-label="월 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="month" data-delta="-1" title="월 감소" aria-label="목적지 월 감소">▼</button>
           </div>
 
           <!-- DAY -->
           <div class="tc-col tc-day">
-            <button type="button" class="tc-arrow up" data-unit="day" data-delta="1" title="일 증가" aria-label="일 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="day" data-delta="1" title="일 증가" aria-label="목적지 일 증가">▲</button>
             <span class="tc-lbl">DAY</span>
-            <div class="tc-screen tc-click-edit" data-unit="day" title="클릭하거나 마우스 휠로 일 변경">
+            <div class="tc-screen tc-click-edit" data-unit="day" role="spinbutton" aria-label="목적지 일" aria-valuenow="5" aria-valuemin="1" aria-valuemax="31" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 일 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="destDay">05</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="day" data-delta="-1" title="일 감소" aria-label="일 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="day" data-delta="-1" title="일 감소" aria-label="목적지 일 감소">▼</button>
           </div>
 
           <!-- YEAR (MIN 1955) -->
           <div class="tc-col tc-year">
-            <button type="button" class="tc-arrow up" data-unit="year" data-delta="1" title="연도 증가" aria-label="연도 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="year" data-delta="1" title="연도 증가" aria-label="목적지 연도 증가">▲</button>
             <span class="tc-lbl">YEAR</span>
-            <div class="tc-screen tc-click-edit" data-unit="year" title="클릭하여 직접 입력하거나 휠로 연도 변경 (최소 1955년)">
+            <div class="tc-screen tc-click-edit" data-unit="year" role="spinbutton" aria-label="목적지 연도" aria-valuenow="1955" aria-valuemin="1955" aria-valuemax="2026" tabindex="0" title="클릭하여 직접 입력하거나 휠, 방향키로 연도 변경 (최소 1955년)">
               <span class="tc-ghost" aria-hidden="true">8888</span>
               <span class="tc-val led" id="ledDest">1955</span>
             </div>
-            <button type="button" class="tc-arrow down is-disabled" id="destYearDown" data-unit="year" data-delta="-1" title="연도 감소 (1955년 최소)" aria-label="연도 감소">▼</button>
+            <button type="button" class="tc-arrow down is-disabled" id="destYearDown" data-unit="year" data-delta="-1" title="연도 감소 (1955년 최소)" aria-label="목적지 연도 감소">▼</button>
           </div>
 
           <!-- AM/PM -->
           <div class="tc-col tc-ampm">
-            <button type="button" class="tc-ampm-btn" id="destAmpmBtn" title="클릭하여 AM/PM 전환" aria-label="AM/PM 전환">
+            <button type="button" class="tc-ampm-btn" id="destAmpmBtn" title="클릭하여 AM/PM 전환" aria-label="목적지 AM/PM 전환">
               <div class="tc-ampm-item is-on" id="destAm"><i class="tc-led-dot"></i><span>AM</span></div>
               <div class="tc-ampm-item" id="destPm"><i class="tc-led-dot"></i><span>PM</span></div>
             </button>
@@ -1473,26 +1747,26 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 
           <!-- HOUR -->
           <div class="tc-col tc-hour">
-            <button type="button" class="tc-arrow up" data-unit="hour" data-delta="1" title="시간 증가" aria-label="시간 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="hour" data-delta="1" title="시간 증가" aria-label="목적지 시간 증가">▲</button>
             <span class="tc-lbl">HOUR</span>
-            <div class="tc-screen tc-click-edit" data-unit="hour" title="클릭하거나 마우스 휠로 시간 변경">
+            <div class="tc-screen tc-click-edit" data-unit="hour" role="spinbutton" aria-label="목적지 시" aria-valuenow="6" aria-valuemin="1" aria-valuemax="12" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 시간 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="destHour">06</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="hour" data-delta="-1" title="시간 감소" aria-label="시간 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="hour" data-delta="-1" title="시간 감소" aria-label="목적지 시간 감소">▼</button>
           </div>
 
           <span class="tc-colon led">:</span>
 
           <!-- MIN -->
           <div class="tc-col tc-min">
-            <button type="button" class="tc-arrow up" data-unit="min" data-delta="1" title="분 증가" aria-label="분 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="min" data-delta="1" title="분 증가" aria-label="목적지 분 증가">▲</button>
             <span class="tc-lbl">MIN</span>
-            <div class="tc-screen tc-click-edit" data-unit="min" title="클릭하거나 마우스 휠로 분 변경">
+            <div class="tc-screen tc-click-edit" data-unit="min" role="spinbutton" aria-label="목적지 분" aria-valuenow="0" aria-valuemin="0" aria-valuemax="59" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 분 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="destMin">00</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="min" data-delta="-1" title="분 감소" aria-label="분 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="min" data-delta="-1" title="분 감소" aria-label="목적지 분 감소">▼</button>
           </div>
         </div>
 
@@ -1515,40 +1789,40 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
         <div class="tc-panel">
           <!-- MONTH -->
           <div class="tc-col tc-month">
-            <button type="button" class="tc-arrow up" data-unit="month" data-delta="1" title="월 증가" aria-label="월 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="month" data-delta="1" title="월 증가" aria-label="현재 월 증가">▲</button>
             <span class="tc-lbl">MONTH</span>
-            <div class="tc-screen tc-click-edit" data-unit="month" title="클릭하거나 마우스 휠로 월 변경">
+            <div class="tc-screen tc-click-edit" data-unit="month" role="spinbutton" aria-label="현재 월" aria-valuenow="10" aria-valuemin="1" aria-valuemax="12" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 월 변경">
               <span class="tc-ghost" aria-hidden="true">888</span>
               <span class="tc-val led" id="presMonth">OCT</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="month" data-delta="-1" title="월 감소" aria-label="월 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="month" data-delta="-1" title="월 감소" aria-label="현재 월 감소">▼</button>
           </div>
 
           <!-- DAY -->
           <div class="tc-col tc-day">
-            <button type="button" class="tc-arrow up" data-unit="day" data-delta="1" title="일 증가" aria-label="일 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="day" data-delta="1" title="일 증가" aria-label="현재 일 증가">▲</button>
             <span class="tc-lbl">DAY</span>
-            <div class="tc-screen tc-click-edit" data-unit="day" title="클릭하거나 마우스 휠로 일 변경">
+            <div class="tc-screen tc-click-edit" data-unit="day" role="spinbutton" aria-label="현재 일" aria-valuenow="26" aria-valuemin="1" aria-valuemax="31" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 일 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="presDay">26</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="day" data-delta="-1" title="일 감소" aria-label="일 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="day" data-delta="-1" title="일 감소" aria-label="현재 일 감소">▼</button>
           </div>
 
           <!-- YEAR -->
           <div class="tc-col tc-year">
-            <button type="button" class="tc-arrow up" data-unit="year" data-delta="1" title="연도 증가" aria-label="연도 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="year" data-delta="1" title="연도 증가" aria-label="현재 연도 증가">▲</button>
             <span class="tc-lbl">YEAR</span>
-            <div class="tc-screen tc-click-edit" data-unit="year" title="클릭하여 직접 입력하거나 휠로 연도 변경 (최소 1955년)">
+            <div class="tc-screen tc-click-edit" data-unit="year" role="spinbutton" aria-label="현재 연도" aria-valuenow="2026" aria-valuemin="1955" aria-valuemax="2026" tabindex="0" title="클릭하여 직접 입력하거나 휠, 방향키로 연도 변경 (최소 1955년)">
               <span class="tc-ghost" aria-hidden="true">8888</span>
               <span class="tc-val led" id="ledPres">2026</span>
             </div>
-            <button type="button" class="tc-arrow down" id="presYearDown" data-unit="year" data-delta="-1" title="연도 감소 (1955년 최소)" aria-label="연도 감소">▼</button>
+            <button type="button" class="tc-arrow down" id="presYearDown" data-unit="year" data-delta="-1" title="연도 감소 (1955년 최소)" aria-label="현재 연도 감소">▼</button>
           </div>
 
           <!-- AM/PM -->
           <div class="tc-col tc-ampm">
-            <button type="button" class="tc-ampm-btn" id="presAmpmBtn" title="클릭하여 AM/PM 전환" aria-label="AM/PM 전환">
+            <button type="button" class="tc-ampm-btn" id="presAmpmBtn" title="클릭하여 AM/PM 전환" aria-label="현재 AM/PM 전환">
               <div class="tc-ampm-item" id="presAm"><i class="tc-led-dot"></i><span>AM</span></div>
               <div class="tc-ampm-item is-on" id="presPm"><i class="tc-led-dot"></i><span>PM</span></div>
             </button>
@@ -1556,26 +1830,26 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
 
           <!-- HOUR -->
           <div class="tc-col tc-hour">
-            <button type="button" class="tc-arrow up" data-unit="hour" data-delta="1" title="시간 증가" aria-label="시간 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="hour" data-delta="1" title="시간 증가" aria-label="현재 시간 증가">▲</button>
             <span class="tc-lbl">HOUR</span>
-            <div class="tc-screen tc-click-edit" data-unit="hour" title="클릭하거나 마우스 휠로 시간 변경">
+            <div class="tc-screen tc-click-edit" data-unit="hour" role="spinbutton" aria-label="현재 시" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 시간 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="presHour">01</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="hour" data-delta="-1" title="시간 감소" aria-label="시간 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="hour" data-delta="-1" title="시간 감소" aria-label="현재 시간 감소">▼</button>
           </div>
 
           <span class="tc-colon led">:</span>
 
           <!-- MIN -->
           <div class="tc-col tc-min">
-            <button type="button" class="tc-arrow up" data-unit="min" data-delta="1" title="분 증가" aria-label="분 증가">▲</button>
+            <button type="button" class="tc-arrow up" data-unit="min" data-delta="1" title="분 증가" aria-label="현재 분 증가">▲</button>
             <span class="tc-lbl">MIN</span>
-            <div class="tc-screen tc-click-edit" data-unit="min" title="클릭하거나 마우스 휠로 분 변경">
+            <div class="tc-screen tc-click-edit" data-unit="min" role="spinbutton" aria-label="현재 분" aria-valuenow="21" aria-valuemin="0" aria-valuemax="59" tabindex="0" title="클릭하거나 마우스 휠, 방향키로 분 변경">
               <span class="tc-ghost" aria-hidden="true">88</span>
               <span class="tc-val led" id="presMin">21</span>
             </div>
-            <button type="button" class="tc-arrow down" data-unit="min" data-delta="-1" title="분 감소" aria-label="분 감소">▼</button>
+            <button type="button" class="tc-arrow down" data-unit="min" data-delta="-1" title="분 감소" aria-label="현재 분 감소">▼</button>
           </div>
         </div>
       </div>
@@ -1627,7 +1901,7 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
     <button id="enterBtn" class="enter" disabled>
       <span class="cta">Start On</span>
     </button>
-    <p class="hint" id="splashHint">연결 중…</p>
+    <p class="hint" id="splashHint">타임서킷 데이터 동기화 중…</p>
   </div>
 </div>
 
@@ -1655,6 +1929,9 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
         </button>
         <button type="button" class="mkt-btn is-on tp-toggle-btn" id="tpToggleBtn" aria-pressed="true" title="역사적 고점·저점 및 당시 주도주 표시 켜기/끄기">
           <i class="tp-star">★</i>고점·저점·주도주
+        </button>
+        <button type="button" class="about-btn" id="aboutBtn" title="EpochWave 안내 및 분석 방법론 열기" aria-haspopup="dialog" aria-expanded="false">
+          <span class="about-icon">ⓘ</span>안내 &amp; 방법론
         </button>
       </div>
     </div>
@@ -1684,9 +1961,72 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
   </div>
 
   <footer class="foot">
-    <span class="foot-hint">노드를 클릭하면 사건이 펼쳐집니다 · 빈 곳을 클릭하거나 <kbd>Esc</kbd>로 닫기</span>
-    <span class="foot-scroll">← 가로로 스크롤 →</span>
+    <div class="foot-disclaimer">
+      ※ 과거의 시장 흐름은 미래의 결과를 보장하지 않으며, 본 서비스는 투자 권유나 예측이 아닌 역사적 맥락 탐구용 시각화 자료입니다.
+    </div>
+    <div class="foot-bar">
+      <span class="foot-hint">노드를 클릭하면 사건이 펼쳐집니다 · 빈 곳을 클릭하거나 <kbd>Esc</kbd>로 닫기</span>
+      <button type="button" class="foot-about-link" id="footAboutLink">안내 &amp; 방법론</button>
+      <span class="foot-scroll">← 가로로 스크롤 →</span>
+    </div>
   </footer>
+
+  <!-- ══ 안내 & 방법론 모달 (About & Methodology) ══ -->
+  <div id="aboutModal" class="about-modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="aboutModalTitle">
+    <div class="about-modal-dialog">
+      <button type="button" class="about-modal-close" id="aboutModalClose" aria-label="안내창 닫기">✕</button>
+      <div class="about-modal-head">
+        <span class="about-badge">ABOUT &amp; METHODOLOGY</span>
+        <h2 class="about-title" id="aboutModalTitle">EpochWave 서비스 안내 및 분석 방법론</h2>
+      </div>
+      <div class="about-modal-body">
+        <section class="about-sec">
+          <h3 class="about-sec-title">1. 기획 의도 — "예측"이 아닌 "맥락의 이해"</h3>
+          <p>
+            EpochWave는 영화 〈백 투 더 퓨처〉의 시간 지평인 1955년부터 현재까지 70년간의 한국사와 세계사 대사건, 그리고 4대 증시(나스닥·NYSE·코스피·코스닥)의 역사적 궤적을 하나의 시각화 축으로 연결한 인터랙티브 아카이브입니다.
+          </p>
+          <p>
+            본 서비스의 목적은 기계적으로 미래 주가를 맞히는 데 있지 않습니다. 과거의 위기(전쟁, 팬데믹, 금융위기)와 번영(기술 혁신, 통화 완화, 무역 호황) 국면에서 시장 참여자들이 어떻게 반응했고 자본이 어디로 흘렀는지를 <strong>입체적인 역사적 맥락</strong> 속에서 되짚어보는 데 목적이 있습니다.
+          </p>
+        </section>
+
+        <section class="about-sec">
+          <h3 class="about-sec-title">2. 분석 방법론 — 이벤트 스터디(Event Study)</h3>
+          <p>
+            금융경제학의 전통적인 '사건 연구(Event Study)' 프레임워크를 기반으로 합니다. 역사적 변곡점 전후의 주가지수 등락률, 섹터별 주도주(Leaders)의 부침, 채권·환율·원자재의 상호작용을 사건 카드와 주가 곡선상에 동기화하여 제공합니다.
+          </p>
+        </section>
+
+        <section class="about-sec">
+          <h3 class="about-sec-title">3. 방법론의 한계와 주의점 (Methodological Caveats)</h3>
+          <div class="about-card-box">
+            <ul class="about-limit-list">
+              <li><strong>표본의 희소성 (Small Sample Size):</strong> 세계대전, 1차 오일쇼크, 글로벌 팬데믹 등 메가 이벤트는 역사상 발생 빈도가 극히 적어 통계적 일반화에 한계가 있습니다.</li>
+              <li><strong>사후편향 (Hindsight Bias):</strong> 결과를 이미 알고 있는 시점에서 과거를 평가할 때 나타나는 '예정된 필연'이라는 인과관계 착각을 경계해야 합니다.</li>
+              <li><strong>거시환경의 이질성 (Macro Heterogeneity):</strong> 같은 '지정학적 분쟁'이라도 1973년 오일쇼크 당시와 2022년 우크라이나 침공 당시의 부채 비율, 금리 수준, 통화 패권 구조는 본질적으로 상이합니다.</li>
+              <li><strong>시장의 자기학습 (Market Reflexivity):</strong> 과거의 패턴이 대중과 알고리즘에 널리 학습되면 시장 참여자들의 선반영으로 인해 동일한 패턴이 미래에 반복되지 않습니다.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="about-sec">
+          <h3 class="about-sec-title">4. 데이터 출처 및 산출 기준</h3>
+          <div class="about-card-box">
+            <p><strong>• 한국 주식시장:</strong> 한국거래소(KRX) 공식 코스피(1975~2026) 및 코스닥(1996~2026) 연말 종가지수, 주요 변곡점 장중치 반영.</p>
+            <p><strong>• 미국 주식시장:</strong> 뉴욕증권거래소(NYSE Composite), 나스닥(NASDAQ Composite, 1971년 100p 시작), 세인트루이스 연방준비은행(FRED) 경제 통계.</p>
+            <p><strong>• 역사적 사실 및 사료:</strong> 대한민국 국가기록원, 국사편찬위원회, 주요 공공 사료 및 공신력 있는 국내외 경제사 문헌 기반.</p>
+          </div>
+        </section>
+
+        <section class="about-sec">
+          <div class="about-disclaimer-box">
+            <strong>⚠️ 법적 고지 및 면책 조항:</strong><br>
+            본 웹사이트에서 제공하는 모든 데이터, 역사적 분석 및 AI 가이드의 응답은 학술·교양 목적의 시각화 참고자료이며, 특정 금융투자상품의 권유나 미래 수익 보장, 투자 자문이 아닙니다. 모든 투자 판단과 결과에 대한 법적 책임은 이용자 본인에게 있습니다.
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
 
   <!-- ══ AI 가이드 챗봇 ══ -->
   <button type="button" id="chatToggle" class="chat-toggle" aria-expanded="false" aria-controls="chatPanel">
@@ -1706,8 +2046,8 @@ kbd{font:inherit;font-size:.85em;border:1px solid var(--line);border-radius:4px;
     <div id="chatList" class="chat-list">
       <div class="chat-msg assistant">
         <div class="chat-bubble">안녕하세요! 1955~2026년 시간여행 AI 가이드입니다. ⚡
-역사적 사건과 4대 증시(나스닥·NYSE·코스피·코스닥)의 고점·저점, 그 당시 시장을 이끈 주도주의 흐름을 안내해 드립니다.
-궁금한 점을 물어보시면 답변과 함께 연표의 사건과 주가 지점을 바로 짚어드려요!</div>
+역사적 사건과 4대 증시(나스닥·NYSE·코스피·코스닥)의 역사적 변곡점, 거시경제 맥락과 당시 시장을 이끈 주도주의 흐름을 안내해 드립니다.
+과거 유사 국면의 시장 반응이나 사건의 전후 맥락에 대해 자유롭게 물어보세요! (※ 본 가이드는 역사적 맥락 탐구용 시각화 자료이며 투자 자문이나 예측을 제공하지 않습니다.)</div>
       </div>
       <div class="chat-suggests">
         <button type="button" class="chat-suggest">2000년 닷컴버블 나스닥 고점과 당시 주도주는?</button>
@@ -1818,6 +2158,37 @@ var App = {
     if (destHourEl) destHourEl.textContent = pad2(destState.hour);
     if (destMinEl) destMinEl.textContent = pad2(destState.min);
 
+    var destRow = document.querySelector('.tc-dest');
+    if (destRow) {
+      var sm = destRow.querySelector('[data-unit="month"]');
+      if (sm) {
+        sm.setAttribute('aria-valuenow', destState.month);
+        sm.setAttribute('aria-valuetext', MONTH_NAMES[destState.month - 1] + ' (' + destState.month + '월)');
+      }
+      var sd = destRow.querySelector('[data-unit="day"]');
+      if (sd) {
+        var maxD = new Date(destState.year, destState.month, 0).getDate();
+        sd.setAttribute('aria-valuenow', destState.day);
+        sd.setAttribute('aria-valuemax', maxD);
+        sd.setAttribute('aria-valuetext', destState.day + '일');
+      }
+      var sy = destRow.querySelector('[data-unit="year"]');
+      if (sy) {
+        sy.setAttribute('aria-valuenow', destState.year);
+        sy.setAttribute('aria-valuetext', destState.year + '년');
+      }
+      var sh = destRow.querySelector('[data-unit="hour"]');
+      if (sh) {
+        sh.setAttribute('aria-valuenow', destState.hour);
+        sh.setAttribute('aria-valuetext', destState.hour + '시 ' + destState.ampm);
+      }
+      var smin = destRow.querySelector('[data-unit="min"]');
+      if (smin) {
+        smin.setAttribute('aria-valuenow', destState.min);
+        smin.setAttribute('aria-valuetext', destState.min + '분');
+      }
+    }
+
     if (destAmEl && destPmEl) {
       destAmEl.classList.toggle('is-on', destState.ampm === 'AM');
       destPmEl.classList.toggle('is-on', destState.ampm === 'PM');
@@ -1837,6 +2208,37 @@ var App = {
     if (ledPres) ledPres.textContent = presState.year;
     if (presHourEl) presHourEl.textContent = pad2(presState.hour);
     if (presMinEl) presMinEl.textContent = pad2(presState.min);
+
+    var presRow = document.querySelector('.tc-pres');
+    if (presRow) {
+      var sm = presRow.querySelector('[data-unit="month"]');
+      if (sm) {
+        sm.setAttribute('aria-valuenow', presState.month);
+        sm.setAttribute('aria-valuetext', MONTH_NAMES[presState.month - 1] + ' (' + presState.month + '월)');
+      }
+      var sd = presRow.querySelector('[data-unit="day"]');
+      if (sd) {
+        var maxD = new Date(presState.year, presState.month, 0).getDate();
+        sd.setAttribute('aria-valuenow', presState.day);
+        sd.setAttribute('aria-valuemax', maxD);
+        sd.setAttribute('aria-valuetext', presState.day + '일');
+      }
+      var sy = presRow.querySelector('[data-unit="year"]');
+      if (sy) {
+        sy.setAttribute('aria-valuenow', presState.year);
+        sy.setAttribute('aria-valuetext', presState.year + '년');
+      }
+      var sh = presRow.querySelector('[data-unit="hour"]');
+      if (sh) {
+        sh.setAttribute('aria-valuenow', presState.hour);
+        sh.setAttribute('aria-valuetext', presState.hour + '시 ' + presState.ampm);
+      }
+      var smin = presRow.querySelector('[data-unit="min"]');
+      if (smin) {
+        smin.setAttribute('aria-valuenow', presState.min);
+        smin.setAttribute('aria-valuetext', presState.min + '분');
+      }
+    }
 
     if (presAmEl && presPmEl) {
       presAmEl.classList.toggle('is-on', presState.ampm === 'AM');
@@ -2024,7 +2426,7 @@ var App = {
     });
   });
 
-  // 스크린 클릭/마우스휠 직접 변경 이벤트 연결 (DESTINATION & PRESENT 공통)
+  // 스크린 클릭/마우스휠/키보드 직접 변경 이벤트 연결 (DESTINATION & PRESENT 공통)
   document.querySelectorAll('.tc-click-edit').forEach(function (screen) {
     screen.addEventListener('click', function () {
       var isPres = screen.closest('.tc-pres') != null;
@@ -2044,6 +2446,32 @@ var App = {
         changeDest(screen.dataset.unit, delta);
       }
     }, { passive: false });
+    screen.addEventListener('keydown', function (e) {
+      var isPres = screen.closest('.tc-pres') != null;
+      var unit = screen.dataset.unit;
+      var changeFn = isPres ? changePres : changeDest;
+
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        changeFn(unit, 1);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        changeFn(unit, -1);
+      } else if (e.key === 'PageUp') {
+        e.preventDefault();
+        changeFn(unit, unit === 'year' ? 10 : (unit === 'min' ? 5 : 1));
+      } else if (e.key === 'PageDown') {
+        e.preventDefault();
+        changeFn(unit, unit === 'year' ? -10 : (unit === 'min' ? -5 : -1));
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (isPres) {
+          promptEditPres(unit);
+        } else {
+          promptEdit(unit);
+        }
+      }
+    });
   });
 
   // AM/PM 토글 버튼 (DEST)
@@ -2674,6 +3102,7 @@ var App = {
     }
     wired = true;
     App.initRange();
+    App.initAboutModal();
 
     /* ── 4대 증시 지수별 On/Off 토글 ── */
     var mktToggles = document.querySelectorAll('.mkt-toolbar button[data-mkt]');
@@ -2920,6 +3349,46 @@ var App = {
     }, { passive: false });
 
     paint();
+  };
+
+  /* ═══ 안내 & 방법론 (About & Methodology) 모달 ═══ */
+  App.initAboutModal = function () {
+    var aboutBtn = document.getElementById('aboutBtn');
+    var footAboutLink = document.getElementById('footAboutLink');
+    var modal = document.getElementById('aboutModal');
+    var closeBtn = document.getElementById('aboutModalClose');
+
+    function openModal() {
+      if (!modal) return;
+      modal.hidden = false;
+      modal.setAttribute('aria-hidden', 'false');
+      if (aboutBtn) aboutBtn.setAttribute('aria-expanded', 'true');
+      if (closeBtn) closeBtn.focus();
+    }
+
+    function closeModal() {
+      if (!modal) return;
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      if (aboutBtn) {
+        aboutBtn.setAttribute('aria-expanded', 'false');
+        aboutBtn.focus();
+      }
+    }
+
+    if (aboutBtn) aboutBtn.addEventListener('click', openModal);
+    if (footAboutLink) footAboutLink.addEventListener('click', openModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (modal) {
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+      });
+    }
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal && !modal.hidden) {
+        closeModal();
+      }
+    });
   };
 })();
 
@@ -3506,6 +3975,14 @@ var App = {
       '</span>'
     ) : '';
 
+    var tagsHTML = '';
+    if (ev.category || ev.macro) {
+      tagsHTML = '<div class="ev-tags-wrap stagger" style="animation-delay:85ms">' +
+        (ev.category ? '<span class="ev-tag cat" title="사건 유형 (클릭 시 AI 가이드 비교 질문)">🏷️ ' + esc(ev.category) + '</span>' : '') +
+        (ev.macro ? '<span class="ev-tag macro" title="당시 거시경제 환경">🌐 ' + esc(ev.macro) + '</span>' : '') +
+      '</div>';
+    }
+
     App._openUnfold({
       id: ev.id, x: pos.x, y: pos.y, track: pos.track, color: era.color,
       ariaLabel: ev.title,
@@ -3517,6 +3994,7 @@ var App = {
             impactBadge +
           '</div>' +
           '<h2 class="card-title stagger" style="animation-delay:60ms">' + esc(ev.title) + '</h2>' +
+          tagsHTML +
           (ev.note ? '<p class="card-note stagger" style="animation-delay:110ms">' + esc(ev.note) + '</p>' : '') +
         '</header>' +
         '<div class="card-body">' +
@@ -3525,6 +4003,17 @@ var App = {
           marketImpactHTML(ev, 260) +
         '</div>',
       afterRender: function (card) {
+        // 사건 유형 태그 클릭 시 관련 유사 사건 비교 질문을 챗봇으로 전송
+        var catTag = card.querySelector('.ev-tag.cat');
+        if (catTag && ev.category) {
+          catTag.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (window.App && typeof App.askChat === 'function') {
+              App.askChat(ev.category + ' 유형의 다른 역사적 사건들과 당시 시장 반응은 어땠나요?');
+            }
+          });
+        }
+
         // 당시 주가 곡선 바로가기 버튼
         var jumpMktBtn = card.querySelector('.ev-jump-mkt-btn');
         if (jumpMktBtn) {
@@ -3901,6 +4390,17 @@ var App = {
       input.focus();
     }
   }
+
+  /* 외부(사건 카드 태그 등)에서 챗봇에 질문을 보내며 열기 위한 API */
+  App.askChat = function (text) {
+    var panel = document.getElementById('chatPanel');
+    var toggle = document.getElementById('chatToggle');
+    if (panel) {
+      panel.hidden = false;
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+    }
+    send(text);
+  };
 
   function init() {
     var toggle = document.getElementById('chatToggle');
@@ -6271,7 +6771,9 @@ var App = {
         "tag": "🚀 전후 경제 호황",
         "summary": "냉전 블록 고착화 속 미국 전후 제조업 및 소비재 주도 NYSE 대세 상승장 전개.",
         "detail": "아이젠하워 행정부의 국방 지출과 주간고속도로 건설 등 대규모 인프라 투자가 맞물려 미국 다우·NYSE 지수가 강력한 상승세를 구가했습니다."
-      }
+      },
+      "category": "지정학·안보",
+      "macro": "냉전체제·전후재건"
     },
     {
       "id": "1956-10",
@@ -6302,7 +6804,9 @@ var App = {
         "tag": "📉 지정학·원자재 쇼크",
         "summary": "수에즈 운하 봉쇄로 원유 수송로 마비, 국제 유가 급등과 유럽 증시의 단기 급락.",
         "detail": "중동 지정학적 충격으로 영국과 프랑스 증시가 직격탄을 맞았으나, 미국 석유 메이저 기업들의 반사이익으로 뉴욕 증시는 충격을 빠르게 흡수했습니다."
-      }
+      },
+      "category": "지정학·에너지",
+      "macro": "원자재쇼크·냉전분쟁"
     },
     {
       "id": "1957-10",
@@ -6333,7 +6837,9 @@ var App = {
         "tag": "🚀 기술 경쟁 점화",
         "summary": "스푸트니크 쇼크로 미·소 우주항공 기술 군비경쟁 점화, 방산·항공주 급등.",
         "detail": "소련의 인공위성 성공에 자극받은 미국이 NASA를 창설하고 군사·항공 R&D 예산을 대폭 증액하면서 항공우주 및 통신·전자 관련주가 장기 강세장에 진입했습니다."
-      }
+      },
+      "category": "기술혁신·우주",
+      "macro": "기술군비경쟁·R&D팽창"
     },
     {
       "id": "1958-12",
@@ -6364,7 +6870,9 @@ var App = {
         "tag": "📊 원조경제 혼란",
         "summary": "원조 경제 둔화와 정치적 불안으로 전후 재건 경기 일시 위축, 암시장 환율 상승.",
         "detail": "삼백산업(제당·제분·면방직) 중심의 원조물자 가공 제조업이 주춤하며 민생 경제의 어려움이 커졌고, 금융권 부실채권과 물가 상승 압력이 가중되었습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "원조경제·정치불안"
     },
     {
       "id": "1960-04",
@@ -6396,7 +6904,9 @@ var App = {
         "tag": "🏛️ 체제 전환 전야",
         "summary": "이승만 정권 붕괴와 정국 혼란으로 기업 활동 위축, 환율 개편 논의 본격화.",
         "detail": "정치적 격변으로 주식 거래는 한산했으나, 부정축재 환수와 경제개발 5개년 계획 수립의 전기가 마련되며 전후 관치경제 탈피의 신호탄이 되었습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "체제전환·원조경제"
     },
     {
       "id": "1961-05",
@@ -6428,7 +6938,9 @@ var App = {
         "tag": "🏛️ 국가주도 경제 개막",
         "summary": "군정의 경제개발 5개년 계획 발표와 화폐개혁 단행, 국가주도 산업화 시동.",
         "detail": "1962년 5월 증권파동 등 초기 제도적 혼란을 겪었으나, 기간산업 육성과 수출 드라이브 정책이 입안되며 근대적 자본시장 형성의 토대가 놓였습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "국가주도개발·화폐개혁"
     },
     {
       "id": "1962-10",
@@ -6459,7 +6971,9 @@ var App = {
         "tag": "📉 핵전쟁 공포 저점",
         "summary": "쿠바 미사일 위기로 전면 핵전쟁 공포 엄습, 월가 5개월 만의 저점 기록.",
         "detail": "해상 봉쇄 기간 동안 위험자산 회피 심리로 주가가 급락했으나, 소련의 미사일 철수로 위기가 해소되자 다우 지수가 하루 만에 급반등하며 V자 회복을 달성했습니다."
-      }
+      },
+      "category": "지정학·안보",
+      "macro": "핵전쟁공포·단기패닉"
     },
     {
       "id": "1963-11",
@@ -6491,7 +7005,9 @@ var App = {
         "tag": "📊 단기 충격 흡수",
         "summary": "케네디 대통령 암살로 월가 일시 패닉, 존슨 부통령 승계 후 빠른 충격 흡수.",
         "detail": "암살 비보 직후 NYSE가 거래를 긴급 중단했으나, 린든 존슨 행정부의 '위대한 사회' 복지·인프라 확장 기조 확인으로 증시는 단 일주일 만에 낙폭을 전액 만회했습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "정치충격·경기부양"
     },
     {
       "id": "1965-06",
@@ -6522,7 +7038,9 @@ var App = {
         "tag": "🚀 대규모 자본 유입",
         "summary": "한일 국교 정상화로 대일 청구권 자금(유·무상 5억 달러) 및 상업차관 유입.",
         "detail": "외화 자금 수혈로 포항제철, 경부고속도로, 소양강댐 등 국가 핵심 기간시설 건설이 탄력을 받으며 중화학공업 도약의 결정적 종잣돈이 되었습니다."
-      }
+      },
+      "category": "외교·통상",
+      "macro": "외자도입·산업화종잣돈"
     },
     {
       "id": "1966-03",
@@ -6553,7 +7071,9 @@ var App = {
         "tag": "🚀 베트남 특수 호황",
         "summary": "브라운 각서 체결과 베트남 파병으로 10억 달러 규모의 '베트남 특수' 호황.",
         "detail": "군납 수출과 현지 용역 수주로 한진, 현대 등 국내 건설·물류 기업들이 급성장하며 한국 경제가 연 10%대의 고도 압축성장 가도에 진입했습니다."
-      }
+      },
+      "category": "지정학·통상",
+      "macro": "베트남특수·고도압축성장"
     },
     {
       "id": "1967-07",
@@ -6584,7 +7104,9 @@ var App = {
         "tag": "📊 공안 정국 긴장",
         "summary": "동베를린 간첩단 사건 등 냉전 안보 위협 속에서도 제2차 경제개발계획 수출 드라이브 지속.",
         "detail": "남북 긴장이 시장 심리를 억눌렀으나 차관 도입에 따른 섬유·경공업 수출 증가세가 주가 하방을 지지하며 공업화가 진전되었습니다."
-      }
+      },
+      "category": "지정학·공안",
+      "macro": "냉전긴장·경공업수출"
     },
     {
       "id": "1969-07",
@@ -6614,7 +7136,9 @@ var App = {
         "tag": "🚀 우주·전자 기술 혁신",
         "summary": "인류의 달 착륙 성공으로 항공우주·컴퓨터·소재 등 하이테크 산업 르네상스 개막.",
         "detail": "아폴로 프로젝트에 참여한 보잉, IBM, 노스아메리칸 록웰 등의 주가가 급등하며 뉴욕 증시의 기술주 밸류에이션 리레이팅을 견인했습니다."
-      }
+      },
+      "category": "기술혁신·우주",
+      "macro": "하이테크르네상스·우량주호황"
     },
     {
       "id": "1972-02",
@@ -6647,7 +7171,9 @@ var App = {
         "tag": "🌐 데탕트·무역로 개척",
         "summary": "닉슨의 방중으로 미·중 해빙 무드 형성, 대규모 대중 무역로 개척 기대감 확산.",
         "detail": "냉전 종식 기대감 속에 미국 농산물, 항공기, 기계류의 대중 수출 가능성이 부각되며 뉴욕 증시가 데탕트 랠리를 펼쳤습니다."
-      }
+      },
+      "category": "외교·통상",
+      "macro": "데탕트·신시장개척"
     },
     {
       "id": "1973-10",
@@ -6678,7 +7204,9 @@ var App = {
         "tag": "⚖️ 1차 오일쇼크 폭락",
         "summary": "제4차 중동전쟁 발발과 석유 무기화로 유가 4배 폭등, 글로벌 증시 대폭락.",
         "detail": "1973~1974년 동안 다우 지수가 -45%, 신생 나스닥이 -60% 폭락하는 최악의 베어마켓을 겪으며 전 세계가 10년 스태그플레이션에 진입했습니다."
-      }
+      },
+      "category": "경제위기·에너지",
+      "macro": "고유가·스태그플레이션"
     },
     {
       "id": "1975-04",
@@ -6708,7 +7236,9 @@ var App = {
         "tag": "📊 냉전 지형 재편",
         "summary": "사이공 함락으로 베트남 특수 종료, 한국 기업들의 중동 건설 시장 대이동 촉발.",
         "detail": "동남아 전선 종식으로 군납 수요가 끝났으나, 오일달러가 넘쳐나던 중동으로 건설사들이 방향을 틀며 1970년대 후반 중동 건설 붐의 전기가 되었습니다."
-      }
+      },
+      "category": "지정학·안보",
+      "macro": "냉전재편·중동건설이동"
     },
     {
       "id": "1976-08",
@@ -6739,7 +7269,9 @@ var App = {
         "tag": "📉 한반도 전쟁 위기",
         "summary": "판문점 도끼만행 사건으로 데프콘 3 격상, 전면전 위기 속 금융시장 일시 경색.",
         "detail": "한반도 전쟁 위기가 고조되었으나 미국의 단호한 무력시위(폴 번연 작전)로 북한이 사과하면서 안보 리스크가 단기에 진정되었습니다."
-      }
+      },
+      "category": "지정학·안보",
+      "macro": "전쟁위기·중동건설호황"
     },
     {
       "id": "1977-12",
@@ -6770,7 +7302,9 @@ var App = {
         "tag": "🚀 수출 100억 달러 금자탑",
         "summary": "사상 최초 연간 수출 100억 달러 돌파, 중화학공업 육성 성과 가시화.",
         "detail": "조선, 제철, 전자 등 중화학공업 중심의 수출 구조 전환이 성공을 거두며 코스피의 전신인 주가지수가 대세 상승 흐름을 탔습니다."
-      }
+      },
+      "category": "경제도약·산업",
+      "macro": "중화학공업·수출입국"
     },
     {
       "id": "1979-10",
@@ -6802,7 +7336,9 @@ var App = {
         "tag": "⚖️ 2차 오일쇼크 & 국변",
         "summary": "이란 혁명에 따른 2차 오일쇼크와 10·26 박정희 대통령 서거로 정국·경제 동반 충격.",
         "detail": "배럴당 40달러에 육박한 고유가와 유신 체제 붕괴로 경제성장률이 -1.6%로 곤두박질치고 외환보유액이 급감하며 증시가 깊은 침체에 빠졌습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "2차오일쇼크·역성장"
     },
     {
       "id": "1980-05",
@@ -6834,7 +7370,9 @@ var App = {
         "tag": "📉 정치 격변·신군부 집권",
         "summary": "5·18 광주민주화운동과 신군부 계엄 확대로 국가 신인도 추락 및 외국인 차관 동결.",
         "detail": "정치적 격변과 외환 부족 속에서 정부가 환율을 대폭 절하하고 중화학공업 구조조정에 나서며 증시는 100선 부근에서 극심한 바닥을 다졌습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "정치격변·신군부긴축"
     },
     {
       "id": "1981-09",
@@ -6865,7 +7403,9 @@ var App = {
         "tag": "🚀 올림픽 호재 & 경기 부양",
         "summary": "88 서울올림픽 유치 성공으로 대규모 도시 인프라 개발 및 경기 부양 모멘텀 형성.",
         "detail": "올림픽 유치에 힘입어 한강 종합개발, 잠실 종합운동장 건립 등 대규모 공공 투자가 본격화되며 건설·건자재 업종을 중심으로 기대감이 확산되었습니다."
-      }
+      },
+      "category": "국제행사·인프라",
+      "macro": "도시개발·경기부양"
     },
     {
       "id": "1983-10",
@@ -6895,7 +7435,9 @@ var App = {
         "tag": "📉 대북 안보 패닉",
         "summary": "버마 아웅산 묘소 테러로 경제 부처 각료 대거 순국, 지정학적 위험 최고조.",
         "detail": "서석준 부총리, 김재익 경제수석 등 경제 정책 브레인 상실 충격으로 증시가 일시 요동쳤으나 규제 완화와 물가 안정 기조는 일관되게 유지되었습니다."
-      }
+      },
+      "category": "지정학·테러",
+      "macro": "안보위기·물가안정기조"
     },
     {
       "id": "1985-09",
@@ -6924,7 +7466,9 @@ var App = {
         "tag": "🚀 플라자 합의 & 3저 호황",
         "summary": "플라자 합의로 엔화 가치 급등, 한국 수출 경쟁력 폭발과 코스피 대세 상승 출발.",
         "detail": "저유가·저금리·저원화의 '3저 호황'을 타고 무역수지가 건국 이래 첫 흑자로 돌아서며 코스피 1,000시대를 향한 전설적인 랠리가 촉발되었습니다."
-      }
+      },
+      "category": "남북관계·통상",
+      "macro": "플라자합의·3저호황"
     },
     {
       "id": "1986-04",
@@ -6955,7 +7499,9 @@ var App = {
         "tag": "📊 원전·에너지주 재평가",
         "summary": "체르노빌 원전 폭발로 글로벌 원자력 산업 위축, 신재생·대체에너지 및 곡물가 급등.",
         "detail": "원전 안전성 우려로 에너지 관련주가 요동쳤으나, 당시 글로벌 시장은 저유가와 저금리에 힘입어 1980년대 중반 유동성 장세를 지속했습니다."
-      }
+      },
+      "category": "재난·환경",
+      "macro": "원전위축·3저유동성"
     },
     {
       "id": "1987-06",
@@ -6987,7 +7533,9 @@ var App = {
         "tag": "📊 민주화 & 블랙먼데이",
         "summary": "6월 민주항쟁으로 대통령 직선제 쟁취, 10월 월가 블랙먼데이(-22.6%) 충격 직면.",
         "detail": "국내 민주화에 따른 임금 인상 요구와 월가 폭락 충격 속에서도 한국 증시는 탄탄한 3저 호황에 힘입어 코스피 500선을 돌파하며 위기를 극복했습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "민주화·블랙먼데이방어"
     },
     {
       "id": "1988-09",
@@ -7017,7 +7565,9 @@ var App = {
         "tag": "🚀 88 올림픽 & 트로이카 장세",
         "summary": "88 서울올림픽 개막으로 국가 위상 급상승, 금융·무역·건설 '트로이카' 광풍.",
         "detail": "시중 부동자금이 증시로 쏟아져 들어오며 주식 계좌 수가 폭증했고, 포항제철 국민주 청약 열풍 속에 코스피는 마침내 1,000포인트 시대를 열었습니다."
-      }
+      },
+      "category": "국제행사·도약",
+      "macro": "3저호황정점·트로이카광풍"
     },
     {
       "id": "1989-11",
@@ -7047,7 +7597,9 @@ var App = {
         "tag": "🌐 냉전 종식·동구권 개방",
         "summary": "베를린 장벽 붕괴로 냉전 종식, 동유럽 개방과 평화의 배당금(Peace Dividend) 수혜.",
         "detail": "국방비 감축에 따른 재정 건전화와 동구권 무역로 개척 기대감으로 미국 다우 지수와 유럽 증시가 1990년대 장기 대세 상승의 닻을 올렸습니다."
-      }
+      },
+      "category": "지정학·체제붕괴",
+      "macro": "냉전종식·평화의배당금"
     },
     {
       "id": "1991-12",
@@ -7078,7 +7630,9 @@ var App = {
         "tag": "🏛️ 글로벌 자본시장 개방",
         "summary": "소련 공식 해체로 글로벌 단일 시장화 촉진, 1992년 한국 주식시장 외국인 투자 전면 허용.",
         "detail": "외국인 자금의 직접 투자가 개시되면서 삼성전자, 포스코 등 한국 대표 우량 제조업(Blue Chip)의 글로벌 밸류에이션 재평가가 시작되었습니다."
-      }
+      },
+      "category": "지정학·체제붕괴",
+      "macro": "글로벌단일시장·자본개방"
     },
     {
       "id": "1993-02",
@@ -7107,7 +7661,9 @@ var App = {
         "tag": "🏛️ 금융실명제 전격 단행",
         "summary": "문민정부 출범 직후 금융실명제 전격 단행, 지하경제 자금 양성화와 제도적 선진화.",
         "detail": "발표 초기 검은돈 이탈 우려로 증시가 급락했으나 차명 거래가 근절되고 자본시장의 투명성이 확립되며 코스피 1,000선 재탈환의 주춧돌이 되었습니다."
-      }
+      },
+      "category": "정치·제도개혁",
+      "macro": "금융실명제·투명성제고"
     },
     {
       "id": "1994-07",
@@ -7138,7 +7694,9 @@ var App = {
         "tag": "📉 북핵 1차 위기·김일성 사망",
         "summary": "제1차 북핵 위기와 김일성 급사로 한반도 전쟁 공포 고조, 금융시장 단기 패닉.",
         "detail": "외국인 매도세로 일시 조정을 받았으나 카터 전 미국 대통령의 방북과 제네바 합의로 리스크가 봉합되며 삼성전자 반도체 수출 호황을 타고 급반등했습니다."
-      }
+      },
+      "category": "지정학·남북관계",
+      "macro": "1차북핵위기·반도체호황"
     },
     {
       "id": "1997-11",
@@ -7169,7 +7727,9 @@ var App = {
         "tag": "📉 국가 부도 IMF 외환위기",
         "summary": "외환보유액 고갈로 정부의 IMF 구제금융 신청, 원·달러 환율 2,000원 육박·지수 277선 추락.",
         "detail": "대기업과 시중은행의 연쇄 부도로 코스피가 -60% 이상 폭락했으나, 혹독한 구조조정과 부실채권 정리 후 벤처·IT 신경제 혁명의 토양이 닦였습니다."
-      }
+      },
+      "category": "경제위기·외환",
+      "macro": "국가부도위기·초고금리구조조정"
     },
     {
       "id": "2000-06",
@@ -7199,7 +7759,9 @@ var App = {
         "tag": "📊 대북 테마 vs 닷컴 버블 붕괴",
         "summary": "첫 남북정상회담으로 현대상선 등 경협주 폭등, 그러나 글로벌 닷컴 버블 붕괴 직면.",
         "detail": "나스닥이 5,000선에서 -78% 폭락하는 과정에서 코스닥도 2,900선에서 500선으로 주저앉으며 실적이 없는 한계 닷컴 기업들의 연쇄 퇴출이 진행되었습니다."
-      }
+      },
+      "category": "남북관계·정치",
+      "macro": "닷컴버블붕괴·금리인상"
     },
     {
       "id": "2001-09",
@@ -7229,7 +7791,9 @@ var App = {
         "tag": "📉 9·11 테러 대폭락",
         "summary": "9·11 테러로 뉴욕 증시 일주일 거래 중단, 재개 후 항공·여행·보험주 폭락.",
         "detail": "세계 무역센터 붕괴 충격에 대응해 미 연준이 1%대 초저금리를 도입했고, 이 풍부한 유동성이 2000년대 중반 글로벌 부동산과 원자재 랠리의 불씨가 되었습니다."
-      }
+      },
+      "category": "지정학·테러",
+      "macro": "글로벌충격·초저금리부양"
     },
     {
       "id": "2002-06",
@@ -7259,7 +7823,9 @@ var App = {
         "tag": "🚀 월드컵 4강 & 내수 활황",
         "summary": "한일 월드컵 4강 신화로 국가 브랜드 급상승, 신용카드 발급 남발로 내수 소비 팽창.",
         "detail": "IT 거품 붕괴를 극복하고 삼성전자가 글로벌 반도체·휴대폰 시장의 최강자로 부상하며 코스피 지수의 든든한 버팀목 역할을 해냈습니다."
-      }
+      },
+      "category": "국제행사·소비",
+      "macro": "내수소비팽창·카드버블전야"
     },
     {
       "id": "2003-02",
@@ -7289,7 +7855,9 @@ var App = {
         "tag": "📊 카드채 사태 & 이라크전",
         "summary": "신용불량자 400만 명을 낳은 카드채 대란과 SK글로벌 분식회계, 미 이라크 침공 쇼크.",
         "detail": "단기 유동성 위기로 코스피가 512선까지 후퇴했으나 채권안정기금 투입과 위기 수습 이후 중국 인프라 특수에 힘입어 대세 상승 랠리로 돌아섰습니다."
-      }
+      },
+      "category": "정치·금융위기",
+      "macro": "카드채대란·이라크전쟁"
     },
     {
       "id": "2004-03",
@@ -7319,7 +7887,9 @@ var App = {
         "tag": "📉 대통령 탄핵소추 충격",
         "summary": "노무현 대통령 탄핵소추안 가결로 코스피 당일 -5.5% 급락, 헌재 기각 후 정상화.",
         "detail": "정치적 불확실성은 단기에 그쳤으며, 브릭스(BRICs) 경제 고도성장과 현대차·LG화학 등 '차·화·정'의 실적 호조에 힘입어 지수가 빠르게 우상향했습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "단기정치충격·차이나랠리"
     },
     {
       "id": "2007-01",
@@ -7348,7 +7918,9 @@ var App = {
         "tag": "🚀 모바일 스마트폰 혁명",
         "summary": "스티브 잡스의 아이폰 공개로 모바일 컴퓨팅 개막, 애플과 글로벌 빅테크 15년 랠리 시동.",
         "detail": "휴대폰이 단순 통화 기기에서 휴대용 컴퓨터로 진화하며 애플, 구글, 퀄컴 등이 세계 시가총액을 장악하는 거대한 모바일 혁명이 본격화되었습니다."
-      }
+      },
+      "category": "기술혁신·모바일",
+      "macro": "모바일혁명·원자재호황"
     },
     {
       "id": "2008-09",
@@ -7378,7 +7950,9 @@ var App = {
         "tag": "📉 리먼 파산·글로벌 금융위기",
         "summary": "월가 4대 투자은행 리먼 브라더스 파산, S&P 500 -57%·코스피 900선 반토막 폭락.",
         "detail": "서브프라임 모기지 부실이 전 세계 은행들의 신용 경색을 불렀고, 사상 초유의 제로금리와 무제한 양적완화(QE)라는 비전통적 통화정책 시대가 열렸습니다."
-      }
+      },
+      "category": "경제위기·금융",
+      "macro": "글로벌신용경색·제로금리QE"
     },
     {
       "id": "2010-03",
@@ -7408,7 +7982,9 @@ var App = {
         "tag": "📊 대북 리스크 & 차·화·정 랠리",
         "summary": "천안함 피격으로 지정학적 긴장 고조, 반면 중국 성장 수혜로 차·화·정 주도주 급등.",
         "detail": "단기 대북 리스크보다 현대차, 기아, LG화학, 정유주 중심의 폭발적 실적 모멘텀이 코스피를 2,000선으로 끌어올리며 강세장을 이끌었습니다."
-      }
+      },
+      "category": "지정학·안보",
+      "macro": "대북리스크·차화정호황"
     },
     {
       "id": "2011-03",
@@ -7437,7 +8013,9 @@ var App = {
         "tag": "📉 동일본 대지진 공급망 쇼크",
         "summary": "동일본 대지진과 후쿠시마 원전 폭발로 글로벌 부품 공급망 마비, 한국 제조업 엔고 반사이익.",
         "detail": "일본 완성차·반도체 공장 파괴로 한국 수출 기업들이 글로벌 대체 수요를 흡수하며 약진했으나, 동년 8월 미국 신용등급 강등 충격을 맞았습니다."
-      }
+      },
+      "category": "재난·공급망",
+      "macro": "공급망쇼크·엔고반사이익"
     },
     {
       "id": "2014-04",
@@ -7466,7 +8044,9 @@ var App = {
         "tag": "📊 내수 침체 & 박스피(Boxpi)",
         "summary": "세월호 참사로 전 국민적 애도 분위기 속 내수 소비 위축, 2,000선 갇힌 '박스피' 고착.",
         "detail": "글로벌 저성장·저물가 기조와 기업 실적 정체로 코스피가 1,800~2,050포인트 사이의 좁은 밴드에 수년간 갇히는 답답한 박스권 장세가 이어졌습니다."
-      }
+      },
+      "category": "사회참사·내수",
+      "macro": "소비위축·박스피고착"
     },
     {
       "id": "2016-12",
@@ -7497,7 +8077,9 @@ var App = {
         "tag": "🏛️ 국정농단 탄핵 & 반도체 슈퍼사이클",
         "summary": "국정농단 대통령 탄핵소추의 정치적 격변, 반면 글로벌 메모리 반도체 슈퍼사이클 진입.",
         "detail": "정치적 불안에도 불구하고 스마트폰과 클라우드 데이터센터 수요 폭증으로 삼성전자와 SK하이닉스가 사상 최대 영업이익을 경신하며 증시를 지탱했습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "정치격변·반도체슈퍼사이클"
     },
     {
       "id": "2017-05",
@@ -7527,7 +8109,9 @@ var App = {
         "tag": "🚀 코스피 2,500 역사적 돌파",
         "summary": "문재인 정부 출범과 반도체 수출 호황으로 코스피가 박스권을 뚫고 2,500선 사상 최고치 경신.",
         "detail": "외국인 투자자의 대규모 순매수와 주주환원 확대 기대감이 맞물려 IT 및 대형 가치주 전반으로 온기가 확산되며 장기 침체를 벗어났습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "반도체수출호황·코스피2500"
     },
     {
       "id": "2018-02",
@@ -7558,7 +8142,9 @@ var App = {
         "tag": "📊 평화 무드 vs 미·중 무역전쟁",
         "summary": "평창 동계올림픽 남북 화해 무드 vs 트럼프 행정부의 대중 관세 폭탄과 무역전쟁 격화.",
         "detail": "남북 경협주가 단기 급등했으나 미·중 관세 전쟁 본격화로 수출 의존도가 높은 한국 증시는 2018년 내내 가파른 조정을 겪었습니다."
-      }
+      },
+      "category": "국제행사·외교",
+      "macro": "미중무역전쟁·수출둔화"
     },
     {
       "id": "2020-03",
@@ -7588,7 +8174,9 @@ var App = {
         "tag": "📉 팬데믹 폭락 후 동학개미 랠리",
         "summary": "코로나19 팬데믹으로 글로벌 서킷브레이커, 이후 무제한 유동성으로 코스피 3,300 돌파.",
         "detail": "1,439선까지 급락했던 코스피는 개인 투자자(동학개미)의 100조 원 순매수와 초저금리 유동성에 힘입어 삼성전자 9만 원, 코스피 3,300을 달성했습니다."
-      }
+      },
+      "category": "팬데믹·재난",
+      "macro": "서킷브레이커·무제한유동성"
     },
     {
       "id": "2022-02",
@@ -7619,7 +8207,9 @@ var App = {
         "tag": "📉 우크라이나 침공 & 금리 빅스텝",
         "summary": "러시아의 우크라이나 침공으로 원자재·곡물 인플레이션 폭발, 미 연준의 4연속 자이언트스텝.",
         "detail": "물가를 잡기 위한 글로벌 중앙은행의 가파른 금리 인상으로 2022년 나스닥 -33%, 코스피 -25% 급락하며 기술 성장주 밸류에이션이 붕괴했습니다."
-      }
+      },
+      "category": "지정학·전쟁",
+      "macro": "원자재인플레·자이언트스텝"
     },
     {
       "id": "2022-11",
@@ -7649,7 +8239,9 @@ var App = {
         "tag": "🚀 생성형 AI & 엔비디아 혁명",
         "summary": "OpenAI의 ChatGPT 공개로 생성형 AI 시대 개막, 엔비디아와 빅테크 주도 나스닥 사상 최고치.",
         "detail": "HBM 반도체와 AI 데이터센터 수요가 폭증하며 SK하이닉스와 엔비디아가 역사적 신고가를 경신하고 글로벌 증시의 새 주도주로 우뚝 섰습니다."
-      }
+      },
+      "category": "기술혁신·AI",
+      "macro": "생성형AI투자·HBM호황"
     },
     {
       "id": "2024-12",
@@ -7679,7 +8271,9 @@ var App = {
         "tag": "📉 비상계엄 쇼크 & 정치 불안",
         "summary": "비상계엄 선포로 야간 환율 급등 및 코스피 변동성 폭발, 국회 해제 의결로 급진정.",
         "detail": "민주주의 시스템과 시장 안전판의 회복력이 확인되었으나, 정치적 불확실성이 불거지며 코리아 디스카운트 해소와 기업 밸류업 정책의 중요성이 부각되었습니다."
-      }
+      },
+      "category": "정치·사회격변",
+      "macro": "단기금융불안·밸류업기대"
     },
     {
       "id": "2025-06",
@@ -7709,7 +8303,9 @@ var App = {
         "tag": "🏛️ 지배구조 개혁 & 밸류업 도약",
         "summary": "조기 대선으로 정국 안정화, 상법 개정 및 기업 밸류업 프로그램 가속화 기대감.",
         "detail": "정치적 불확실성이 해소되며 자본시장 선진화 정책과 이사의 충실의무 확대 등 주주권익 보호 제도가 재가동되어 한국 증시의 재평가 계기가 마련되었습니다."
-      }
+      },
+      "category": "정치·제도개혁",
+      "macro": "정국정상화·자본시장개혁"
     }
   ]
 }

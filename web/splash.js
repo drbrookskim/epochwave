@@ -91,6 +91,37 @@ var App = {
     if (destHourEl) destHourEl.textContent = pad2(destState.hour);
     if (destMinEl) destMinEl.textContent = pad2(destState.min);
 
+    var destRow = document.querySelector('.tc-dest');
+    if (destRow) {
+      var sm = destRow.querySelector('[data-unit="month"]');
+      if (sm) {
+        sm.setAttribute('aria-valuenow', destState.month);
+        sm.setAttribute('aria-valuetext', MONTH_NAMES[destState.month - 1] + ' (' + destState.month + '월)');
+      }
+      var sd = destRow.querySelector('[data-unit="day"]');
+      if (sd) {
+        var maxD = new Date(destState.year, destState.month, 0).getDate();
+        sd.setAttribute('aria-valuenow', destState.day);
+        sd.setAttribute('aria-valuemax', maxD);
+        sd.setAttribute('aria-valuetext', destState.day + '일');
+      }
+      var sy = destRow.querySelector('[data-unit="year"]');
+      if (sy) {
+        sy.setAttribute('aria-valuenow', destState.year);
+        sy.setAttribute('aria-valuetext', destState.year + '년');
+      }
+      var sh = destRow.querySelector('[data-unit="hour"]');
+      if (sh) {
+        sh.setAttribute('aria-valuenow', destState.hour);
+        sh.setAttribute('aria-valuetext', destState.hour + '시 ' + destState.ampm);
+      }
+      var smin = destRow.querySelector('[data-unit="min"]');
+      if (smin) {
+        smin.setAttribute('aria-valuenow', destState.min);
+        smin.setAttribute('aria-valuetext', destState.min + '분');
+      }
+    }
+
     if (destAmEl && destPmEl) {
       destAmEl.classList.toggle('is-on', destState.ampm === 'AM');
       destPmEl.classList.toggle('is-on', destState.ampm === 'PM');
@@ -110,6 +141,37 @@ var App = {
     if (ledPres) ledPres.textContent = presState.year;
     if (presHourEl) presHourEl.textContent = pad2(presState.hour);
     if (presMinEl) presMinEl.textContent = pad2(presState.min);
+
+    var presRow = document.querySelector('.tc-pres');
+    if (presRow) {
+      var sm = presRow.querySelector('[data-unit="month"]');
+      if (sm) {
+        sm.setAttribute('aria-valuenow', presState.month);
+        sm.setAttribute('aria-valuetext', MONTH_NAMES[presState.month - 1] + ' (' + presState.month + '월)');
+      }
+      var sd = presRow.querySelector('[data-unit="day"]');
+      if (sd) {
+        var maxD = new Date(presState.year, presState.month, 0).getDate();
+        sd.setAttribute('aria-valuenow', presState.day);
+        sd.setAttribute('aria-valuemax', maxD);
+        sd.setAttribute('aria-valuetext', presState.day + '일');
+      }
+      var sy = presRow.querySelector('[data-unit="year"]');
+      if (sy) {
+        sy.setAttribute('aria-valuenow', presState.year);
+        sy.setAttribute('aria-valuetext', presState.year + '년');
+      }
+      var sh = presRow.querySelector('[data-unit="hour"]');
+      if (sh) {
+        sh.setAttribute('aria-valuenow', presState.hour);
+        sh.setAttribute('aria-valuetext', presState.hour + '시 ' + presState.ampm);
+      }
+      var smin = presRow.querySelector('[data-unit="min"]');
+      if (smin) {
+        smin.setAttribute('aria-valuenow', presState.min);
+        smin.setAttribute('aria-valuetext', presState.min + '분');
+      }
+    }
 
     if (presAmEl && presPmEl) {
       presAmEl.classList.toggle('is-on', presState.ampm === 'AM');
@@ -297,7 +359,7 @@ var App = {
     });
   });
 
-  // 스크린 클릭/마우스휠 직접 변경 이벤트 연결 (DESTINATION & PRESENT 공통)
+  // 스크린 클릭/마우스휠/키보드 직접 변경 이벤트 연결 (DESTINATION & PRESENT 공통)
   document.querySelectorAll('.tc-click-edit').forEach(function (screen) {
     screen.addEventListener('click', function () {
       var isPres = screen.closest('.tc-pres') != null;
@@ -317,6 +379,32 @@ var App = {
         changeDest(screen.dataset.unit, delta);
       }
     }, { passive: false });
+    screen.addEventListener('keydown', function (e) {
+      var isPres = screen.closest('.tc-pres') != null;
+      var unit = screen.dataset.unit;
+      var changeFn = isPres ? changePres : changeDest;
+
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        changeFn(unit, 1);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        changeFn(unit, -1);
+      } else if (e.key === 'PageUp') {
+        e.preventDefault();
+        changeFn(unit, unit === 'year' ? 10 : (unit === 'min' ? 5 : 1));
+      } else if (e.key === 'PageDown') {
+        e.preventDefault();
+        changeFn(unit, unit === 'year' ? -10 : (unit === 'min' ? -5 : -1));
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (isPres) {
+          promptEditPres(unit);
+        } else {
+          promptEdit(unit);
+        }
+      }
+    });
   });
 
   // AM/PM 토글 버튼 (DEST)

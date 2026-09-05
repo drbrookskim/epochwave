@@ -433,6 +433,7 @@
     }
     wired = true;
     App.initRange();
+    App.initAboutModal();
 
     /* ── 4대 증시 지수별 On/Off 토글 ── */
     var mktToggles = document.querySelectorAll('.mkt-toolbar button[data-mkt]');
@@ -679,5 +680,45 @@
     }, { passive: false });
 
     paint();
+  };
+
+  /* ═══ 안내 & 방법론 (About & Methodology) 모달 ═══ */
+  App.initAboutModal = function () {
+    var aboutBtn = document.getElementById('aboutBtn');
+    var footAboutLink = document.getElementById('footAboutLink');
+    var modal = document.getElementById('aboutModal');
+    var closeBtn = document.getElementById('aboutModalClose');
+
+    function openModal() {
+      if (!modal) return;
+      modal.hidden = false;
+      modal.setAttribute('aria-hidden', 'false');
+      if (aboutBtn) aboutBtn.setAttribute('aria-expanded', 'true');
+      if (closeBtn) closeBtn.focus();
+    }
+
+    function closeModal() {
+      if (!modal) return;
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      if (aboutBtn) {
+        aboutBtn.setAttribute('aria-expanded', 'false');
+        aboutBtn.focus();
+      }
+    }
+
+    if (aboutBtn) aboutBtn.addEventListener('click', openModal);
+    if (footAboutLink) footAboutLink.addEventListener('click', openModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (modal) {
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+      });
+    }
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal && !modal.hidden) {
+        closeModal();
+      }
+    });
   };
 })();
