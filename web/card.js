@@ -258,68 +258,6 @@
     return res;
   }
 
-  function getEventRelatedCompanies(ev) {
-    var yr = ev.year;
-    var list = [];
-    var seen = {};
-
-    function add(name, url) {
-      if (!name || !url || seen[name]) return;
-      seen[name] = true;
-      list.push({ name: name, url: url });
-    }
-
-    // 1. 해당 연도의 turningPoints 주도주
-    (App.data.markets || []).forEach(function (mk) {
-      (mk.turningPoints || []).forEach(function (tp) {
-        if (tp.year === yr) {
-          (tp.leaders || []).forEach(function (ld) {
-            var links = getLeaderLinks(ld);
-            links.forEach(function (lk) { add(lk.name, lk.url); });
-          });
-        }
-      });
-    });
-
-    // 2. 사건 제목, 본문, figures에서 언급된 기업
-    var fullText = [
-      ev.title,
-      ev.korea && ev.korea.headline,
-      ev.korea && ev.korea.body,
-      ev.world && ev.world.headline,
-      ev.world && ev.world.body,
-      (ev.korea && ev.korea.figures || []).join(' '),
-      (ev.world && ev.world.figures || []).join(' ')
-    ].join(' ');
-
-    for (var comp in COMPANY_URLS) {
-      if (comp.length >= 2 && fullText.indexOf(comp) !== -1) {
-        add(comp, COMPANY_URLS[comp]);
-      }
-    }
-
-    // 3. 만약 리스트가 적으면(2개 미만), 인접한 연도(±3년)의 주도주 보충
-    if (list.length < 2) {
-      var allTps = [];
-      (App.data.markets || []).forEach(function (mk) {
-        (mk.turningPoints || []).forEach(function (tp) {
-          allTps.push({ tp: tp, dist: Math.abs(tp.year - yr) });
-        });
-      });
-      allTps.sort(function (a, b) { return a.dist - b.dist; });
-      for (var i = 0; i < allTps.length && list.length < 4; i++) {
-        (allTps[i].tp.leaders || []).forEach(function (ld) {
-          var links = getLeaderLinks(ld);
-          links.forEach(function (lk) {
-            if (list.length < 4) add(lk.name, lk.url);
-          });
-        });
-      }
-    }
-
-    return list;
-  }
-
   function sideHTML(kind, d, delay) {
     if (!d) return '';
     var tag = kind === 'world' ? 'WORLD · 세계' : 'KOREA · 한국';
@@ -408,24 +346,6 @@
       '</div>'
     ) : '';
 
-    // 관련 기업 공식 홈페이지 링크 리스트
-    var relatedComps = getEventRelatedCompanies(ev);
-    var compsHTML = relatedComps.length > 0 ? (
-      '<div class="ev-mkt-companies">' +
-        '<div class="ev-comp-header">' +
-          '<span class="ev-comp-title">당시 주요 기업 공식 홈페이지</span>' +
-        '</div>' +
-        '<div class="ev-comp-grid">' +
-          relatedComps.map(function (c) {
-            return '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer" class="ev-company-link" title="' + esc(c.name) + ' 홈페이지로 가기" aria-label="' + esc(c.name) + ' 홈페이지로 가기">' +
-              '<span class="ev-comp-name">' + esc(c.name) + '</span>' +
-              '<span class="ev-comp-btn">공식 홈 ↗</span>' +
-            '</a>';
-          }).join('') +
-        '</div>' +
-      '</div>'
-    ) : '';
-
     var summaryText = impact ? impact.summary : (econNotes.length > 0 ? econNotes[0].note.body : '');
     var detailText = impact && impact.detail ? impact.detail : '';
 
@@ -438,7 +358,6 @@
         (summaryText ? '<p class="ev-impact-summary">' + esc(summaryText) + '</p>' : '') +
         (detailText ? '<p class="ev-impact-detail">' + esc(detailText) + '</p>' : '') +
         (econNoteHTML || '') +
-        (compsHTML || '') +
         (statsHTML ? '<div class="ev-mkt-stats-wrap"><div class="ev-mkt-stats-grid">' + statsHTML + '</div></div>' : '') +
         '<div class="ev-mkt-actions">' + jumpBtnHTML + tpBtnHTML + '</div>' +
       '</section>';
@@ -661,21 +580,6 @@
       '</span>'
     ) : '';
 
-    var relatedComps = getEventRelatedCompanies(ev);
-    var quickBarHTML = relatedComps.length > 0 ? (
-      '<div class="ev-quick-companies stagger" style="animation-delay:110ms">' +
-        '<div class="ev-quick-title">🏢 관련 기업 공식 홈페이지</div>' +
-        '<div class="ev-quick-chips">' +
-          relatedComps.map(function (c) {
-            return '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer" class="ev-quick-chip" title="' + esc(c.name) + ' 공식 홈페이지 열기 (새 창)">' +
-              '<span class="ev-quick-name">' + esc(c.name) + '</span>' +
-              '<span class="ev-quick-arrow">↗</span>' +
-            '</a>';
-          }).join('') +
-        '</div>' +
-      '</div>'
-    ) : '';
-
     App._openUnfold({
       id: ev.id, x: pos.x, y: pos.y, track: pos.track, color: era.color,
       ariaLabel: ev.title,
@@ -690,7 +594,6 @@
           (ev.note ? '<p class="card-note stagger" style="animation-delay:110ms">' + esc(ev.note) + '</p>' : '') +
         '</header>' +
         '<div class="card-body">' +
-          quickBarHTML +
           sideHTML('world', ev.world, 150) +
           sideHTML('korea', ev.korea, 210) +
           marketImpactHTML(ev, 260) +
@@ -788,41 +691,6 @@
       delay += 45;
     }
 
-    var mktComps = [];
-    var mktSeen = {};
-    (App.data.markets || []).forEach(function (m) {
-      (m.turningPoints || []).forEach(function (tp) {
-        if (tp.year === point[0]) {
-          (tp.leaders || []).forEach(function (ld) {
-            var links = getLeaderLinks(ld);
-            links.forEach(function (lk) {
-              if (!mktSeen[lk.name]) { mktSeen[lk.name] = true; mktComps.push(lk); }
-            });
-          });
-        }
-      });
-    });
-
-    var compSecHTML = '';
-    if (mktComps.length > 0) {
-      compSecHTML =
-        '<section class="side mkt-comp-sec stagger" style="animation-delay:' + delay + 'ms">' +
-          '<div class="side-top">' +
-            '<span class="side-tag" style="color:' + mk.color + '">LEADERS · ' + point[0] + '년 대표 기업</span>' +
-            '<span class="side-head">공식 홈페이지 바로가기</span>' +
-          '</div>' +
-          '<div class="ev-comp-grid">' +
-            mktComps.map(function (c) {
-              return '<a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer" class="ev-company-link" title="' + esc(c.name) + ' 공식 홈페이지 열기">' +
-                '<span class="ev-comp-name">' + esc(c.name) + '</span>' +
-                '<span class="ev-comp-btn">공식 홈 ↗</span>' +
-              '</a>';
-            }).join('') +
-          '</div>' +
-        '</section>';
-      delay += 40;
-    }
-
     var relHTML = related.length
       ? related.map(function (e, idx) {
           var side = e.anchor === 'korea' ? e.korea : e.world;
@@ -858,7 +726,7 @@
               '</p>'
             : '') +
         '</header>' +
-        '<div class="card-body">' + econHTML + compSecHTML + relHTML + '</div>',
+        '<div class="card-body">' + econHTML + relHTML + '</div>',
       afterRender: function (card) {
         Array.prototype.forEach.call(card.querySelectorAll('.mkt-rel'), function (sec) {
           sec.addEventListener('click', function () {
